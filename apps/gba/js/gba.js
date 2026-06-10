@@ -1,400 +1,349 @@
-const GBA_GAMES = [
-  { name: 'Pokémon Émeraude', file: 'https://pub-045046eb23854c6e897afff1193bf9bf.r2.dev/gba/Pokemon - Version Emeraude (France).gba', cover: '/public/assets/icons/pkmnemeraude.webp' },
-  { name: 'Pokémon Rouge Feu', file: 'https://pub-045046eb23854c6e897afff1193bf9bf.r2.dev/gba/Pokemon - Version Rouge Feu (France).gba', cover: '/public/assets/icons/pkmnrouge.webp' },
-  { name: 'Kirby & the Amazing Mirror', file: 'https://pub-045046eb23854c6e897afff1193bf9bf.r2.dev/gba/Kirby & the Amazing Mirror (Europe) (En,Fr,De,Es,It).zip', cover: '/public/assets/icons/kirby.webp' },
-  { name: 'The Legend of Zelda: The Minish Cap', file: 'https://pub-045046eb23854c6e897afff1193bf9bf.r2.dev/gba/Legend of Zelda, The - The Minish Cap (Europe) (En,Fr,De,Es,It).zip', cover: '/public/assets/icons/zelda.webp' }
-];
+/**
+ * gba.js
+ * Handles the GBA emulator page (host/parent side).
+ *
+ * Responsibilities:
+ *  - Inject Save 💾 / Load 📂 buttons + slot selector into the emulator toolbar
+ *  - Talk to the gba_player.html iframe via postMessage
+ *  - Upload / download save states through SaveManager
+ *  - Show toast confirmations
+ *
+ * Expects on window:
+ *   window.SaveManager  (SaveManager.js must be loaded first)
+ *   An iframe with id="gba-emu-iframe" pointing to gba_player.html
+ */
 
-// Expose globally for GBA Turbo to read
-window.GBA_GAMES = GBA_GAMES;
+(function () {
+  "use strict";
 
-let gbaPlaytimes = {};
-let currentEmuStartTime = 0;
-let currentGameName = null;
-let currentCoverIndex = 0;
+  /* ------------------------------------------------------------------ */
+  /*  Constants                                                           */
+  /* ------------------------------------------------------------------ */
+  const PLATFORM      = "gba";
+  const IFRAME_ID     = "gba-emu-iframe";
+  const SAVE_TIMEOUT  = 5000; // ms to wait for state from iframe
 
-export default async function renderGba(container) {
-  if (window.SaveManager) {
-    gbaPlaytimes = await window.SaveManager.loadPlaytimes('gba');
-  } else if (window.Auth?.currentUser && window.Firestore) {
+  /* ------------------------------------------------------------------ */
+  /*  State                                                               */
+  /* ------------------------------------------------------------------ */
+  let currentSlot    = 1;          // active save slot (1 | 2 | 3)
+  let gameName       = "Unknown";  // resolved from iframe URL or dataset
+  let pendingSaveResolve = null;   // resolves when iframe returns state
+  let pendingSaveTimer   = null;
+
+  /* ------------------------------------------------------------------ */
+  /*  Init – wait for DOM                                                 */
+  /* ------------------------------------------------------------------ */
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", init);
+  } else {
+    init();
+  }
+
+  function init() {
+    resolveGameName();
+    injectSaveUI();
+    listenToIframe();
+  }
+
+  /* ------------------------------------------------------------------ */
+  /*  Resolve game name from the iframe src hash or data attribute        */
+  /* ------------------------------------------------------------------ */
+  function resolveGameName() {
+    const iframe = document.getElementById(IFRAME_ID);
+    if (!iframe) return;
+
+    // Prefer data-game-name attribute set by the host page
+    if (iframe.dataset.gameName) {
+      gameName = iframe.dataset.gameName;
+      return;
+    }
+
+    // Fall back: parse hash from src
     try {
-      const uid = window.Auth.currentUser.uid;
-      const docRef = window.Firestore.doc(window.FirebaseDB, 'users', uid);
-      const docSnap = await window.Firestore.getDoc(docRef);
-      if (docSnap.exists() && docSnap.data().gba_playtimes) {
-        gbaPlaytimes = docSnap.data().gba_playtimes;
+      const src    = iframe.src || "";
+      const hash   = src.split("#")[1] || "";
+      const params = new URLSearchParams(hash);
+      const name   = params.get("name");
+      if (name) gameName = name;
+    } catch (_) { /* ignore */ }
+  }
+
+  /* ------------------------------------------------------------------ */
+  /*  Build and inject the Save/Load UI                                   */
+  /* ------------------------------------------------------------------ */
+  function injectSaveUI() {
+    // Find or create a toolbar container
+    let toolbar = document.querySelector(".emu-toolbar");
+    if (!toolbar) {
+      toolbar = document.createElement("div");
+      toolbar.className = "emu-toolbar";
+      applyToolbarStyles(toolbar);
+
+      // Insert right after the iframe, or at end of body
+      const iframe = document.getElementById(IFRAME_ID);
+      if (iframe && iframe.parentNode) {
+        iframe.parentNode.insertBefore(toolbar, iframe.nextSibling);
+      } else {
+        document.body.appendChild(toolbar);
       }
-    } catch (e) {
-      console.error('Error loading GBA playtimes:', e);
+    }
+
+    // ---- Slot selector ----
+    const slotLabel = el("span", { className: "emu-slot-label" }, "Slot :");
+    applyStyles(slotLabel, {
+      color: "#ccc", fontSize: "13px", fontFamily: "monospace",
+    });
+
+    const slotSelect = el("select", { id: "emu-slot-select" });
+    applyStyles(slotSelect, {
+      background: "#1e1e2e", color: "#e0e0e0", border: "1px solid #444",
+      borderRadius: "6px", padding: "4px 8px", cursor: "pointer",
+      fontFamily: "monospace", fontSize: "13px",
+    });
+    [1, 2, 3].forEach(n => {
+      const opt = el("option", { value: n }, `Slot ${n}`);
+      slotSelect.appendChild(opt);
+    });
+    slotSelect.value = currentSlot;
+    slotSelect.addEventListener("change", () => {
+      currentSlot = parseInt(slotSelect.value, 10);
+    });
+
+    // Populate slot labels from Firestore metadata
+    loadSlotLabels(slotSelect);
+
+    // ---- Save button ----
+    const saveBtn = el("button", { id: "emu-save-btn", title: "Save state to cloud" }, "💾 Save");
+    applyBtnStyles(saveBtn, "#7c3aed");
+    saveBtn.addEventListener("click", handleSave);
+
+    // ---- Load button ----
+    const loadBtn = el("button", { id: "emu-load-btn", title: "Load state from cloud" }, "📂 Load");
+    applyBtnStyles(loadBtn, "#0e7490");
+    loadBtn.addEventListener("click", handleLoad);
+
+    // ---- Assemble ----
+    toolbar.appendChild(slotLabel);
+    toolbar.appendChild(slotSelect);
+    toolbar.appendChild(saveBtn);
+    toolbar.appendChild(loadBtn);
+  }
+
+  /* ------------------------------------------------------------------ */
+  /*  Save flow                                                           */
+  /* ------------------------------------------------------------------ */
+  async function handleSave() {
+    const btn = document.getElementById("emu-save-btn");
+    setLoading(btn, true);
+
+    try {
+      // 1. Ask the iframe to trigger a save and send back the state
+      const stateArray = await requestStateFromIframe();
+
+      // 2. Convert Array → Uint8Array → Blob
+      const uint8 = new Uint8Array(stateArray);
+      const blob  = new Blob([uint8], { type: "application/octet-stream" });
+
+      // 3. Upload via SaveManager
+      const label = `Slot ${currentSlot} – ${new Date().toLocaleString()}`;
+      await window.SaveManager.saveState(PLATFORM, gameName, blob, currentSlot, label);
+
+      // 4. Refresh slot labels
+      loadSlotLabels(document.getElementById("emu-slot-select"));
+
+      showToast(`💾 Slot ${currentSlot} sauvegardé !`, "success");
+    } catch (err) {
+      console.error("[gba.js] Save failed:", err);
+      showToast(`❌ Échec de la sauvegarde : ${err.message}`, "error");
+    } finally {
+      setLoading(btn, false);
     }
   }
-  renderGbaMenu(container);
-}
 
-function renderGbaMenu(container) {
-  // Add CSS for simple scrollable cover flow
-  if (!document.getElementById('gba-simple-cover-styles')) {
-    const style = document.createElement('style');
-    style.id = 'gba-simple-cover-styles';
-    style.textContent = `
-      .gba-menu-wrapper {
-        display: flex; flex-direction: column; width: 100%; height: 100%; font-family: 'Inter', sans-serif;
-        background: transparent; color: #fff; overflow: hidden; position: relative;
-        animation: gbaFadeIn 0.3s ease-out;
-      }
-      @keyframes gbaFadeIn {
-        from { opacity: 0; transform: scale(1.02); }
-        to { opacity: 1; transform: scale(1); }
-      }
-      
-      .gba-covers-row {
-        flex: 1; display: flex; align-items: center; justify-content: flex-start;
-        padding: 0 50vw; /* Padding to allow centering first/last items */
-        overflow-x: hidden; scroll-behavior: smooth; gap: 40px;
-      }
-      
-      .gba-cover-item {
-        flex-shrink: 0; width: 220px; height: 320px; border-radius: 8px; cursor: pointer;
-        position: relative; transition: all 0.3s cubic-bezier(0.2, 1, 0.3, 1);
-        filter: brightness(0.5) grayscale(0.8);
-        box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-      }
-      
-      .gba-cover-item.active {
-        filter: brightness(1) grayscale(0);
-        transform: scale(1.15) translateY(-10px);
-        box-shadow: 0 0 40px rgba(90,180,255,0.6), 0 20px 40px rgba(0,0,0,0.8);
-        z-index: 10;
-        border: 2px solid rgba(255,255,255,0.8);
-      }
-      
-      .gba-cover-img { width: 100%; height: 100%; object-fit: cover; border-radius: 6px; display: block; }
-      
-      .gba-fallback {
-        width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center;
-        background: linear-gradient(135deg, #3a2b71, #1a1a2e); border-radius: 6px; text-align: center; padding: 15px;
-      }
-      
-      .gba-info-panel {
-        height: 160px; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; 
-        padding-bottom: 30px; gap: 12px; z-index: 1000;
-        background: linear-gradient(to top, rgba(0,0,0,0.95), transparent); border-top: 1px solid rgba(255,255,255,0.1);
-      }
-      
-      .gba-title { font-size: 34px; font-weight: 900; color: white; text-shadow: 0 4px 15px rgba(0,0,0,1); margin: 0; }
-      .gba-playtime { font-size: 15px; color: #7ec4ff; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; }
-      
-      .gba-controls { display: flex; gap: 25px; margin-top: 15px; position: relative; z-index: 1001; }
-      .gba-btn {
-        display: flex; align-items: center; gap: 10px; background: rgba(255,255,255,0.1); border: 2px solid rgba(255,255,255,0.3);
-        border-radius: 40px; padding: 10px 25px; font-size: 16px; color: #fff; font-weight: 800; cursor: pointer; transition: all 0.2s;
-      }
-      .gba-btn:hover { background: rgba(255,255,255,0.3); transform: scale(1.05); border-color: #fff; }
-      .gba-btn.primary { 
-        background: #0096ff; color: #fff; border: none; 
-        box-shadow: 0 0 20px rgba(0, 150, 255, 0.4);
-        width: 240px; justify-content: center;
-      }
-      .gba-btn.primary:hover { background: #3ab1ff; transform: scale(1.1); box-shadow: 0 0 30px rgba(0, 150, 255, 0.7); }
-      .gba-btn b { background: #fff; color: #000; border-radius: 50%; width: 22px; height: 22px; display: flex; align-items: center; justify-content: center; font-size: 13px; }
+  /* ------------------------------------------------------------------ */
+  /*  Load flow                                                           */
+  /* ------------------------------------------------------------------ */
+  async function handleLoad() {
+    const btn = document.getElementById("emu-load-btn");
+    setLoading(btn, true);
 
-      .gba-arrow {
-        position: absolute; top: calc(50% - 80px); transform: translateY(-50%); z-index: 1000; width: 80px; height: 120px;
-        border-radius: 18px; border: 2px solid rgba(255,255,255,0.2); background: rgba(0,0,0,0.7);
-        color: white; cursor: pointer; display: flex; align-items: center; justify-content: center;
-        transition: all 0.2s; box-shadow: 0 10px 40px rgba(0,0,0,0.6); outline: none;
-      }
-      .gba-arrow:hover { background: rgba(0,0,0,0.9); transform: translateY(-50%) scale(1.1); border-color: #7ec4ff; }
-      .gba-arrow:active { transform: translateY(-50%) scale(0.95); }
-      
-      #gba-btn-prev { left: 40px; }
-      #gba-btn-next { right: 40px; }
-      .gba-arrow svg { width: 45px; height: 45px; opacity: 1; stroke: #7ec4ff; }
-      .gba-arrow:hover svg { stroke: #fff; }
-    `;
-    document.head.appendChild(style);
+    try {
+      // 1. Download from Firebase Storage
+      const uint8 = await window.SaveManager.loadState(PLATFORM, gameName, currentSlot);
+
+      // 2. Send to iframe
+      sendToIframe({
+        type:  "LOAD_SAVE_STATE",
+        state: Array.from(uint8),  // structured-clone-safe
+      });
+
+      showToast(`📂 Slot ${currentSlot} chargé !`, "success");
+    } catch (err) {
+      console.error("[gba.js] Load failed:", err);
+      showToast(`❌ Échec du chargement : ${err.message}`, "error");
+    } finally {
+      setLoading(btn, false);
+    }
   }
 
-  // Enforce limits
-  if (currentCoverIndex < 0) currentCoverIndex = 0;
-  if (currentCoverIndex >= GBA_GAMES.length) currentCoverIndex = GBA_GAMES.length - 1;
+  /* ------------------------------------------------------------------ */
+  /*  iframe communication                                                */
+  /* ------------------------------------------------------------------ */
 
-  let coversHtml = '';
-  GBA_GAMES.forEach((game, index) => {
-    const isFallback = !game.cover;
-    const content = isFallback
-      ? `<div class="gba-fallback">
-           <span style="font-size: 40px;">🎮</span>
-           <span style="font-size: 12px; opacity: 0.7; margin-top: 5px;">GBA</span>
-           <span style="font-weight: bold; margin-top: 10px; font-size: 16px;">${game.name}</span>
-         </div>`
-      : `<img src="${game.cover}" class="gba-cover-img" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />
-         <div class="gba-fallback" style="display:none;">
-           <span style="font-size: 40px;">🎮</span>
-           <span style="font-weight: bold; margin-top: 10px; font-size: 16px;">${game.name}</span>
-         </div>`;
+  /** Ask the iframe to call EJS_emulator.saveState() and return state. */
+  function requestStateFromIframe() {
+    return new Promise((resolve, reject) => {
+      // In case a previous request timed out and a new one starts
+      if (pendingSaveResolve) {
+        clearTimeout(pendingSaveTimer);
+        pendingSaveResolve = null;
+      }
 
-    coversHtml += `
-      <div class="gba-cover-item" id="gba-item-${index}" data-index="${index}">
-        ${content}
-      </div>
-    `;
-  });
+      pendingSaveResolve = resolve;
 
-  const html = `
-    <div class="gba-menu-wrapper" tabindex="-1">
-      <button id="gba-btn-prev" class="gba-arrow">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="15 18 9 12 15 6"/></svg>
-      </button>
-      <button id="gba-btn-next" class="gba-arrow">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="9 18 15 12 9 6"/></svg>
-      </button>
-      <div class="gba-covers-row" id="gba-scroll-row">
-        ${coversHtml}
-      </div>
-      <div class="gba-info-panel">
-        <h2 class="gba-title" id="gba-ui-title">...</h2>
-        <div class="gba-playtime" id="gba-ui-playtime">...</div>
-        <div class="gba-controls">
-           <button class="gba-btn primary" id="gba-launch-btn"><b>A</b> JOUER</button>
-           <button class="gba-btn" id="gba-quit-btn"><b>B</b> QUITTER</button>
-        </div>
-      </div>
-    </div>
-  `;
+      pendingSaveTimer = setTimeout(() => {
+        pendingSaveResolve = null;
+        reject(new Error("Timeout : l'iframe n'a pas répondu dans les délais."));
+      }, SAVE_TIMEOUT);
 
-  container.innerHTML = html;
-  
-  const wrapper = container.querySelector('.gba-menu-wrapper');
-  wrapper.focus();
+      // Ask iframe to trigger save
+      sendToIframe({ type: "TRIGGER_SAVE" });
+    });
+  }
 
-  if (GBA_GAMES.length > 0) {
-    updateSimpleCarousel(container);
+  /** Listen for messages coming back from the iframe. */
+  function listenToIframe() {
+    window.addEventListener("message", function (event) {
+      const data = event.data;
+      if (!data) return;
 
-    const items = container.querySelectorAll('.gba-cover-item');
-    items.forEach(item => {
-      item.addEventListener('click', () => {
-        const index = parseInt(item.getAttribute('data-index'), 10);
-        if (currentCoverIndex === index) {
-          if (typeof AudioManager !== 'undefined') AudioManager.playClick();
-          launchEmulator(container, GBA_GAMES[currentCoverIndex]);
+      if (data.type === "SAVE_STATE_RESPONSE") {
+        if (pendingSaveResolve && data.state) {
+          clearTimeout(pendingSaveTimer);
+          const cb = pendingSaveResolve;
+          pendingSaveResolve = null;
+          cb(data.state);
+        }
+      }
+    });
+  }
+
+  /** Post a message to the GBA iframe. */
+  function sendToIframe(msg) {
+    const iframe = document.getElementById(IFRAME_ID);
+    if (!iframe || !iframe.contentWindow) {
+      console.warn("[gba.js] iframe not found or not ready.");
+      return;
+    }
+    iframe.contentWindow.postMessage(msg, "*");
+  }
+
+  /* ------------------------------------------------------------------ */
+  /*  Slot label enrichment                                               */
+  /* ------------------------------------------------------------------ */
+  async function loadSlotLabels(select) {
+    if (!select || !window.SaveManager) return;
+
+    try {
+      const meta = await window.SaveManager.getSlotsMeta(PLATFORM, gameName);
+      Array.from(select.options).forEach(opt => {
+        const n    = parseInt(opt.value, 10);
+        const slot = meta[`slot_${n}`];
+        if (slot?.date) {
+          const d = new Date(slot.date);
+          opt.text = `Slot ${n} — ${d.toLocaleDateString()} ${d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}`;
         } else {
-          currentCoverIndex = index;
-          if (typeof AudioManager !== 'undefined') AudioManager.playClick();
-          updateSimpleCarousel(container);
+          opt.text = `Slot ${n} — vide`;
         }
       });
+    } catch (err) {
+      console.warn("[gba.js] Could not load slot metadata:", err);
+    }
+  }
+
+  /* ------------------------------------------------------------------ */
+  /*  Toast                                                               */
+  /* ------------------------------------------------------------------ */
+  function showToast(message, type = "success") {
+    const existing = document.getElementById("emu-toast");
+    if (existing) existing.remove();
+
+    const toast = el("div", { id: "emu-toast" }, message);
+    applyStyles(toast, {
+      position:     "fixed",
+      bottom:       "24px",
+      left:         "50%",
+      transform:    "translateX(-50%)",
+      background:   type === "error" ? "#7f1d1d" : "#14532d",
+      color:        "#fff",
+      padding:      "10px 22px",
+      borderRadius: "8px",
+      fontFamily:   "monospace",
+      fontSize:     "14px",
+      zIndex:       "9999",
+      boxShadow:    "0 4px 16px rgba(0,0,0,0.5)",
+      pointerEvents:"none",
+      transition:   "opacity 0.4s ease",
+      opacity:      "1",
     });
 
-    container.querySelector('#gba-launch-btn').addEventListener('click', () => {
-      if (typeof AudioManager !== 'undefined') AudioManager.playClick();
-      launchEmulator(container, GBA_GAMES[currentCoverIndex]);
-    });
+    document.body.appendChild(toast);
 
-    container.querySelector('#gba-btn-prev').addEventListener('click', (e) => {
-      e.stopPropagation();
-      if (currentCoverIndex > 0) {
-        currentCoverIndex--;
-        if (typeof AudioManager !== 'undefined') AudioManager.playClick();
-        updateSimpleCarousel(container);
-      }
-    });
-
-    container.querySelector('#gba-btn-next').addEventListener('click', (e) => {
-      e.stopPropagation();
-      if (currentCoverIndex < GBA_GAMES.length - 1) {
-        currentCoverIndex++;
-        if (typeof AudioManager !== 'undefined') AudioManager.playClick();
-        updateSimpleCarousel(container);
-      }
-    });
-
-    // Scoped Key Handler
-    const keyHandler = (e) => {
-      
-      const menuWrapper = document.querySelector('.gba-menu-wrapper');
-      if (!menuWrapper) {
-        window.removeEventListener('keydown', keyHandler, true);
-        return;
-      }
-      // Specifically check if the GBA emulator iframe is active, not ANY global iframe
-      const emuActive = document.querySelector('iframe[src*="gba_player.html"]');
-      if (emuActive) return;
-
-      const keys = ['ArrowRight', 'ArrowLeft', 'Enter', 'b', 'Escape'];
-      if (keys.includes(e.key)) {
-        e.preventDefault();
-        e.stopPropagation();
-        
-        if (e.key === 'ArrowRight') {
-          if (currentCoverIndex < GBA_GAMES.length - 1) {
-            currentCoverIndex++;
-            if (typeof AudioManager !== 'undefined') AudioManager.playClick();
-            updateSimpleCarousel(container);
-          }
-        }
-        else if (e.key === 'ArrowLeft') {
-          if (currentCoverIndex > 0) {
-            currentCoverIndex--;
-            if (typeof AudioManager !== 'undefined') AudioManager.playClick();
-            updateSimpleCarousel(container);
-          }
-        }
-        else if (e.key === 'Enter') {
-          if (typeof AudioManager !== 'undefined') AudioManager.playClick();
-          launchEmulator(container, GBA_GAMES[currentCoverIndex]);
-        }
-        else if (e.key === 'b' || e.key === 'Escape') {
-          container.querySelector('#gba-quit-btn').click();
-        }
-      }
-    };
-
-    if (window._gbaKeyHandler) window.removeEventListener('keydown', window._gbaKeyHandler, true);
-    window._gbaKeyHandler = keyHandler;
-    window.addEventListener('keydown', keyHandler, true);
+    setTimeout(() => {
+      toast.style.opacity = "0";
+      setTimeout(() => toast.remove(), 400);
+    }, 3000);
   }
 
-  container.querySelector('#gba-quit-btn').addEventListener('click', () => {
-    if (typeof AudioManager !== 'undefined') AudioManager.playClick();
-    if (window._gbaKeyHandler) {
-      window.removeEventListener('keydown', window._gbaKeyHandler, true);
-      window._gbaKeyHandler = null;
-    }
-    if (window.AppRegistry['gba'] && window.AppRegistry['gba'].close) {
-      window.AppRegistry['gba'].close();
-    }
-  });
-}
-
-function updateSimpleCarousel(container) {
-  const row = container.querySelector('#gba-scroll-row');
-  const items = container.querySelectorAll('.gba-cover-item');
-  const titleEl = container.querySelector('#gba-ui-title');
-  const playtimeEl = container.querySelector('#gba-ui-playtime');
-
-  if (!row || !items.length) return;
-
-  // Update text
-  const game = GBA_GAMES[currentCoverIndex];
-  if (titleEl) titleEl.textContent = game.name;
-  if (playtimeEl) {
-    const mins = gbaPlaytimes[game.name] || 0;
-    if (mins === 0) {
-      playtimeEl.textContent = `Temps de jeu : Vierge`;
-    } else {
-      const h = Math.floor(mins / 60);
-      const m = Math.floor(mins % 60);
-      playtimeEl.textContent = `Temps de jeu : ${h > 0 ? h + 'h ' : ''}${m}m`;
-    }
+  /* ------------------------------------------------------------------ */
+  /*  DOM helpers                                                         */
+  /* ------------------------------------------------------------------ */
+  function el(tag, props, text) {
+    const node = document.createElement(tag);
+    if (props) Object.assign(node, props);
+    if (text !== undefined) node.textContent = text;
+    return node;
   }
 
-  // Update classes and calculate scroll position
-  items.forEach((item, index) => {
-    if (index === currentCoverIndex) {
-      item.classList.add('active');
-    } else {
-      item.classList.remove('active');
-    }
-  });
+  function applyStyles(node, styles) {
+    Object.assign(node.style, styles);
+  }
 
-  // Scroll to bring active item to center
-  const activeItem = items[currentCoverIndex];
-  if (activeItem) {
-    // 50vw padding on left side means the first item starts exactly at the center
-    // We just need to scroll so the active item's center hits the screen center
-    const itemWidth = 220;
-    const gap = 40;
-    
-    // The total width before this item is (itemWidth + gap) * index
-    // The padding left is window.innerWidth / 2
-    // To center the item, we scroll such that the left edge of the item is at (window.innerWidth / 2) - (itemWidth / 2)
-    
-    // Since padding-left pushes all content, scrollLeft = 0 implies item 0 is at offset = paddingLeft
-    // So item 0 is already centered if we scrollLeft = itemWidth/2
-    const targetScroll = (currentCoverIndex * (itemWidth + gap)) + (itemWidth / 2);
-    
-    row.scrollTo({
-      left: targetScroll,
-      behavior: 'smooth'
+  function applyToolbarStyles(node) {
+    applyStyles(node, {
+      display:        "flex",
+      alignItems:     "center",
+      gap:            "10px",
+      padding:        "8px 16px",
+      background:     "#111827",
+      borderTop:      "1px solid #2d2d3d",
+      flexWrap:       "wrap",
     });
   }
-}
 
-function launchEmulator(container, game) {
-  const romUrl = encodeURIComponent(game.file);
-  const gameName = encodeURIComponent(game.name);
-  
-  currentEmuStartTime = Date.now();
-  currentGameName = game.name;
-  
-  // Stop background music to avoid overlap
-  if (typeof AudioManager !== 'undefined') {
-    AudioManager.pauseMusic();
-    if (AudioManager.appBgm) {
-      AudioManager.appBgm.pause();
-      AudioManager.appBgm.currentTime = 0;
-      AudioManager.appBgm = null;
-    }
+  function applyBtnStyles(btn, bgColor) {
+    applyStyles(btn, {
+      background:   bgColor,
+      color:        "#fff",
+      border:       "none",
+      borderRadius: "6px",
+      padding:      "6px 14px",
+      cursor:       "pointer",
+      fontFamily:   "monospace",
+      fontSize:     "13px",
+      fontWeight:   "600",
+      transition:   "opacity 0.2s",
+    });
+    btn.addEventListener("mouseenter", () => (btn.style.opacity = "0.85"));
+    btn.addEventListener("mouseleave", () => (btn.style.opacity = "1"));
   }
 
-  container.innerHTML = `
-    <div style="display:flex;flex-direction:column;width:100%;height:100%;background:#000;overflow:hidden;animation:gbaFadeIn 0.3s ease-out;">
-      <div class="emu-toolbar" style="padding:10px 20px;background:rgba(20,20,20,0.95);backdrop-filter:blur(10px);display:flex;align-items:center;gap:12px;border-bottom:2px solid rgba(255,255,255,0.08);z-index:100;flex-wrap:wrap;">
-        <div id="emu-back-btn" style="display:flex;align-items:center;gap:8px;background:rgba(255,255,255,0.1);border:2px solid rgba(255,255,255,0.2);border-radius:40px;padding:6px 18px;color:white;cursor:pointer;font-weight:700;transition:0.2s;">
-          <span style="background:white;color:black;border-radius:50%;width:20px;height:20px;text-align:center;line-height:20px;font-size:13px;">B</span> Quitter
-        </div>
-        <h3 style="margin:0;color:white;font-size:18px;font-weight:400;letter-spacing:1px;flex:1;text-align:center;">${game.name}</h3>
-      </div>
-      <div style="flex:1;position:relative;display:flex;align-items:center;justify-content:center;background:radial-gradient(circle,#222,#000);">
-        <iframe id="gba-emu-iframe" src="/apps/gba/gba_player.html#rom=${romUrl}&name=${gameName}" style="border:none;width:100%;height:100%;max-width:1280px;" allow="autoplay; fullscreen"></iframe>
-      </div>
-    </div>
-  `;
-
-  // Injecte les boutons Save/Load dans la toolbar
-  const emuIframe = container.querySelector('#gba-emu-iframe');
-  if (window.SaveManager) {
-    window.SaveManager.injectSaveUI(container, 'gba', game.name, emuIframe);
+  function setLoading(btn, loading) {
+    if (!btn) return;
+    btn.disabled = loading;
+    btn.style.opacity = loading ? "0.5" : "1";
+    btn.style.cursor  = loading ? "wait" : "pointer";
   }
 
-  const backBtn = container.querySelector('#emu-back-btn');
-  backBtn.addEventListener('mouseover', () => backBtn.style.background = 'rgba(255,255,255,0.2)');
-  backBtn.addEventListener('mouseout', () => backBtn.style.background = 'rgba(255,255,255,0.1)');
-  backBtn.addEventListener('click', async () => {
-    if (typeof AudioManager !== 'undefined') {
-      AudioManager.playClick();
-      // Restart menu music
-      AudioManager.playAppLaunchTransition(null, 'gbaBgm');
-    }
-    
-    // Calcul et sauvegarde du playtime via SaveManager
-    const elapsedMs = Date.now() - currentEmuStartTime;
-    const elapsedMinutes = Math.floor(elapsedMs / 60000);
-    if (window.SaveManager) {
-      await window.SaveManager.addPlaytime('gba', currentGameName, elapsedMinutes, gbaPlaytimes);
-    } else if (window.Auth?.currentUser && window.Firestore) {
-      const uid = window.Auth.currentUser.uid;
-      gbaPlaytimes[currentGameName] = (gbaPlaytimes[currentGameName] || 0) + Math.max(1, elapsedMinutes);
-      const docRef = window.Firestore.doc(window.FirebaseDB, 'users', uid);
-      window.Firestore.setDoc(docRef, { gba_playtimes: gbaPlaytimes }, { merge: true })
-        .catch(e => console.error('Error saving playtime:', e));
-    }
-
-    renderGbaMenu(container); 
-  });
-
-  // Focus the iframe automatically so keyboard works immediately
-  if (emuIframe) {
-    const focusEmu = () => {
-      if (document.activeElement !== emuIframe) {
-        emuIframe.focus();
-        if (emuIframe.contentWindow) emuIframe.contentWindow.focus();
-      }
-    };
-
-    emuIframe.onload = () => {
-      setTimeout(focusEmu, 500);
-    };
-  }
-}
+})();
