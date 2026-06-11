@@ -11,14 +11,14 @@
   const romUrl   = decodeURIComponent(params.get('rom') || '');
   const gameName = params.get('name') || 'Unknown Game';
 
-  // Clé IndexedDB
   const romFileName = romUrl.split('/').pop();
   const srmFileName = romFileName.replace(/\.[^.]+$/, '.srm');
   const idbKey      = `/data/saves/mGBA/${srmFileName}`;
 
+  // null = jamais uploadé, on forcera toujours le premier upload
   let lastSaveHash = null;
+  let cloudSaveHash = null; // hash de ce qu'on a téléchargé depuis R2
 
-  /* ── Lire la SRAM depuis IndexedDB ── */
   function readSaveFromIDB() {
     return new Promise((resolve, reject) => {
       const req = indexedDB.open('/data/saves');
@@ -26,15 +26,13 @@
       req.onsuccess = (e) => {
         const db    = e.target.result;
         const tx    = db.transaction('FILE_DATA', 'readonly');
-        const store = tx.objectStore('FILE_DATA');
-        const get   = store.get(idbKey);
+        const get   = tx.objectStore('FILE_DATA').get(idbKey);
         get.onsuccess = () => resolve(get.result || null);
         get.onerror   = () => reject(get.error);
       };
     });
   }
 
-  /* ── Écrire la SRAM dans IndexedDB ── */
   function writeSaveToIDB(contents) {
     return new Promise((resolve, reject) => {
       const req = indexedDB.open('/data/saves');
@@ -42,20 +40,14 @@
       req.onsuccess = (e) => {
         const db    = e.target.result;
         const tx    = db.transaction('FILE_DATA', 'readwrite');
-        const store = tx.objectStore('FILE_DATA');
-        const obj   = {
-          timestamp: new Date(),
-          mode: 33206,
-          contents: new Int8Array(contents)
-        };
-        const put = store.put(obj, idbKey);
+        const obj   = { timestamp: new Date(), mode: 33206, contents: new Int8Array(contents) };
+        const put   = tx.objectStore('FILE_DATA').put(obj, idbKey);
         put.onsuccess = () => resolve();
         put.onerror   = () => reject(put.error);
       };
     });
   }
 
-  /* ── Attendre Firebase Auth ── */
   function waitForAuth(cb) {
     let tries = 0;
     const check = setInterval(() => {
@@ -70,14 +62,12 @@
     }, 300);
   }
 
-  /* ── Hash rapide pour détecter les changements ── */
   function hashArray(arr) {
     let sum = 0;
     for (let i = 0; i < arr.length; i++) sum = (sum + (arr[i] & 0xFF) * (i + 1)) & 0xFFFFFFFF;
     return sum.toString(16) + '_' + arr.length;
   }
 
-  /* ── Télécharger save depuis R2 → injecter dans IndexedDB ── */
   async function downloadAndInjectSave(user) {
     try {
       const token = await user.getIdToken();
@@ -87,26 +77,29 @@
       });
       if (res.status === 404) {
         console.log('[SaveSync] Aucune save cloud — nouvelle partie.');
+        cloudSaveHash = null;
         return;
       }
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const buffer   = await res.arrayBuffer();
+      const buffer = await res.arrayBuffer();
       await writeSaveToIDB(buffer);
-      lastSaveHash = hashArray(new Uint8Array(buffer));
+      cloudSaveHash = hashArray(new Uint8Array(buffer));
+      lastSaveHash  = cloudSaveHash; // on vient de sync, pas besoin de re-upload
       console.log(`[SaveSync] ✅ Save chargée depuis R2 (${buffer.byteLength} octets)`);
     } catch (e) {
       console.error('[SaveSync] Erreur téléchargement:', e);
     }
   }
 
-  /* ── Uploader save vers R2 si changée ── */
   async function uploadSaveIfChanged(user) {
     try {
       const obj = await readSaveFromIDB();
-      if (!obj || !obj.contents) return;
+      if (!obj?.contents) return;
 
-      const contents = obj.contents; // Int8Array
+      const contents = obj.contents;
       const hash     = hashArray(contents);
+
+      // Upload si différent du dernier upload ET différent de ce qu'on a téléchargé
       if (hash === lastSaveHash) return;
 
       const token = await user.getIdToken();
@@ -126,21 +119,26 @@
     }
   }
 
-  /* ── Démarrer ── */
+  function waitForEmulator(cb, retries = 60) {
+    if (window.EJS_emulator) { cb(); return; }
+    if (retries <= 0) { console.warn('[SaveSync] Émulateur non prêt.'); return; }
+    setTimeout(() => waitForEmulator(cb, retries - 1), 500);
+  }
+
   async function startSync() {
     waitForAuth(async (user) => {
-      // Attendre que l'émulateur soit prêt
-      await new Promise(r => setTimeout(r, 3000));
 
-      // Forcer EmulatorJS à écrire la SRAM dans IndexedDB toutes les 10s
+      // Démarrer le save interval dès que l'émulateur est prêt
       waitForEmulator(() => {
         window.EJS_emulator.startSaveInterval(10000);
         console.log('[SaveSync] Save interval démarré (10s)');
       });
 
-      // Télécharger la save cloud au démarrage
+      // Attendre un peu que l'émulateur charge
+      await new Promise(r => setTimeout(r, 4000));
+
+      // Télécharger la save cloud
       await downloadAndInjectSave(user);
-      lastSaveHash = null;
 
       // Sync toutes les 30s
       setInterval(() => uploadSaveIfChanged(user), 30_000);
@@ -148,17 +146,11 @@
       // Sync à la fermeture
       window.addEventListener('beforeunload', () => uploadSaveIfChanged(user));
 
-      // Sync forcée depuis le parent (bouton Quitter)
+      // Sync forcée depuis gba.js (bouton Quitter)
       window.addEventListener('message', (e) => {
         if (e.data?.type === 'FORCE_SAVE_SYNC') uploadSaveIfChanged(user);
       });
     });
-  }
-
-  function waitForEmulator(cb, retries = 40) {
-    if (window.EJS_emulator) { cb(); return; }
-    if (retries <= 0) { console.warn('[SaveSync] Émulateur non prêt.'); return; }
-    setTimeout(() => waitForEmulator(cb, retries - 1), 500);
   }
 
   startSync();
