@@ -140,6 +140,7 @@
 
       // Télécharger la save cloud au démarrage
       await downloadAndInjectSave(user);
+      lastSaveHash = null;
 
       // Sync toutes les 30s
       setInterval(() => uploadSaveIfChanged(user), 30_000);
