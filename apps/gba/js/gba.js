@@ -364,6 +364,12 @@ function launchGbaEmulator(container, game) {
       return;
     }
 
+    // Forcer un dernier upload de la save avant de quitter
+    if (gbaEmuIframe?.contentWindow) {
+      gbaEmuIframe.contentWindow.postMessage({ type: 'FORCE_SAVE_SYNC' }, '*');
+      await new Promise(r => setTimeout(r, 600));
+    }
+
     if (typeof AudioManager !== 'undefined') {
       AudioManager.playClick();
       AudioManager.playAppLaunchTransition(null, 'gbaBgm');

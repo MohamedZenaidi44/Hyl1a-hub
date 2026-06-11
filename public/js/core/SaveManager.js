@@ -227,6 +227,168 @@ const SaveManager = (() => {
   }
 
   /* ------------------------------------------------------------------ */
+  /*  injectSaveUI                                                        */
+  /* ------------------------------------------------------------------ */
+
+  /**
+   * Injecte un panneau Save/Load par-dessus l'iframe de l'émulateur.
+   * Appelé depuis gba.js après le lancement de l'émulateur.
+   *
+   * @param {HTMLElement} container  – le conteneur parent (div du jeu)
+   * @param {string}      platform   – "gba", "ds", etc.
+   * @param {string}      gameName   – nom du jeu
+   * @param {HTMLIFrameElement} iframe – l'iframe EmulatorJS
+   */
+  function injectSaveUI(container, platform, gameName, iframe) {
+
+    /* ── Styles ── */
+    if (!document.getElementById('save-ui-styles')) {
+      const style = document.createElement('style');
+      style.id = 'save-ui-styles';
+      style.textContent = `
+        #save-ui-panel {
+          position: absolute; bottom: 60px; right: 20px; z-index: 999;
+          display: flex; flex-direction: column; gap: 8px; align-items: flex-end;
+        }
+        #save-ui-toggle {
+          background: rgba(124,58,237,0.9); border: 2px solid rgba(255,255,255,0.3);
+          border-radius: 40px; padding: 8px 18px; color: #fff; font-weight: 800;
+          font-size: 14px; cursor: pointer; transition: all 0.2s; letter-spacing: 1px;
+          backdrop-filter: blur(8px);
+        }
+        #save-ui-toggle:hover { background: rgba(157,95,245,0.95); transform: scale(1.05); }
+        #save-ui-slots {
+          display: none; flex-direction: column; gap: 6px;
+          background: rgba(10,10,20,0.92); border: 1px solid rgba(255,255,255,0.15);
+          border-radius: 12px; padding: 12px; backdrop-filter: blur(12px); min-width: 220px;
+        }
+        #save-ui-slots.open { display: flex; }
+        .save-slot-row {
+          display: flex; align-items: center; justify-content: space-between;
+          gap: 8px; padding: 6px 4px; border-bottom: 1px solid rgba(255,255,255,0.07);
+        }
+        .save-slot-row:last-child { border-bottom: none; }
+        .save-slot-label { color: #c4b5fd; font-size: 13px; font-weight: 700; flex: 1; }
+        .save-slot-date  { color: #888; font-size: 11px; flex: 1; text-align: center; }
+        .save-slot-btn {
+          background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2);
+          border-radius: 20px; padding: 4px 12px; color: #fff; font-size: 12px;
+          font-weight: 700; cursor: pointer; transition: all 0.15s;
+        }
+        .save-slot-btn:hover { background: rgba(255,255,255,0.25); }
+        .save-slot-btn.save-btn { border-color: #7c3aed; color: #c4b5fd; }
+        .save-slot-btn.save-btn:hover { background: rgba(124,58,237,0.4); }
+        .save-slot-btn.load-btn { border-color: #10b981; color: #6ee7b7; }
+        .save-slot-btn.load-btn:hover { background: rgba(16,185,129,0.3); }
+        .save-ui-status {
+          font-size: 11px; color: #a78bfa; text-align: center;
+          padding: 4px 0 0; min-height: 16px;
+        }
+      `;
+      document.head.appendChild(style);
+    }
+
+    /* ── DOM ── */
+    const panel = document.createElement('div');
+    panel.id = 'save-ui-panel';
+    panel.innerHTML = `
+      <button id="save-ui-toggle">💾 SAVES</button>
+      <div id="save-ui-slots">
+        ${[1, 2, 3].map(n => `
+          <div class="save-slot-row" id="slot-row-${n}">
+            <span class="save-slot-label">Slot ${n}</span>
+            <span class="save-slot-date" id="slot-date-${n}">—</span>
+            <button class="save-slot-btn save-btn" data-slot="${n}" data-action="save">SAVE</button>
+            <button class="save-slot-btn load-btn" data-slot="${n}" data-action="load">LOAD</button>
+          </div>
+        `).join('')}
+        <div class="save-ui-status" id="save-ui-status"></div>
+      </div>
+    `;
+
+    // On insère dans le conteneur parent de l'iframe (position:relative déjà là)
+    const emuWrapper = container.querySelector('div[style*="position:relative"]') || container;
+    emuWrapper.style.position = 'relative';
+    emuWrapper.appendChild(panel);
+
+    /* ── Toggle ── */
+    const toggle   = panel.querySelector('#save-ui-toggle');
+    const slotsDiv = panel.querySelector('#save-ui-slots');
+    toggle.addEventListener('click', () => slotsDiv.classList.toggle('open'));
+
+    /* ── Charger les métadonnées des slots ── */
+    async function refreshSlotsMeta() {
+      try {
+        const meta = await getSlotsMeta(platform, gameName);
+        [1, 2, 3].forEach(n => {
+          const slotData = meta[`slot_${n}`];
+          const dateEl   = panel.querySelector(`#slot-date-${n}`);
+          if (dateEl) {
+            dateEl.textContent = slotData?.date
+              ? new Date(slotData.date).toLocaleDateString('fr-FR', { day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit' })
+              : '—';
+          }
+        });
+      } catch (e) { /* pas connecté ou aucune save */ }
+    }
+    refreshSlotsMeta();
+
+    /* ── Statut temporaire ── */
+    function setStatus(msg, isError = false) {
+      const el = panel.querySelector('#save-ui-status');
+      if (!el) return;
+      el.textContent = msg;
+      el.style.color = isError ? '#f87171' : '#a78bfa';
+      setTimeout(() => { el.textContent = ''; }, 3000);
+    }
+
+    /* ── Boutons Save / Load ── */
+    panel.querySelectorAll('.save-slot-btn').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const slot   = parseInt(btn.dataset.slot);
+        const action = btn.dataset.action;
+
+        if (action === 'save') {
+          setStatus('Sauvegarde en cours…');
+          // Demander le state à l'iframe via postMessage
+          const timeout = 5000;
+          const statePromise = new Promise((resolve, reject) => {
+            const handler = (e) => {
+              if (e.data?.type === 'SAVE_STATE_RESPONSE' && e.data.gameName === gameName) {
+                window.removeEventListener('message', handler);
+                resolve(new Uint8Array(e.data.state));
+              }
+            };
+            window.addEventListener('message', handler);
+            setTimeout(() => { window.removeEventListener('message', handler); reject(new Error('timeout')); }, timeout);
+          });
+          iframe.contentWindow.postMessage({ type: 'TRIGGER_SAVE' }, '*');
+          try {
+            const stateData = await statePromise;
+            await saveState(platform, gameName, stateData, slot);
+            setStatus(`✅ Slot ${slot} sauvegardé !`);
+            refreshSlotsMeta();
+          } catch (e) {
+            console.error(e);
+            setStatus(`❌ Erreur sauvegarde`, true);
+          }
+
+        } else if (action === 'load') {
+          setStatus('Chargement…');
+          try {
+            const stateData = await loadState(platform, gameName, slot);
+            iframe.contentWindow.postMessage({ type: 'LOAD_SAVE_STATE', state: Array.from(stateData) }, '*');
+            setStatus(`✅ Slot ${slot} chargé !`);
+          } catch (e) {
+            console.error(e);
+            setStatus(`❌ Aucune save dans ce slot`, true);
+          }
+        }
+      });
+    });
+  }
+
+  /* ------------------------------------------------------------------ */
   /*  Public API                                                          */
   /* ------------------------------------------------------------------ */
 
@@ -236,6 +398,7 @@ const SaveManager = (() => {
     getSlotsMeta,
     loadPlaytimes,
     addPlaytime,
+    injectSaveUI,
   };
 })();
 
