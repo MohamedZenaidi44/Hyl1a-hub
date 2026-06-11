@@ -1,40 +1,17 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>GBA Player – Hyl1a-hub</title>
-  <script src="./js/gba-save-sync.js"></script> 
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
-
-    html, body {
-      width: 100%; height: 100%;
-      background: #0a0a0a;
-      overflow: hidden;
-    }
-
-    #game-container {
-      width: 100%; height: 100%;
-      display: flex; align-items: center; justify-content: center;
-    }
-
-    #emulator-wrapper {
-      width: 100%; height: 100%;
-    }
-
+    html, body { width: 100%; height: 100%; background: #0a0a0a; overflow: hidden; }
+    #game-container { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; }
+    #emulator-wrapper { width: 100%; height: 100%; }
     #error-screen {
-      display: none;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      color: #ff4444;
-      font-family: monospace;
-      font-size: 14px;
-      gap: 12px;
-      text-align: center;
-      padding: 24px;
+      display: none; flex-direction: column; align-items: center; justify-content: center;
+      color: #ff4444; font-family: monospace; font-size: 14px; gap: 12px; text-align: center; padding: 24px;
     }
     #error-screen.visible { display: flex; }
   </style>
@@ -49,7 +26,6 @@
   </div>
 </div>
 
-<!-- Save sync Firebase — ne touche pas à l'interface -->
 <script src="./js/gba-save-sync.js"></script>
 
 <script>
@@ -65,10 +41,6 @@
       return;
     }
 
-    /* ── User isolation ─────────────────────────────────────────────── */
-    const currentUser = localStorage.getItem('nostalgia_current_user') || 'guest';
-
-    /* ── EmulatorJS config (latest CDN, comme DS) ───────────────────── */
     window.EJS_player        = '#emulator-wrapper';
     window.EJS_gameUrl       = romUrl;
     window.EJS_core          = 'mgba';
@@ -76,10 +48,8 @@
     window.EJS_pathtodata    = 'https://cdn.emulatorjs.org/latest/data/';
     window.EJS_startOnLoaded = true;
     window.EJS_color         = '#7c3aed';
+    window.EJS_saveInBrowserStorage = true;
 
-    window.EJS_localStorageKey = `ejs_${currentUser}_gba_${gameName}`;
-
-    /* ── Save state → parent (pour SaveManager.injectSaveUI) ────────── */
     window.EJS_onSaveState = function (data) {
       if (!data?.state) return;
       const stateArray = Array.from(data.state);
@@ -89,40 +59,30 @@
       );
     };
 
-    /* ── Charger un save state depuis le parent ──────────────────────── */
     window.addEventListener('message', function (event) {
       if (!event.data || event.data.type !== 'LOAD_SAVE_STATE') return;
       const raw = event.data.state;
       if (!raw) return;
       const uint8 = raw instanceof Uint8Array ? raw : new Uint8Array(raw);
       waitForEmulator(function () {
-        try {
-          window.EJS_emulator.loadState(uint8);
-        } catch (err) {
-          console.error('[gba_player] loadState failed:', err);
-        }
+        try { window.EJS_emulator.loadState(uint8); }
+        catch (err) { console.error('[gba_player] loadState failed:', err); }
       });
     });
 
-    /* ── Déclencher un save state à la demande du parent ────────────── */
     window.addEventListener('message', function (event) {
       if (!event.data || event.data.type !== 'TRIGGER_SAVE') return;
       waitForEmulator(function () {
-        try {
-          window.EJS_emulator.saveState();
-        } catch (err) {
-          console.error('[gba_player] saveState trigger failed:', err);
-        }
+        try { window.EJS_emulator.saveState(); }
+        catch (err) { console.error('[gba_player] saveState trigger failed:', err); }
       });
     });
 
-    /* ── Protection avant fermeture ─────────────────────────────────── */
     window.addEventListener('beforeunload', function (e) {
       e.preventDefault();
       e.returnValue = '';
     });
 
-    /* ── Charger EmulatorJS (latest, comme DS) ──────────────────────── */
     var script = document.createElement('script');
     script.src = 'https://cdn.emulatorjs.org/latest/data/loader.js';
     script.onerror = function () {
@@ -130,7 +90,6 @@
     };
     document.body.appendChild(script);
 
-    /* ── Helpers ────────────────────────────────────────────────────── */
     function waitForEmulator(cb, retries) {
       retries = retries === undefined ? 40 : retries;
       if (window.EJS_emulator) { cb(); return; }
