@@ -1,147 +1,111 @@
 <!DOCTYPE html>
-<html>
-
+<html lang="fr">
 <head>
-    <style>
-        body,
-        html {
-            margin: 0;
-            padding: 0;
-            width: 100%;
-            height: 100%;
-            overflow: hidden;
-            background: #000;
-        }
-
-        #game {
-            width: 100%;
-            height: 100%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-family: sans-serif;
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>GBA Player – Hyl1a-hub</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body { width: 100%; height: 100%; background: #0a0a0a; overflow: hidden; }
+    #game-container { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; }
+    #emulator-wrapper { width: 100%; height: 100%; }
+    #error-screen {
+      display: none; flex-direction: column; align-items: center; justify-content: center;
+      color: #ff4444; font-family: monospace; font-size: 14px; gap: 12px; text-align: center; padding: 24px;
+    }
+    #error-screen.visible { display: flex; }
+  </style>
 </head>
-
 <body>
-    <div id="game">Loading Emulator...</div>
-    <script>
-        const paramsString = window.location.hash ? window.location.hash.substring(1) : window.location.search;
-        const urlParams = new URLSearchParams(paramsString);
-        let romUrl = urlParams.get('rom');
-        let gameName = urlParams.get('name') || 'Unknown Game';
 
-        if (!romUrl && window.location.hash.includes('rom=')) {
-            const hashParts = window.location.hash.substring(1).split('&');
-            for (let part of hashParts) {
-                if (part.startsWith('rom=')) romUrl = decodeURIComponent(part.split('=')[1]);
-                if (part.startsWith('name=')) gameName = decodeURIComponent(part.split('=')[1]);
-            }
-        }
+<div id="game-container">
+  <div id="emulator-wrapper"></div>
+  <div id="error-screen">
+    <span style="font-size:2rem;">⚠️</span>
+    <span id="error-msg">Une erreur est survenue.</span>
+  </div>
+</div>
 
-        const currentUser = localStorage.getItem('nostalgia_current_user') || 'Guest';
-        const safeGameName = `${currentUser}_${gameName}`.replace(/[^a-zA-Z0-9_-]/g, '_');
+<script src="./js/gba-save-sync.js"></script>
 
-        if (romUrl) {
-            window.EJS_player        = '#game';
-            window.EJS_core          = 'mgba';
-            window.EJS_gameUrl       = romUrl;
-            window.EJS_gameName      = safeGameName;
-            window.EJS_pathtodata    = 'https://cdn.emulatorjs.org/4.0.9/data/';
-            window.EJS_startOnLoaded = true;
-            window.EJS_threads       = false;
+<script>
+  (function () {
+    const hash   = location.hash.slice(1);
+    const params = new URLSearchParams(hash);
 
-            window.EJS_defaultOptions = {
-                'save-state-location': 'browser',
-                'rewind': 'false',
-            };
+    const romUrl   = params.get('rom')  || '';
+    const gameName = params.get('name') || 'Unknown Game';
 
-            // postMessage hooks pour SaveManager
-            window.EJS_onSaveState = function(data) {
-                if (!data || !data.state) return;
-                window.parent.postMessage({
-                    type: 'SAVE_STATE_RESPONSE',
-                    state: Array.from(data.state),
-                    gameName: gameName,
-                    platform: 'gba',
-                }, '*');
-            };
+    if (!romUrl) {
+      showError('Aucune URL de ROM fournie. Ajoutez #rom=<url>&name=<titre> à l\'URL.');
+      return;
+    }
 
-            window.addEventListener('message', function(event) {
-                if (!event.data || event.data.type !== 'TRIGGER_SAVE') return;
-                waitForEmulator(function() {
-                    try { window.EJS_emulator.saveState(); } catch(e) {}
-                });
-            });
+    window.EJS_player        = '#emulator-wrapper';
+    window.EJS_gameUrl       = romUrl;
+    window.EJS_core          = 'mgba';
+    window.EJS_gameName      = gameName;
+    window.EJS_pathtodata    = 'https://cdn.emulatorjs.org/latest/data/';
+    window.EJS_startOnLoaded = true;
+    window.EJS_color         = '#7c3aed';
+    window.EJS_saveInBrowserStorage = true;
 
-            window.addEventListener('message', function(event) {
-                if (!event.data || event.data.type !== 'LOAD_SAVE_STATE') return;
-                var raw = event.data.state;
-                if (!raw) return;
-                var uint8 = raw instanceof Uint8Array ? raw : new Uint8Array(raw);
-                waitForEmulator(function() {
-                    try { window.EJS_emulator.loadState(uint8); } catch(e) {}
-                });
-            });
+    window.EJS_onSaveState = function (data) {
+      if (!data?.state) return;
+      const stateArray = Array.from(data.state);
+      window.parent.postMessage(
+        { type: 'SAVE_STATE_RESPONSE', state: stateArray, gameName, platform: 'gba' },
+        '*'
+      );
+    };
 
-            // Controles overlay
-            var keysOverlay = document.createElement('div');
-            keysOverlay.style.cssText = [
-                'position: fixed',
-                'top: 50%',
-                'left: 20px',
-                'transform: translateY(-50%)',
-                'color: rgba(255,255,255,0.4)',
-                'font-family: Segoe UI, sans-serif',
-                'font-size: 11px',
-                'text-transform: uppercase',
-                'letter-spacing: 1px',
-                'line-height: 2',
-                'pointer-events: none',
-                'z-index: 1000',
-                'text-shadow: 0 2px 4px rgba(0,0,0,0.5)',
-            ].join(';');
-            keysOverlay.innerHTML = '<div style="font-weight:800;color:#7ec4ff;margin-bottom:10px;font-size:13px;">CONTROLES</div>'
-                + '<b>FLECHES</b> : DIR<br>'
-                + '<b>X</b> : BOUTON A<br>'
-                + '<b>Z</b> : BOUTON B<br>'
-                + '<b>A</b> : BOUTON X<br>'
-                + '<b>S</b> : BOUTON Y<br>'
-                + '<b>C</b> : GACHETTE L<br>'
-                + '<b>V</b> : GACHETTE R<br>'
-                + '<b>ENTRER</b> : START<br>'
-                + '<b>SHIFT</b> : SELECT';
-            document.body.appendChild(keysOverlay);
+    window.addEventListener('message', function (event) {
+      if (!event.data || event.data.type !== 'LOAD_SAVE_STATE') return;
+      const raw = event.data.state;
+      if (!raw) return;
+      const uint8 = raw instanceof Uint8Array ? raw : new Uint8Array(raw);
+      waitForEmulator(function () {
+        try { window.EJS_emulator.loadState(uint8); }
+        catch (err) { console.error('[gba_player] loadState failed:', err); }
+      });
+    });
 
-            // Chargement EmulatorJS
-            var script = document.createElement('script');
-            script.src = 'https://cdn.emulatorjs.org/4.0.9/data/loader.js';
-            document.body.appendChild(script);
+    window.addEventListener('message', function (event) {
+      if (!event.data || event.data.type !== 'TRIGGER_SAVE') return;
+      waitForEmulator(function () {
+        try { window.EJS_emulator.saveState(); }
+        catch (err) { console.error('[gba_player] saveState trigger failed:', err); }
+      });
+    });
 
-            // Focus
-            window.focus();
-            document.addEventListener('mousedown', function() { window.focus(); });
+    window.addEventListener('beforeunload', function (e) {
+      e.preventDefault();
+      e.returnValue = '';
+    });
 
-            window.addEventListener('mousemove', function(e) {
-                window.parent.postMessage({ type: 'mii-mousemove', x: e.clientX, y: e.clientY }, '*');
-            });
-            window.addEventListener('mousedown', function(e) {
-                window.parent.postMessage({ type: 'mii-mousedown', x: e.clientX, y: e.clientY }, '*');
-            });
+    var script = document.createElement('script');
+    script.src = 'https://cdn.emulatorjs.org/latest/data/loader.js';
+    script.onerror = function () {
+      showError('Impossible de charger EmulatorJS. Vérifie ta connexion réseau.');
+    };
+    document.body.appendChild(script);
 
-        } else {
-            document.getElementById('game').innerText = 'No ROM provided!';
-        }
+    function waitForEmulator(cb, retries) {
+      retries = retries === undefined ? 40 : retries;
+      if (window.EJS_emulator) { cb(); return; }
+      if (retries <= 0) { console.warn('[gba_player] Émulateur non prêt.'); return; }
+      setTimeout(function () { waitForEmulator(cb, retries - 1); }, 250);
+    }
 
-        function waitForEmulator(cb, retries) {
-            retries = retries === undefined ? 40 : retries;
-            if (window.EJS_emulator) { cb(); return; }
-            if (retries <= 0) return;
-            setTimeout(function() { waitForEmulator(cb, retries - 1); }, 250);
-        }
-    </script>
+    function showError(msg) {
+      var el    = document.getElementById('error-screen');
+      var msgEl = document.getElementById('error-msg');
+      if (el)    el.classList.add('visible');
+      if (msgEl) msgEl.textContent = msg;
+      console.error('[gba_player]', msg);
+    }
+  })();
+</script>
+
 </body>
-
 </html>
