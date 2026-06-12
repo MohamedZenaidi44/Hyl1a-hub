@@ -1,192 +1,243 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>GBA Player – Hyl1a-hub</title>
-  <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
+ <!DOCTYPE html>
+  <html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>GBA Player – Hyl1a-hub</title>
+    <style>
+      * { margin: 0; padding: 0; box-sizing: border-box; }
 
-    html, body {
-      width: 100%; height: 100%;
-      background: #0a0a0a;
-      overflow: hidden;
-    }
+      html, body {
+        width: 100%; height: 100%;
+        background: #000;
+        overflow: hidden;
+      }
 
-    #game-container {
-      width: 100%; height: 100%;
-      display: flex; align-items: center; justify-content: center;
-    }
+      #game-container {
+        width: 100%; height: 100%;
+        display: flex; align-items: center; justify-content: center;
+        color: white;
+        font-family: sans-serif;
+      }
 
-    /* EmulatorJS mounts its canvas inside #emulator-wrapper */
-    #emulator-wrapper {
-      width: 100%; height: 100%;
-    }
+      /* EmulatorJS mounts its canvas inside #emulator-wrapper */
+      #emulator-wrapper {
+        width: 100%; height: 100%;
+      }
 
-    #error-screen {
-      display: none;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      color: #ff4444;
-      font-family: monospace;
-      font-size: 14px;
-      gap: 12px;
-      text-align: center;
-      padding: 24px;
-    }
-    #error-screen.visible { display: flex; }
-  </style>
-</head>
-<body>
+      #error-screen {
+        display: none;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        color: #ff4444;
+        font-family: monospace;
+        font-size: 14px;
+        gap: 12px;
+        text-align: center;
+        padding: 24px;
+      }
+      #error-screen.visible { display: flex; }
+    </style>
+  </head>
+  <body>
 
-<div id="game-container">
-  <div id="emulator-wrapper"></div>
-  <div id="error-screen">
-    <span style="font-size:2rem;">⚠️</span>
-    <span id="error-msg">An error occurred.</span>
+  <div id="game-container">
+    <div id="emulator-wrapper"></div>
+    <div id="error-screen">
+      <span style="font-size:2rem;">⚠️</span>
+      <span id="error-msg">An error occurred.</span>
+    </div>
   </div>
-</div>
 
-<script>
-  /* ------------------------------------------------------------------ */
-  /*  0. Parse params from hash  #rom=<url>&name=<gameName>             */
-  /* ------------------------------------------------------------------ */
-  (function () {
-    const hash = location.hash.slice(1);           // strip leading #
-    const params = new URLSearchParams(hash);
-
-    const romUrl  = params.get("rom")  || "";
-    const gameName = params.get("name") || "Unknown Game";
-
-    if (!romUrl) {
-      showError("No ROM URL provided. Add #rom=<url>&name=<title> to the page URL.");
-      return;
-    }
-
+  <script>
     /* ------------------------------------------------------------------ */
-    /*  1. User isolation via localStorage                                 */
+    /*  0. Parse params from hash  #rom=<url>&name=<gameName>             */
     /* ------------------------------------------------------------------ */
-    const currentUser = localStorage.getItem("nostalgia_current_user") || "guest";
+    (function () {
+      const hash = location.hash.slice(1);           // strip leading #
+      const params = new URLSearchParams(hash);
 
-    /* ------------------------------------------------------------------ */
-    /*  2. EmulatorJS config BEFORE the script loads                       */
-    /* ------------------------------------------------------------------ */
-    window.EJS_player      = "#emulator-wrapper";
-    window.EJS_gameUrl     = romUrl;
-    window.EJS_core        = "mgba";               // GBA core
-    window.EJS_gameName    = gameName;
-    window.EJS_pathtodata  = "https://cdn.emulatorjs.org/4.0.9/data/";
-    window.EJS_startOnLoaded = true;
-    window.EJS_color       = "#7c3aed";             // Hyl1a purple accent
+      const romUrl  = params.get("rom")  || "";
+      const gameName = params.get("name") || "Unknown Game";
 
-    // Per-user localStorage key prefix so saves don't collide between accounts
-    window.EJS_localStorageKey = `ejs_${currentUser}_gba_${gameName}`;
-
-    /* ------------------------------------------------------------------ */
-    /*  3. Save-state interception                                         */
-    /* ------------------------------------------------------------------ */
-
-    /**
-     * EmulatorJS calls this when the user triggers Save State from its UI.
-     * data = { state: Uint8Array }
-     * We forward the raw bytes to the parent frame.
-     */
-    window.EJS_onSaveState = function (data) {
-      if (!data?.state) return;
-
-      // Convert Uint8Array → plain Array for structured-clone / postMessage
-      const stateArray = Array.from(data.state);
-
-      window.parent.postMessage(
-        {
-          type: "SAVE_STATE_RESPONSE",
-          state: stateArray,
-          gameName,
-          platform: "gba",
-        },
-        "*"
-      );
-
-      console.log("[gba_player] SAVE_STATE_RESPONSE sent to parent.");
-    };
-
-    /* ------------------------------------------------------------------ */
-    /*  4. Listen for LOAD_SAVE_STATE from parent                          */
-    /* ------------------------------------------------------------------ */
-    window.addEventListener("message", function (event) {
-      if (!event.data || event.data.type !== "LOAD_SAVE_STATE") return;
-
-      const raw = event.data.state; // Array or Uint8Array
-      if (!raw) {
-        console.warn("[gba_player] LOAD_SAVE_STATE received but no state data.");
+      if (!romUrl) {
+        showError("No ROM URL provided. Add #rom=<url>&name=<title> to the page URL.");
         return;
       }
 
-      const uint8 = raw instanceof Uint8Array ? raw : new Uint8Array(raw);
+      /* ------------------------------------------------------------------ */
+      /*  1. User isolation via localStorage                                 */
+      /* ------------------------------------------------------------------ */
+      const currentUser = localStorage.getItem("nostalgia_current_user") || "guest";
 
-      // Wait until the emulator is ready before loading
-      waitForEmulator(function () {
-        try {
-          window.EJS_emulator.loadState(uint8);
-          console.log("[gba_player] State loaded successfully.");
-        } catch (err) {
-          console.error("[gba_player] loadState failed:", err);
+      /* ------------------------------------------------------------------ */
+      /*  2. EmulatorJS config BEFORE the script loads                       */
+      /* ------------------------------------------------------------------ */
+      window.EJS_player      = "#emulator-wrapper";
+      window.EJS_gameUrl     = romUrl;
+      window.EJS_core        = "mgba";               // GBA core
+      window.EJS_gameName    = gameName;
+      window.EJS_pathtodata  = "https://cdn.emulatorjs.org/4.0.9/data/";
+      window.EJS_startOnLoaded = true;
+      window.EJS_color       = "#7c3aed";             // Hyl1a purple accent
+
+      // Per-user localStorage key prefix so saves don't collide between accounts
+      window.EJS_localStorageKey = `ejs_${currentUser}_gba_${gameName}`;
+
+      /* ------------------------------------------------------------------ */
+      /*  3. Save-state interception                                         */
+      /* ------------------------------------------------------------------ */
+
+      /**
+       * EmulatorJS calls this when the user triggers Save State from its UI.
+       * data = { state: Uint8Array }
+       * We forward the raw bytes to the parent frame.
+       */
+      window.EJS_onSaveState = function (data) {
+        if (!data?.state) return;
+
+        // Convert Uint8Array → plain Array for structured-clone / postMessage
+        const stateArray = Array.from(data.state);
+
+        window.parent.postMessage(
+          {
+            type: "SAVE_STATE_RESPONSE",
+            state: stateArray,
+            gameName,
+            platform: "gba",
+          },
+          "*"
+        );
+
+        console.log("[gba_player] SAVE_STATE_RESPONSE sent to parent.");
+      };
+
+      /* ------------------------------------------------------------------ */
+      /*  4. Listen for LOAD_SAVE_STATE from parent                          */
+      /* ------------------------------------------------------------------ */
+      window.addEventListener("message", function (event) {
+        if (!event.data || event.data.type !== "LOAD_SAVE_STATE") return;
+
+        const raw = event.data.state; // Array or Uint8Array
+        if (!raw) {
+          console.warn("[gba_player] LOAD_SAVE_STATE received but no state data.");
+          return;
         }
+
+        const uint8 = raw instanceof Uint8Array ? raw : new Uint8Array(raw);
+
+        // Wait until the emulator is ready before loading
+        waitForEmulator(function () {
+          try {
+            window.EJS_emulator.loadState(uint8);
+            console.log("[gba_player] State loaded successfully.");
+          } catch (err) {
+            console.error("[gba_player] loadState failed:", err);
+          }
+        });
       });
-    });
 
-    /* ------------------------------------------------------------------ */
-    /*  5. Listen for TRIGGER_SAVE (parent asks us to trigger a save)      */
-    /* ------------------------------------------------------------------ */
-    window.addEventListener("message", function (event) {
-      if (!event.data || event.data.type !== "TRIGGER_SAVE") return;
+      /* ------------------------------------------------------------------ */
+      /*  5. Listen for TRIGGER_SAVE (parent asks us to trigger a save)      */
+      /* ------------------------------------------------------------------ */
+      window.addEventListener("message", function (event) {
+        if (!event.data || event.data.type !== "TRIGGER_SAVE") return;
 
-      waitForEmulator(function () {
-        try {
-          // Ask EmulatorJS to emit its save-state; EJS_onSaveState fires next
-          window.EJS_emulator.saveState();
-        } catch (err) {
-          console.error("[gba_player] saveState trigger failed:", err);
-          // Fallback: try calling the callback directly if it's exposed
+        waitForEmulator(function () {
+          try {
+            // Ask EmulatorJS to emit its save-state; EJS_onSaveState fires next
+            window.EJS_emulator.saveState();
+          } catch (err) {
+            console.error("[gba_player] saveState trigger failed:", err);
+            // Fallback: try calling the callback directly if it's exposed
+          }
+        });
+      });
+
+      /* ------------------------------------------------------------------ */
+      /*  6. Load EmulatorJS                                                  */
+      /* ------------------------------------------------------------------ */
+      var script = document.createElement("script");
+      script.src = "https://cdn.emulatorjs.org/4.0.9/data/loader.js";
+      script.onerror = function () {
+        showError("Failed to load EmulatorJS CDN. Check your network connection.");
+      };
+      document.body.appendChild(script);
+
+      /* ------------------------------------------------------------------ */
+      /*  Helpers                                                             */
+      /* ------------------------------------------------------------------ */
+
+      /** Poll until window.EJS_emulator exists, then call cb. */
+      function waitForEmulator(cb, retries) {
+        retries = retries === undefined ? 40 : retries;
+        if (window.EJS_emulator) { cb(); return; }
+        if (retries <= 0) {
+          console.warn("[gba_player] Emulator not ready in time.");
+          return;
         }
-      });
-    });
-
-    /* ------------------------------------------------------------------ */
-    /*  6. Load EmulatorJS                                                  */
-    /* ------------------------------------------------------------------ */
-    var script = document.createElement("script");
-    script.src = "https://cdn.emulatorjs.org/4.0.9/data/loader.js";
-    script.onerror = function () {
-      showError("Failed to load EmulatorJS CDN. Check your network connection.");
-    };
-    document.body.appendChild(script);
-
-    /* ------------------------------------------------------------------ */
-    /*  Helpers                                                             */
-    /* ------------------------------------------------------------------ */
-
-    /** Poll until window.EJS_emulator exists, then call cb. */
-    function waitForEmulator(cb, retries) {
-      retries = retries === undefined ? 40 : retries;
-      if (window.EJS_emulator) { cb(); return; }
-      if (retries <= 0) {
-        console.warn("[gba_player] Emulator not ready in time.");
-        return;
+        setTimeout(function () { waitForEmulator(cb, retries - 1); }, 250);
       }
-      setTimeout(function () { waitForEmulator(cb, retries - 1); }, 250);
-    }
 
-    function showError(msg) {
-      var el = document.getElementById("error-screen");
-      var msgEl = document.getElementById("error-msg");
-      if (el)  el.classList.add("visible");
-      if (msgEl) msgEl.textContent = msg;
-      console.error("[gba_player]", msg);
-    }
-  })();
-</script>
+      function showError(msg) {
+        var el = document.getElementById("error-screen");
+        var msgEl = document.getElementById("error-msg");
+        if (el)  el.classList.add("visible");
+        if (msgEl) msgEl.textContent = msg;
+        console.error("[gba_player]", msg);
+      }
+    })();
+  </script>
 
-</body>
-</html>
+  <!-- UI Enhancement: Show controls on the sides (matching DS emulator) -->
+  <script>
+    const keysOverlay = document.createElement('div');
+    keysOverlay.style.cssText = `
+      position: fixed;
+      top: 50%;
+      left: 20px;
+      transform: translateY(-50%);
+      color: rgba(255,255,255,0.4);
+      font-family: 'Segoe UI', sans-serif;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      line-height: 2;
+      pointer-events: none;
+      z-index: 1000;
+      text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+    `;
+    keysOverlay.innerHTML = `
+      <div style="font-weight: 800; color: #7ec4ff; margin-bottom: 10px; font-size:
+  13px;">CONTROLES</div>
+      <b>FLÈCHES</b> : DIR<br>
+      <b>X</b> : BOUTON A<br>
+      <b>Z</b> : BOUTON B<br>
+      <b>A</b> : BOUTON X<br>
+      <b>S</b> : BOUTON Y<br>
+      <b>C</b> : GACHETTE L<br>
+      <b>V</b> : GACHETTE R<br>
+      <b>ENTRER</b> : START<br>
+      <b>SHIFT</b> : SELECT
+    `;
+    document.body.appendChild(keysOverlay);
+  </script>
+
+  <!-- Auto-focus window for keys and mouse reporting -->
+  <script>
+    // Auto-focus window for keys
+    window.focus();
+    document.addEventListener('mousedown', () => window.focus());
+
+    // Report mouse acts to parent for custom cursor support
+    window.addEventListener('mousemove', (e) => {
+      window.parent.postMessage({ type: 'mii-mousemove', x: e.clientX, y: e.clientY }, '*');
+    });
+    window.addEventListener('mousedown', (e) => {
+      window.parent.postMessage({ type: 'mii-mousedown', x: e.clientX, y: e.clientY }, '*');
+    });
+  </script>
+
+  </body>
+  </html>
