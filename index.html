@@ -5,7 +5,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Hylia Plaza</title>
-  
+
   <!-- CSS -->
   <link rel="stylesheet" href="public/css/main.css" />
   <link rel="stylesheet" href="public/css/animations.css" />
@@ -19,7 +19,7 @@
   <link rel="stylesheet" href="public/css/nowPlaying.css" />
   <link rel="stylesheet" href="public/css/auth.css" />
   <link rel="stylesheet" href="public/css/responsive.css" />
-  
+
   <link rel="icon" type="image/webp" href="public/assets/icons/logov2.webp" />
 
   <!-- Three.js and OrbitControls -->
@@ -57,8 +57,7 @@
         <p style="margin-top: 20px; font-size: 13px; color: rgba(255,255,255,0.5);">Déjà un compte ? <span id="toggle-to-login" style="color: #7ec4ff; cursor: pointer; font-weight: bold; text-decoration: underline;">Se connecter</span></p>
       </div>
     </div>
-  </div>
-  <style>
+    <style>
   .auth-input { width: 100%; padding: 14px 18px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.15); background: rgba(255,255,255,0.05); color: white; outline: none; box-sizing: border-box; transition: all 0.3s; font-size: 15px; }
   .auth-input:focus { background: rgba(255,255,255,0.1); border-color: #7ec4ff; box-shadow: 0 0 15px rgba(126,196,255,0.3); }
   .auth-btn { width: 100%; padding: 14px; border-radius: 12px; border: none; font-weight: bold; font-size: 16px; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s, background 0.2s; }
@@ -66,6 +65,7 @@
   .auth-btn.highlight:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(74, 159, 255, 0.6); }
   .auth-btn.highlight:active { transform: scale(0.98); }
   </style>
+  </div>
 
   <!-- MII PLAZA LAYER -->
   <div id="mii-plaza-layer"></div>
@@ -91,7 +91,7 @@
             <div class="sidebar-btn" id="btn-global" onclick="SocialSystem.openOverlay('global')">
               <div class="sidebar-icon"><img src="public/assets/icons/miiplaza.webp" alt="Global"></div>
               <div class="sidebar-label">Global</div>
-            </div>
+            </div
             <div class="sidebar-btn" id="btn-messages" onclick="SocialSystem.openOverlay('messages')">
               <div class="sidebar-icon"><img src="public/assets/icons/message.webp" alt="Messages"></div>
               <div class="sidebar-label">Messages</div>
@@ -211,17 +211,18 @@
   <div id="app-containers" style="display: none;"></div>
 
   <!-- JS IMPORTS -->
+  <script type="module" src="public/js/firebase/init.js"></script>
   <script type="module" src="public/js/core/firebase.js"></script>
   <script type="module" src="public/js/core/auth.js"></script>
   <script type="module" src="public/js/core/audio.js"></script>
-  
+
   <script src="public/js/core/windowManager.js" defer></script>
-  
+
   <script>
     window.process = { env: { NODE_ENV: 'production' } };
     window.global = window;
   </script>
-  
+
   <script src="public/js/core/visualizer.js" defer></script>
   <script src="public/js/core/carousel.js" defer></script>
   <script src="public/js/core/social.js" defer></script>
