@@ -80,24 +80,42 @@
   }
 
   /* -------------------------- AUTH HELPERS -------------------------- */
+  /**
+   * Retourne un utilisateur Firebase connecté.
+   * Essaie d’abord d’obtenir l’auth depuis la fenêtre parente (iframe),
+   * puis depuis la fenêtre courante.
+   */
   function waitForAuth(cb) {
+    // 1️⃣  On tente d’abord la fenêtre parente (iframe)
+    const parentAuth = window.parent?.FirebaseAuth || window.parent?.auth;
+    if (parentAuth?.currentUser) {
+      cb(parentAuth.currentUser);
+      return;
+    }
+
+    // 2️⃣  Ensuite on tente la fenêtre courante (au cas où le script serait exécuté hors iframe)
+    const selfAuth = window.FirebaseAuth || window.auth;
+    if (selfAuth?.currentUser) {
+      cb(selfAuth.currentUser);
+      return;
+    }
+
+    // Aucun utilisateur trouvé → on attend qu’il apparaisse (polling simple)
     let tries = 0;
     const check = setInterval(() => {
       tries++;
-      const auth = window.FirebaseAuth;
+      // on regarde successivement parent puis self
+      const auth = window.parent?.FirebaseAuth || window.parent?.auth ||
+                   window.FirebaseAuth || window.auth;
       const user = auth?.currentUser;
-      if (user) { clearInterval(check); cb(user); }
-      else if (tries >= 40) {
+      if (user) {
+        clearInterval(check);
+        cb(user);
+      } else if (tries >= 40) {   // ~12 s max
         clearInterval(check);
         console.warn('[SaveSync] Non connecté — saves locales uniquement.');
       }
     }, 300);
-  }
-
-  function hashArray(arr) {
-    let sum = 0;
-    for (let i = 0; i < arr.length; i++) sum = (sum + (arr[i] & 0xFF) * (i + 1)) & 0xFFFFFFFF;
-    return sum.toString(16) + '_' + arr.length;
   }
 
   /* -------------------------- DOWNLOAD FROM WORKER -------------------------- */
