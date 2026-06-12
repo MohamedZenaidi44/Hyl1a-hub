@@ -1,111 +1,320 @@
 /**
  * gba.js  —  apps/gba/js/gba.js
  *
- * Chargé en lazy-import par app.js via :
- *   _lazy(container, '../../../apps/gba/js/gba.js')
- *
- * app.js appelle  mod.default(container)  avec le fsContainer déjà dans le DOM.
- * Ce module :
- *   1. Crée un sélecteur de ROMs
- *   2. Crée l'iframe gba_player.html avec le bon hash
- *   3. Injecte la toolbar Save / Load
- *   4. Gère la communication postMessage avec l'iframe
- *   5. Délègue upload/download à window.SaveManager
+ * Menu carousel façon DS pour la sélection des ROMs GBA,
+ * + lancement de l'iframe gba_player.html avec toolbar Save/Load par slots.
  */
 
 /* ── ROM library ──────────────────────────────────────────────────────────── */
-// Ajoute tes ROMs ici : { label, url }
-// Les URLs peuvent être des liens directs (archive.org, ton propre storage, etc.)
 const ROM_LIBRARY = [
-  // Exemples — remplace par tes vraies URLs
-  { label: 'Pokémon FireRed',   url: 'https://your-storage.com/roms/gba/firered.gba' },
-  { label: 'Pokémon Émeraude',  url: 'https://your-storage.com/roms/gba/emerald.gba' },
-  { label: 'Mario Kart Super Circuit', url: 'https://your-storage.com/roms/gba/mksc.gba' },
+  { label: 'Pokémon FireRed',          file: 'https://your-storage.com/roms/gba/firered.gba', cover: '' },
+  { label: 'Pokémon Émeraude',         file: 'https://your-storage.com/roms/gba/emerald.gba', cover: '' },
+  { label: 'Mario Kart Super Circuit', file: 'https://your-storage.com/roms/gba/mksc.gba',    cover: '' },
 ];
+
+window.GBA_GAMES = ROM_LIBRARY;
 
 /* ── Constants ────────────────────────────────────────────────────────────── */
 const PLATFORM     = 'gba';
-const PLAYER_PAGE  = 'apps/gba/gba_player.html';   // chemin relatif depuis index.html
+const PLAYER_PAGE  = 'apps/gba/gba_player.html';
 const SAVE_TIMEOUT = 6000;
 
 /* ── Module state ─────────────────────────────────────────────────────────── */
-let currentSlot        = 1;
-let currentGameName    = '';
-let iframeEl           = null;
-let pendingSaveResolve = null;
-let pendingSaveTimer   = null;
+let currentSlot          = 1;
+let currentGameName      = '';
+let iframeEl              = null;
+let pendingSaveResolve    = null;
+let pendingSaveTimer      = null;
+let currentGbaCoverIndex  = 0;
 
 /* ══════════════════════════════════════════════════════════════════════════ */
-/*  ENTRY POINT — appelé par app.js                                          */
+/*  ENTRY POINT                                                              */
 /* ══════════════════════════════════════════════════════════════════════════ */
 export default function init(container) {
-  container.style.cssText = `
-    display: flex; flex-direction: column;
-    width: 100%; height: 100%;
-    background: #0a0a0a; color: #e0e0e0;
-    font-family: monospace; overflow: hidden;
-  `;
-
-  // ── Bouton retour ────────────────────────────────────────────────────────
-  const backBtn = mkEl('button', {}, '← Retour');
-  Object.assign(backBtn.style, {
-    position: 'absolute', top: '12px', left: '12px', zIndex: '100',
-    background: 'rgba(0,0,0,0.5)', border: '1px solid #444',
-    color: '#ccc', borderRadius: '8px', padding: '6px 14px',
-    cursor: 'pointer', fontFamily: 'monospace', fontSize: '13px',
-  });
-  backBtn.addEventListener('click', () => {
-    // Cherche la fonction close enregistrée par app.js
-    if (window.AppRegistry?.gba?.close) window.AppRegistry.gba.close();
-  });
-  container.appendChild(backBtn);
-
-  // ── Si une seule ROM → lancer directement, sinon afficher le sélecteur ──
   if (ROM_LIBRARY.length === 1) {
-    launchRom(container, ROM_LIBRARY[0].url, ROM_LIBRARY[0].label);
+    launchRom(container, ROM_LIBRARY[0].file, ROM_LIBRARY[0].label);
   } else {
-    renderRomPicker(container);
+    renderGbaMenu(container);
   }
-
-  // ── Écoute les messages de l'iframe ─────────────────────────────────────
   window.addEventListener('message', onIframeMessage);
 }
 
 /* ══════════════════════════════════════════════════════════════════════════ */
-/*  ROM PICKER                                                               */
+/*  CAROUSEL MENU (style DS)                                                 */
 /* ══════════════════════════════════════════════════════════════════════════ */
-function renderRomPicker(container) {
-  const picker = mkEl('div');
-  Object.assign(picker.style, {
-    display: 'flex', flexDirection: 'column', alignItems: 'center',
-    justifyContent: 'center', gap: '14px',
-    width: '100%', height: '100%', padding: '20px',
+function renderGbaMenu(container) {
+  if (!document.getElementById('gba-simple-cover-styles')) {
+    const style = document.createElement('style');
+    style.id = 'gba-simple-cover-styles';
+    style.textContent = `
+      .gba-menu-wrapper {
+        display: flex; flex-direction: column; width: 100%; height: 100%; font-family: 'Inter', sans-serif;
+        background: transparent; color: #fff; overflow: hidden; position: relative;
+        animation: gbaFadeIn 0.3s ease-out;
+      }
+      @keyframes gbaFadeIn {
+        from { opacity: 0; transform: scale(1.02); }
+        to { opacity: 1; transform: scale(1); }
+      }
+
+      .gba-covers-row {
+        flex: 1; display: flex; align-items: center; justify-content: flex-start;
+        padding: 0 50vw;
+        overflow-x: hidden; scroll-behavior: smooth; gap: 40px;
+      }
+
+      .gba-cover-item {
+        flex-shrink: 0; width: 220px; height: 220px; border-radius: 8px; cursor: pointer;
+        position: relative; transition: all 0.3s cubic-bezier(0.2, 1, 0.3, 1);
+        filter: brightness(0.5) grayscale(0.8);
+        box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+      }
+
+      .gba-cover-item.active {
+        filter: brightness(1) grayscale(0);
+        transform: scale(1.15) translateY(-10px);
+        box-shadow: 0 0 40px rgba(167,139,250,0.6), 0 20px 40px rgba(0,0,0,0.8);
+        z-index: 10;
+        border: 2px solid rgba(255,255,255,0.8);
+      }
+
+      .gba-cover-img { width: 100%; height: 100%; object-fit: cover; border-radius: 6px; display: block; }
+
+      .gba-fallback {
+        width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center;
+        background: linear-gradient(135deg, #4c1d95, #1a1a2e); border-radius: 6px; text-align: center; padding: 15px;
+      }
+
+      .gba-info-panel {
+        height: 160px; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: flex-end;
+        padding-bottom: 30px; gap: 12px; z-index: 1000;
+        background: linear-gradient(to top, rgba(0,0,0,0.95), transparent); border-top: 1px solid rgba(255,255,255,0.1);
+      }
+
+      .gba-title { font-size: 34px; font-weight: 900; color: white; text-shadow: 0 4px 15px rgba(0,0,0,1); margin: 0; }
+      .gba-subtitle { font-size: 15px; color: #a78bfa; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; }
+
+      .gba-controls { display: flex; gap: 25px; margin-top: 15px; position: relative; z-index: 1001; }
+      .gba-btn {
+        display: flex; align-items: center; gap: 10px; background: rgba(255,255,255,0.1); border: 2px solid rgba(255,255,255,0.3);
+        border-radius: 40px; padding: 10px 25px; font-size: 16px; color: #fff; font-weight: 800; cursor: pointer; transition: all 0.2s;
+      }
+      .gba-btn:hover { background: rgba(255,255,255,0.3); transform: scale(1.05); border-color: #fff; }
+      .gba-btn.primary {
+        background: #7c3aed; color: #fff; border: none;
+        box-shadow: 0 0 20px rgba(124,58,237,0.4);
+        width: 240px; justify-content: center;
+      }
+      .gba-btn.primary:hover { background: #9b5cf6; transform: scale(1.1); box-shadow: 0 0 30px rgba(124,58,237,0.7); }
+      .gba-btn b { background: #fff; color: #000; border-radius: 50%; width: 22px; height: 22px; display: flex; align-items: center; justify-content: center; font-size: 13px; }
+
+      .gba-arrow {
+        position: absolute; top: calc(50% - 80px); transform: translateY(-50%); z-index: 1000; width: 80px; height: 120px;
+        border-radius: 18px; border: 2px solid rgba(255,255,255,0.2); background: rgba(0,0,0,0.7);
+        color: white; cursor: pointer; display: flex; align-items: center; justify-content: center;
+        transition: all 0.2s; box-shadow: 0 10px 40px rgba(0,0,0,0.6); outline: none;
+      }
+      .gba-arrow:hover { background: rgba(0,0,0,0.9); transform: translateY(-50%) scale(1.1); border-color: #a78bfa; }
+      .gba-arrow:active { transform: translateY(-50%) scale(0.95); }
+
+      #gba-btn-prev { left: 40px; }
+      #gba-btn-next { right: 40px; }
+      .gba-arrow svg { width: 45px; height: 45px; opacity: 1; stroke: #a78bfa; }
+      .gba-arrow:hover svg { stroke: #fff; }
+    `;
+    document.head.appendChild(style);
+  }
+
+  if (currentGbaCoverIndex < 0) currentGbaCoverIndex = 0;
+  if (currentGbaCoverIndex >= ROM_LIBRARY.length) currentGbaCoverIndex = ROM_LIBRARY.length - 1;
+
+  let coversHtml = '';
+  ROM_LIBRARY.forEach((rom, index) => {
+    const isFallback = !rom.cover;
+    const content = isFallback
+      ? `<div class="gba-fallback">
+           <span style="font-size: 40px;">🎮</span>
+           <span style="font-size: 12px; opacity: 0.7; margin-top: 5px;">GBA</span>
+           <span style="font-weight: bold; margin-top: 10px; font-size: 16px;">${rom.label}</span>
+         </div>`
+      : `<img src="${rom.cover}" class="gba-cover-img" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />
+         <div class="gba-fallback" style="display:none;">
+           <span style="font-size: 40px;">🎮</span>
+           <span style="font-weight: bold; margin-top: 10px; font-size: 16px;">${rom.label}</span>
+         </div>`;
+
+    coversHtml += `
+      <div class="gba-cover-item" id="gba-item-${index}" data-index="${index}">
+        ${content}
+      </div>
+    `;
   });
 
-  const title = mkEl('h2', {}, '🎮 Choisissez une ROM GBA');
-  Object.assign(title.style, { marginBottom: '8px', fontSize: '20px', color: '#a78bfa' });
-  picker.appendChild(title);
+  const html = `
+    <div class="gba-menu-wrapper" tabindex="-1">
+      <button id="gba-btn-prev" class="gba-arrow">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="15 18 9 12 15 6"/></svg>
+      </button>
+      <button id="gba-btn-next" class="gba-arrow">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="9 18 15 12 9 6"/></svg>
+      </button>
+      <div class="gba-covers-row" id="gba-scroll-row">
+        ${coversHtml}
+      </div>
+      <div class="gba-info-panel">
+        <h2 class="gba-title" id="gba-ui-title">...</h2>
+        <div class="gba-subtitle">Game Boy Advance</div>
+        <div class="gba-controls">
+           <button class="gba-btn primary" id="gba-launch-btn"><b>A</b> JOUER</button>
+           <button class="gba-btn" id="gba-quit-btn"><b>B</b> QUITTER</button>
+        </div>
+      </div>
+    </div>
+  `;
 
-  ROM_LIBRARY.forEach(rom => {
-    const btn = mkEl('button', {}, rom.label);
-    Object.assign(btn.style, {
-      background: '#1e1e2e', border: '1px solid #4c1d95',
-      color: '#e0e0e0', borderRadius: '10px',
-      padding: '12px 28px', cursor: 'pointer',
-      fontFamily: 'monospace', fontSize: '15px',
-      width: '320px', textAlign: 'left',
-      transition: 'background 0.2s',
+  container.innerHTML = html;
+
+  const wrapper = container.querySelector('.gba-menu-wrapper');
+  wrapper.focus();
+
+  if (ROM_LIBRARY.length > 0) {
+    updateGbaCarousel(container);
+
+    const items = container.querySelectorAll('.gba-cover-item');
+    items.forEach(item => {
+      item.addEventListener('click', () => {
+        const index = parseInt(item.getAttribute('data-index'), 10);
+        if (currentGbaCoverIndex === index) {
+          if (typeof AudioManager !== 'undefined') AudioManager.playClick();
+          startRom(container, ROM_LIBRARY[currentGbaCoverIndex]);
+        } else {
+          currentGbaCoverIndex = index;
+          if (typeof AudioManager !== 'undefined') AudioManager.playClick();
+          updateGbaCarousel(container);
+        }
+      });
     });
-    btn.addEventListener('mouseenter', () => (btn.style.background = '#2e2e4e'));
-    btn.addEventListener('mouseleave', () => (btn.style.background = '#1e1e2e'));
-    btn.addEventListener('click', () => {
-      picker.remove();
-      launchRom(container, rom.url, rom.label);
+
+    container.querySelector('#gba-launch-btn').addEventListener('click', () => {
+      if (typeof AudioManager !== 'undefined') AudioManager.playClick();
+      startRom(container, ROM_LIBRARY[currentGbaCoverIndex]);
     });
-    picker.appendChild(btn);
+
+    container.querySelector('#gba-btn-prev').addEventListener('click', (e) => {
+      e.stopPropagation();
+      if (currentGbaCoverIndex > 0) {
+        currentGbaCoverIndex--;
+        if (typeof AudioManager !== 'undefined') AudioManager.playClick();
+        updateGbaCarousel(container);
+      }
+    });
+
+    container.querySelector('#gba-btn-next').addEventListener('click', (e) => {
+      e.stopPropagation();
+      if (currentGbaCoverIndex < ROM_LIBRARY.length - 1) {
+        currentGbaCoverIndex++;
+        if (typeof AudioManager !== 'undefined') AudioManager.playClick();
+        updateGbaCarousel(container);
+      }
+    });
+
+    const keyHandler = (e) => {
+      const menuWrapper = document.querySelector('.gba-menu-wrapper');
+      if (!menuWrapper) {
+        window.removeEventListener('keydown', keyHandler, true);
+        return;
+      }
+      const emuActive = document.getElementById('gba-emu-iframe');
+      if (emuActive) return;
+
+      const keys = ['ArrowRight', 'ArrowLeft', 'Enter', 'b', 'Escape'];
+      if (keys.includes(e.key)) {
+        e.preventDefault();
+        e.stopPropagation();
+
+        if (e.key === 'ArrowRight') {
+          if (currentGbaCoverIndex < ROM_LIBRARY.length - 1) {
+            currentGbaCoverIndex++;
+            if (typeof AudioManager !== 'undefined') AudioManager.playClick();
+            updateGbaCarousel(container);
+          }
+        }
+        else if (e.key === 'ArrowLeft') {
+          if (currentGbaCoverIndex > 0) {
+            currentGbaCoverIndex--;
+            if (typeof AudioManager !== 'undefined') AudioManager.playClick();
+            updateGbaCarousel(container);
+          }
+        }
+        else if (e.key === 'Enter') {
+          if (typeof AudioManager !== 'undefined') AudioManager.playClick();
+          startRom(container, ROM_LIBRARY[currentGbaCoverIndex]);
+        }
+        else if (e.key === 'b' || e.key === 'Escape') {
+          container.querySelector('#gba-quit-btn').click();
+        }
+      }
+    };
+
+    if (window._gbaKeyHandler) window.removeEventListener('keydown', window._gbaKeyHandler, true);
+    window._gbaKeyHandler = keyHandler;
+    window.addEventListener('keydown', keyHandler, true);
+  }
+
+  container.querySelector('#gba-quit-btn').addEventListener('click', () => {
+    if (typeof AudioManager !== 'undefined') AudioManager.playClick();
+    if (window._gbaKeyHandler) {
+      window.removeEventListener('keydown', window._gbaKeyHandler, true);
+      window._gbaKeyHandler = null;
+    }
+    if (window.AppRegistry?.gba?.close) window.AppRegistry.gba.close();
+  });
+}
+
+function updateGbaCarousel(container) {
+  const row = container.querySelector('#gba-scroll-row');
+  const items = container.querySelectorAll('.gba-cover-item');
+  const titleEl = container.querySelector('#gba-ui-title');
+
+  if (!row || !items.length) return;
+
+  const rom = ROM_LIBRARY[currentGbaCoverIndex];
+  if (titleEl) titleEl.textContent = rom.label;
+
+  items.forEach((item, index) => {
+    if (index === currentGbaCoverIndex) {
+      item.classList.add('active');
+    } else {
+      item.classList.remove('active');
+    }
   });
 
-  container.appendChild(picker);
+  const activeItem = items[currentGbaCoverIndex];
+  if (activeItem) {
+    const itemWidth = 220;
+    const gap = 40;
+    const targetScroll = (currentGbaCoverIndex * (itemWidth + gap)) + (itemWidth / 2);
+    row.scrollTo({
+      left: targetScroll,
+      behavior: 'smooth'
+    });
+  }
+}
+
+/* ══════════════════════════════════════════════════════════════════════════ */
+/*  START ROM  (depuis le carousel)                                          */
+/* ══════════════════════════════════════════════════════════════════════════ */
+function startRom(container, rom) {
+  if (window._gbaKeyHandler) {
+    window.removeEventListener('keydown', window._gbaKeyHandler, true);
+    window._gbaKeyHandler = null;
+  }
+  if (typeof AudioManager !== 'undefined' && AudioManager.appBgm) {
+    AudioManager.appBgm.pause();
+    AudioManager.appBgm.currentTime = 0;
+    AudioManager.appBgm = null;
+  }
+  launchRom(container, rom.file, rom.label);
 }
 
 /* ══════════════════════════════════════════════════════════════════════════ */
@@ -114,10 +323,57 @@ function renderRomPicker(container) {
 function launchRom(container, romUrl, romName) {
   currentGameName = romName;
 
+  container.innerHTML = '';
+  container.style.cssText = `
+    display: flex; flex-direction: column;
+    width: 100%; height: 100%;
+    background: #0a0a0a; color: #e0e0e0;
+    font-family: 'Inter', sans-serif; overflow: hidden;
+    animation: gbaFadeIn 0.3s ease-out;
+  `;
+
+  // ── Bouton retour ────────────────────────────────────────────────────────
+  const backBtn = mkEl('div', { id: 'gba-back-btn' });
+  backBtn.innerHTML = `<span style="background:white;color:black;border-radius:50%;width:20px;height:20px;text-align:center;line-height:20px;font-size:13px;display:inline-block;">B</span> Quitter`;
+  Object.assign(backBtn.style, {
+    display: 'flex', alignItems: 'center', gap: '8px',
+    background: 'rgba(255,255,255,0.1)', border: '2px solid rgba(255,255,255,0.2)',
+    borderRadius: '40px', padding: '6px 18px', color: '#fff',
+    cursor: 'pointer', fontWeight: '700', transition: '0.2s',
+    width: 'fit-content',
+  });
+  backBtn.addEventListener('mouseover', () => backBtn.style.background = 'rgba(255,255,255,0.2)');
+  backBtn.addEventListener('mouseout', () => backBtn.style.background = 'rgba(255,255,255,0.1)');
+  backBtn.addEventListener('click', () => {
+    if (typeof AudioManager !== 'undefined') AudioManager.playClick();
+    if (ROM_LIBRARY.length === 1) {
+      if (window.AppRegistry?.gba?.close) window.AppRegistry.gba.close();
+    } else {
+      renderGbaMenu(container);
+    }
+  });
+
+  const titleEl = mkEl('h3', {}, romName);
+  Object.assign(titleEl.style, {
+    margin: '0', color: 'white', fontSize: '18px',
+    fontWeight: '400', letterSpacing: '1px', flex: '1', textAlign: 'center',
+  });
+
+  const topBar = mkEl('div');
+  Object.assign(topBar.style, {
+    padding: '10px 20px', background: 'rgba(20,20,20,0.95)',
+    backdropFilter: 'blur(10px)', display: 'flex', alignItems: 'center',
+    gap: '12px', borderBottom: '2px solid rgba(255,255,255,0.08)',
+    zIndex: '100', flexWrap: 'wrap',
+  });
+  topBar.append(backBtn, titleEl);
+
   // ── Wrapper iframe ───────────────────────────────────────────────────────
   const iframeWrap = mkEl('div');
   Object.assign(iframeWrap.style, {
     flex: '1', width: '100%', overflow: 'hidden', position: 'relative',
+    display: 'flex', alignItems: 'center', justifyContent: 'center',
+    background: 'radial-gradient(circle,#222,#000)',
   });
 
   const hash = `#rom=${encodeURIComponent(romUrl)}&name=${encodeURIComponent(romName)}`;
@@ -126,22 +382,29 @@ function launchRom(container, romUrl, romName) {
   iframeEl.src = PLAYER_PAGE + hash;
   iframeEl.dataset.gameName = romName;
   Object.assign(iframeEl.style, {
-    width: '100%', height: '100%', border: 'none', display: 'block',
+    width: '100%', height: '100%', border: 'none', display: 'block', maxWidth: '1280px',
   });
-  // Permissions nécessaires pour EmulatorJS
   iframeEl.setAttribute('allow', 'autoplay; fullscreen');
   iframeEl.setAttribute('allowfullscreen', 'true');
 
   iframeWrap.appendChild(iframeEl);
 
-  // ── Toolbar ──────────────────────────────────────────────────────────────
+  // ── Toolbar Save/Load ────────────────────────────────────────────────────
   const toolbar = buildToolbar();
 
+  container.appendChild(topBar);
   container.appendChild(iframeWrap);
   container.appendChild(toolbar);
 
-  // Charge les labels des slots depuis Firestore
   refreshSlotLabels();
+
+  // Focus auto de l'iframe
+  iframeEl.onload = () => {
+    setTimeout(() => {
+      iframeEl.focus();
+      if (iframeEl.contentWindow) iframeEl.contentWindow.focus();
+    }, 500);
+  };
 }
 
 /* ══════════════════════════════════════════════════════════════════════════ */
@@ -156,7 +419,6 @@ function buildToolbar() {
     flexShrink: '0',
   });
 
-  // Slot selector
   const slotLabel = mkEl('span', {}, 'Slot :');
   Object.assign(slotLabel.style, { color: '#ccc', fontSize: '13px' });
 
@@ -176,12 +438,10 @@ function buildToolbar() {
     currentSlot = parseInt(slotSelect.value, 10);
   });
 
-  // Save button
   const saveBtn = mkEl('button', { id: 'emu-save-btn' }, '💾 Save');
   styleBtn(saveBtn, '#7c3aed');
   saveBtn.addEventListener('click', handleSave);
 
-  // Load button
   const loadBtn = mkEl('button', { id: 'emu-load-btn' }, '📂 Load');
   styleBtn(loadBtn, '#0e7490');
   loadBtn.addEventListener('click', handleLoad);
