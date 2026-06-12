@@ -5,37 +5,36 @@ window.CloudSaveManager = {
     if (!notif) {
       notif = document.createElement('div');
       notif.id = 'cloud-save-notif';
-      notif.style.cssText = `
-        position: fixed;
-        bottom: 20px;
-        right: 20px;
-        background: rgba(0, 0, 0, 0.8);
-        backdrop-filter: blur(10px);
-        color: #fff;
-        padding: 12px 24px;
-        border-radius: 8px;
-        font-family: 'Segoe UI', sans-serif;
-        font-size: 14px;
-        font-weight: 600;
-        z-index: 99999;
-        pointer-events: none;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.5);
-        border: 1px solid rgba(255,255,255,0.1);
-        transition: opacity 0.3s ease, transform 0.3s ease;
-        opacity: 0;
-        transform: translateY(20px);
-      `;
+      notif.style.cssText =
+        'position: fixed;' +
+        'bottom: 20px;' +
+        'right: 20px;' +
+        'background: rgba(0, 0, 0, 0.8);' +
+        'backdrop-filter: blur(10px);' +
+        'color: #fff;' +
+        'padding: 12px 24px;' +
+        'border-radius: 8px;' +
+        'font-family: \'Segoe UI\', sans-serif;' +
+        'font-size: 14px;' +
+        'font-weight: 600;' +
+        'z-index: 99999;' +
+        'pointer-events: none;' +
+        'box-shadow: 0 4px 12px rgba(0,0,0,0.5);' +
+        'border: 1px solid rgba(255,255,255,0.1);' +
+        'transition: opacity 0.3s ease, transform 0.3s ease;' +
+        'opacity: 0;' +
+        'transform: translateY(20px);';
       document.body.appendChild(notif);
     }
-    
+
     notif.innerHTML = message;
-    
+
     // Force reflow
     void notif.offsetWidth;
-    
+
     notif.style.opacity = '1';
     notif.style.transform = 'translateY(0)';
-    
+
     if (this.notifTimeout) clearTimeout(this.notifTimeout);
     this.notifTimeout = setTimeout(() => {
       notif.style.opacity = '0';
@@ -50,7 +49,7 @@ window.CloudSaveManager = {
         console.log("CloudSave: Utilisateur non connecté, sauvegarde locale uniquement.");
         return;
       }
-      
+
       if (!window.StorageAPI) {
         console.error("CloudSave: StorageAPI non initialisé.");
         return;
@@ -58,13 +57,13 @@ window.CloudSaveManager = {
 
       this.showNotification('☁️ Sauvegarde Cloud en cours...', 5000);
 
-      const path = \`saves/\${user.uid}/\${core}/\${gameName}.state\`;
+      const path = 'saves/' + user.uid + '/' + core + '/' + gameName + '.state';
       const storageRef = window.StorageAPI.ref(window.StorageAPI.storage, path);
-      
+
       // stateData est normalement un Uint8Array
       await window.StorageAPI.uploadBytes(storageRef, stateData);
-      
-      console.log(\`CloudSave: Sauvegarde réussie pour \${gameName}\`);
+
+      console.log('CloudSave: Sauvegarde réussie pour ' + gameName);
       this.showNotification('✅ Sauvegarde Cloud terminée !');
     } catch (error) {
       console.error("CloudSave: Erreur lors de la sauvegarde :", error);
@@ -83,11 +82,11 @@ window.CloudSaveManager = {
 
       if (!window.StorageAPI) return null;
 
-      const path = \`saves/\${user.uid}/\${core}/\${gameName}.state\`;
+      const path = 'saves/' + user.uid + '/' + core + '/' + gameName + '.state';
       const storageRef = window.StorageAPI.ref(window.StorageAPI.storage, path);
-      
+
       const url = await window.StorageAPI.getDownloadURL(storageRef);
-      console.log(\`CloudSave: Sauvegarde trouvée pour \${gameName}\`);
+      console.log('CloudSave: Sauvegarde trouvée pour ' + gameName);
       return url;
     } catch (error) {
       // It's normal to have an error if the file doesn't exist (e.g. 404 object-not-found)

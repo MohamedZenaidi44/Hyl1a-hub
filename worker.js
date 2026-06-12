@@ -12,8 +12,23 @@
 export default {
   async fetch(request, env, ctx) {
     // ---------- CORS ----------
+    const origin = request.headers.get('Origin') || '';
+    const allowedOrigins = [
+      'https://hyl1a-hub.vercel.app',
+      'http://127.0.0.1:5500',
+      'http://localhost:5500'
+    ];
+    let allowOrigin = allowedOrigins.includes(origin) ? origin : '';
+    // If not in list but looks like a local dev origin, allow it
+    if (!allowOrigin && (origin.startsWith('http://127.0.0.1:') || origin.startsWith('http://localhost:'))) {
+      allowOrigin = origin;
+    }
+    // Fallback to Vercel origin if nothing matched (should not happen in practice)
+    if (!allowOrigin) {
+      allowOrigin = 'https://hyl1a-hub.vercel.app';
+    }
     const corsHeaders = {
-      "Access-Control-Allow-Origin": "https://hyl1a-hub.vercel.app",
+      "Access-Control-Allow-Origin": allowOrigin,
       "Access-Control-Allow-Methods": "GET, PUT, OPTIONS",
       "Access-Control-Allow-Headers": "Authorization, Content-Type",
     };
