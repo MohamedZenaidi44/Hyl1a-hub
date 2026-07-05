@@ -439,10 +439,11 @@ body.app-open-active #companion-widget {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 0 4vw 0 5vw;
+  margin-left: 0;
+  padding: 0 3vw 0 5vw;
   pointer-events: none;
   min-width: 320px;
-  max-width: 520px;
+  max-width: 620px;
   opacity: 0;
   transform: translateX(20px);
   transition: opacity 0.3s ease, transform 0.3s ease;
@@ -456,7 +457,7 @@ body.app-open-active #companion-widget {
 /* Grande image de preview */
 #preview-image-wrap {
   width: 100%;
-  max-width: 460px;
+  max-width: 560px;
   aspect-ratio: 16/9;
   border-radius: 18px;
   overflow: hidden;
@@ -496,7 +497,7 @@ body.app-open-active #companion-widget {
 
 /* Nom de l'app */
 #preview-app-name {
-  font-size: 30px;
+  font-size: 34px;
   font-weight: 900;
   color: white;
   text-shadow: 0 2px 14px rgba(0,0,0,0.55);
@@ -504,18 +505,18 @@ body.app-open-active #companion-widget {
   margin-bottom: 12px;
   letter-spacing: -0.5px;
   width: 100%;
-  max-width: 460px;
+  max-width: 560px;
 }
 
 /* Description */
 #preview-app-desc {
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 600;
   color: rgba(255,255,255,0.70);
   text-align: center;
   line-height: 1.65;
   width: 100%;
-  max-width: 420px;
+  max-width: 500px;
   text-shadow: 0 1px 4px rgba(0,0,0,0.4);
 }
 
@@ -580,18 +581,18 @@ body.app-open-active #companion-widget {
   align-content: center;
   pointer-events: none;
   padding: 18px 20px;
-  /* Fond style 3DS : gris-bleu semi-transparent avec texture */
+  /* Panneau translucide façon menu console */
   background: linear-gradient(160deg,
-    rgba(58, 72, 100, 0.88) 0%,
-    rgba(40, 54, 82, 0.92) 100%);
-  backdrop-filter: blur(20px) saturate(1.4);
-  -webkit-backdrop-filter: blur(20px) saturate(1.4);
+    rgba(255, 255, 255, 0.68) 0%,
+    rgba(232, 240, 248, 0.50) 100%);
+  backdrop-filter: blur(18px) saturate(1.2);
+  -webkit-backdrop-filter: blur(18px) saturate(1.2);
   border-radius: 18px;
-  border: 2px solid rgba(255, 255, 255, 0.12);
+  border: 2px solid rgba(255, 255, 255, 0.45);
   box-shadow:
-    0 30px 80px rgba(0, 0, 0, 0.55),
-    inset 0 1px 0 rgba(255, 255, 255, 0.10),
-    inset 0 -1px 0 rgba(0, 0, 0, 0.3);
+    0 26px 70px rgba(0, 0, 0, 0.18),
+    inset 0 1px 0 rgba(255, 255, 255, 0.75),
+    inset 0 -1px 0 rgba(90, 120, 150, 0.08);
   width: auto;
 }
 
@@ -667,23 +668,17 @@ body.app-open-active #companion-widget {
   position: relative;
   width: 140px;
   height: 130px;
-  border-radius: 12px;
-  overflow: hidden;
+  border-radius: 0;
+  overflow: visible;
   cursor: pointer;
   pointer-events: auto;
   outline: none;
-  /* Fond tile : blanc grisé style cartouche 3DS */
-  background: linear-gradient(160deg, #dce6f0 0%, #c8d8e8 100%);
-  /* Bordure épaisse style 3DS — gris moyen */
-  border: 3px solid rgba(180, 195, 215, 0.9);
-  box-shadow:
-    0 4px 10px rgba(0, 0, 0, 0.35),
-    inset 0 1px 0 rgba(255, 255, 255, 0.6),
-    inset 0 -2px 4px rgba(0, 0, 0, 0.12);
+  background: transparent;
+  border: none;
+  box-shadow: none;
   transition:
     transform 180ms cubic-bezier(0.25, 1, 0.5, 1),
-    box-shadow 180ms ease,
-    border-color 180ms ease;
+    opacity 180ms ease;
   animation: tile-enter 0.28s ease-out both;
   display: flex;
   flex-direction: column;
@@ -719,9 +714,13 @@ body.app-open-active #companion-widget {
   inset: 0;
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  object-fit: contain;
   z-index: 0;
-  border-radius: 9px;
+  border-radius: 0;
+  background: transparent;
+  padding: 0;
+  box-sizing: border-box;
+  filter: drop-shadow(0 1px 4px rgba(0, 0, 0, 0.18));
 }
 .tile-bg-img[src=""],
 .tile-bg-img:not([src]) { display: none; }
@@ -729,7 +728,7 @@ body.app-open-active #companion-widget {
 /* Placeholder — fond blanc/gris avec texte centré, style cartouche vide */
 .tile-placeholder {
   position: absolute;
-  inset: 3px;
+  inset: 0;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -740,9 +739,9 @@ body.app-open-active #companion-widget {
   text-transform: uppercase;
   font-family: var(--font-main, 'Nunito', sans-serif);
   z-index: 1;
-  background: linear-gradient(160deg, #edf3fa 0%, #dce6f2 100%);
-  border-radius: 9px;
-  border: 1px dashed rgba(160, 180, 210, 0.4);
+  background: transparent;
+  border-radius: 0;
+  border: none;
 }
 .grid-tile:has(.tile-bg-img[src]:not([src=""])) .tile-placeholder { display: none; }
 
@@ -751,12 +750,10 @@ body.app-open-active #companion-widget {
   content: '';
   position: absolute;
   top: 0; left: 0; right: 0;
-  height: 42%;
-  background: linear-gradient(to bottom,
-    rgba(255,255,255,0.38) 0%,
-    rgba(255,255,255,0.05) 100%);
-  border-radius: 9px 9px 0 0;
-  z-index: 4;
+  height: 0;
+  background: transparent;
+  border-radius: 0;
+  z-index: 0;
   pointer-events: none;
 }
 
@@ -789,22 +786,15 @@ body.app-open-active #companion-widget {
 /* HOVER — légère élévation */
 .grid-tile:hover {
   transform: scale(1.06) translateY(-2px);
-  box-shadow:
-    0 8px 20px rgba(0, 0, 0, 0.45),
-    inset 0 1px 0 rgba(255, 255, 255, 0.7);
-  border-color: rgba(200, 220, 240, 1);
+  box-shadow: none;
+  border-color: transparent;
   z-index: 10;
 }
 
 /* ACTIVE — contour cyan lumineux style 3DS */
 .grid-tile.active-carousel-tile {
-  border-color: rgba(0, 220, 255, 0.95);
-  box-shadow:
-    0 0 0 2px rgba(0, 220, 255, 0.6),
-    0 0 18px rgba(0, 220, 255, 0.55),
-    0 0 40px rgba(0, 200, 255, 0.25),
-    0 6px 16px rgba(0, 0, 0, 0.4),
-    inset 0 1px 0 rgba(255, 255, 255, 0.5);
+  border-color: transparent;
+  box-shadow: none;
   transform: scale(1.07);
   z-index: 100;
 }

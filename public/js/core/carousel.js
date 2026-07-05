@@ -8,13 +8,35 @@ const CarouselManager = {
   currentPage: 0,
   tilesPerPage: 10,
   totalPages: 2,
+  _navPositionRaf: null,
 
   init: function () {
     this.allTiles = Array.from(document.querySelectorAll('.grid-tile:not(.webm-tile)'));
     if (this.allTiles.length === 0) return;
     this.totalPages = Math.ceil(this.allTiles.length / this.tilesPerPage);
     this.setupInputs();
+    this.updateNavPositions();
+    window.addEventListener('resize', () => this.updateNavPositions());
     this.showPage(0, true);
+  },
+
+  updateNavPositions: function () {
+    const grid = document.getElementById('app-grid');
+    const btnPrev = document.getElementById('carousel-nav-prev');
+    const btnNext = document.getElementById('carousel-nav-next');
+    if (!grid || !btnPrev || !btnNext) return;
+
+    const gridRect = grid.getBoundingClientRect();
+    const prevWidth = btnPrev.offsetWidth || 28;
+    const nextWidth = btnNext.offsetWidth || 28;
+    const verticalCenter = gridRect.top + (gridRect.height / 2);
+    const offset = 12;
+
+    btnPrev.style.top = `${verticalCenter}px`;
+    btnPrev.style.left = `${Math.max(8, gridRect.left - prevWidth - offset)}px`;
+
+    btnNext.style.top = `${verticalCenter}px`;
+    btnNext.style.left = `${gridRect.right + offset}px`;
   },
 
   setupInputs: function () {
@@ -108,6 +130,7 @@ const CarouselManager = {
   updateDescriptionBox: function (tile) {
     const title = tile.getAttribute('data-title');
     const description = tile.getAttribute('data-description');
+    const appId = tile.getAttribute('data-app');
     const panel = document.getElementById('app-preview-panel');
     const nameEl = document.getElementById('preview-app-name');
     const descEl = document.getElementById('preview-app-desc');
@@ -118,12 +141,26 @@ const CarouselManager = {
 
     panel.classList.remove('visible');
     setTimeout(() => {
-      if (nameEl) nameEl.textContent = title || '';
-      if (descEl) descEl.textContent = description || '';
-      const previewSrc = tile.getAttribute('data-preview') || tile.querySelector('.tile-bg-img')?.getAttribute('src') || '';
-      if (imgEl) { imgEl.src = previewSrc; imgEl.style.display = previewSrc ? 'block' : 'none'; }
-      if (placeholderEl) placeholderEl.style.display = previewSrc ? 'none' : 'flex';
-      if (openBtn) openBtn.onclick = () => { if (window.handleAppLaunch) window.handleAppLaunch(tile); };
+      if (appId === 'bio') {
+        if (nameEl) nameEl.textContent = 'Hyl1a';
+        if (descEl) {
+          descEl.innerHTML = `J'ai voulu créer un projet similaire à <strong>IISU</strong> mais sur navigateur pour pouvoir jouer directement sur le web avec une gestion fluide de sauvegarde et de compte.`;
+        }
+        const previewSrc = 'public/assets/icons/bobaboy.webp';
+        if (imgEl) { imgEl.src = previewSrc; imgEl.style.display = 'block'; }
+        if (placeholderEl) placeholderEl.style.display = 'none';
+        if (openBtn) openBtn.style.display = 'none';
+      } else {
+        if (nameEl) nameEl.textContent = title || '';
+        if (descEl) descEl.textContent = description || '';
+        const previewSrc = tile.getAttribute('data-preview') || tile.querySelector('.tile-bg-img')?.getAttribute('src') || '';
+        if (imgEl) { imgEl.src = previewSrc; imgEl.style.display = previewSrc ? 'block' : 'none'; }
+        if (placeholderEl) placeholderEl.style.display = previewSrc ? 'none' : 'flex';
+        if (openBtn) {
+          openBtn.style.display = '';
+          openBtn.onclick = () => { if (window.handleAppLaunch) window.handleAppLaunch(tile); };
+        }
+      }
       if (title) panel.classList.add('visible');
     }, 140);
 
@@ -168,6 +205,8 @@ const CarouselManager = {
     } catch {}
   }
 };
+
+window.CarouselManager = CarouselManager;
 
 
 /* ============================================================

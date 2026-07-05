@@ -11,6 +11,7 @@ const ThemeManager = {
       emoji: '🏠',
       bgGradient: 'linear-gradient(135deg, #f0f0f0 0%, #e0e4e8 50%, #d5dce3 100%)',
       videoSrc: 'public/assets/icons/video/menuBC.mp4',
+      previewVideo: 'public/assets/icons/video/ps3-xmb-hd-ytmp4.savetube.vip.mp4',
       accentColor: '#00d2ff',
       textColor: '#555',
       pillBg: 'linear-gradient(to bottom, rgba(255,255,255,0.95), rgba(240,240,240,0.9))'
@@ -20,6 +21,7 @@ const ThemeManager = {
       emoji: '🔮',
       bgGradient: 'linear-gradient(135deg, #4a1c6f 0%, #2d0a4f 40%, #1a0533 70%, #6f1cba 100%)',
       videoSrc: 'public/assets/icons/video/purpleBC.mp4',
+      previewVideo: 'public/assets/icons/video/xmb-ps3-back-waves-ytmp4.savetube.vip.mp4',
       accentColor: '#b700ffff',
       textColor: '#4a1c6f',
       pillBg: 'linear-gradient(to bottom, rgba(230,200,255,0.95), rgba(200, 150, 255, 0.9))'
@@ -142,7 +144,9 @@ const ThemeManager = {
           ${Object.entries(this.themes).map(([id, t]) => `
             <div class="theme-option ${this.currentTheme === id ? 'active' : ''}" data-theme="${id}">
               <div class="theme-preview" style="background: ${t.bgGradient};">
-                <span class="theme-emoji">${t.emoji}</span>
+                ${t.previewVideo ? `
+                  <video class="theme-preview-video" src="${t.previewVideo}" muted loop autoplay playsinline preload="metadata"></video>
+                ` : `<span class="theme-emoji">${t.emoji}</span>`}
               </div>
               <div class="theme-name">${t.name}</div>
             </div>

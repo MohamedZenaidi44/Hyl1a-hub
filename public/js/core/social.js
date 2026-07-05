@@ -12,6 +12,7 @@ window.SocialSystem = {
   unsubFriends: null,
   unsubRequests: null,
   unsubGlobal: null,
+  unsubPrivateThreads: null,
   unsubPrivate: null,
   focusTimeout: null,
 
@@ -29,6 +30,7 @@ window.SocialSystem = {
   openOverlay(tab) {
     if(!this.overlay) this.init();
     this.overlay.classList.remove('hidden');
+    this.resetViewLayout();
     
     // Stop home scroll check
     document.body.classList.add('social-active');
@@ -47,6 +49,7 @@ window.SocialSystem = {
     
     if (this.unsubGlobal) { this.unsubGlobal(); this.unsubGlobal = null; }
     if (this.unsubPrivate) { this.unsubPrivate(); this.unsubPrivate = null; }
+    if (this.unsubPrivateThreads) { this.unsubPrivateThreads(); this.unsubPrivateThreads = null; }
 
     this.switchTab(tab);
   },
@@ -112,15 +115,24 @@ window.SocialSystem = {
       header.textContent = "Liste d'Amis";
       leftCol.style.opacity = '1';
       this.resetRightCol();
-      this.renderAddFriendUI();
+      this.renderFriendsHubUI();
       this.fetchRealFriends();
+      this.fetchPotentialFriends();
 
     } else if (tab === 'global') {
       document.getElementById('btn-global').classList.add('active');
-      header.textContent = "Plaza Globale";
+      header.textContent = "Chat Général";
       leftCol.style.opacity = '1';
-      this.fetchGlobalUsers(); // Restore user list on the left
-      this.renderGlobalChat(document.getElementById('social-right-col')); // Chat on the right
+      listInner.classList.remove('social-list-scroll');
+      listInner.style.padding = '0';
+      listInner.style.overflow = 'hidden';
+      listInner.style.display = 'block';
+      listInner.style.flex = '1';
+      listInner.style.minHeight = '0';
+      this.renderGlobalChat(listInner);
+      if (document.getElementById('social-right-col')) {
+        document.getElementById('social-right-col').innerHTML = '';
+      }
 
     } else if (tab === 'messages') {
       document.getElementById('btn-messages').classList.add('active');
@@ -192,11 +204,13 @@ window.SocialSystem = {
     if(this.overlay) this.overlay.classList.add('hidden');
     document.body.classList.remove('social-active');
     document.querySelectorAll('.sidebar-btn').forEach(btn => btn.classList.remove('active'));
+    this.resetViewLayout();
     
     if(this.unsubFriends) this.unsubFriends();
     if(this.unsubRequests) this.unsubRequests();
     if(this.unsubGlobal) this.unsubGlobal();
     if(this.unsubPrivate) this.unsubPrivate();
+    if(this.unsubPrivateThreads) this.unsubPrivateThreads();
     
     if (window.AudioManager && AudioManager.playBack) {
       AudioManager.playBack();
@@ -230,16 +244,19 @@ window.SocialSystem = {
     }
   },
 
-  renderAddFriendUI() {
+  renderFriendsHubUI() {
     const list = document.getElementById('social-list');
     list.innerHTML = `
-      <div style="padding: 15px; margin-bottom: 20px; background: rgba(0,0,0,0.05); border-radius: 20px;">
+      <div style="padding: 15px; margin-bottom: 16px; background: rgba(0,0,0,0.05); border-radius: 20px;">
+        <div style="font-weight: 800; margin-bottom: 10px; opacity: 0.75;">Ajouter un ami</div>
         <input type="text" id="friend-search-input" placeholder="Pseudo#1234..." style="width: 100%; padding: 10px; border: none; border-radius: 10px; font-family: inherit;">
         <button onclick="SocialSystem.addFriendRequest()" style="width:100%; margin-top: 10px; padding: 10px; background: #6adae4; color:white; border:none; border-radius: 10px; font-weight: 700; cursor: pointer;">Ajouter</button>
       </div>
-      <div id="requests-list-inner" style="margin-bottom: 20px;"></div>
-      <div id="friends-list-header" style="font-size: 14px; font-weight: 800; color: #5f6f82; margin-bottom: 10px; padding-left: 10px;">MES AMIS</div>
-      <div id="friends-list-inner">Chargement...</div>
+      <div id="requests-list-inner" style="margin-bottom: 16px;"></div>
+      <div style="font-size: 14px; font-weight: 800; color: #5f6f82; margin-bottom: 10px; padding-left: 10px;">MES AMIS</div>
+      <div id="friends-list-inner" style="margin-bottom: 18px;">Chargement...</div>
+      <div style="font-size: 14px; font-weight: 800; color: #5f6f82; margin-bottom: 10px; padding-left: 10px;">AUTRES UTILISATEURS</div>
+      <div id="other-users-list">Chargement...</div>
     `;
   },
 
@@ -285,6 +302,9 @@ window.SocialSystem = {
         }
         this.friends = friendsList;
         this.renderListItems(this.friends, listInner, "Tu n'as pas encore d'amis.");
+        if (document.getElementById('other-users-list')) {
+          this.fetchPotentialFriends();
+        }
       });
 
     } catch (e) { console.error("SocialSystem: Listeners error:", e); }
@@ -359,6 +379,66 @@ window.SocialSystem = {
           <div style="font-size: 11px; opacity: 0.7; margin-top: 10px;">La liste globale nécessite des permissions administratives.</div>
         </div>
       `;
+    }
+  },
+
+  async fetchPotentialFriends() {
+    const list = document.getElementById('other-users-list');
+    if (!list) return;
+
+    const fbUser = window.Auth ? window.Auth.currentUser : null;
+    if (!fbUser) return;
+
+    list.innerHTML = '<div style="text-align:center; padding: 20px; opacity:0.6;">Chargement...</div>';
+
+    try {
+      const usersRef = window.Firestore.collection(window.FirebaseDB, "users");
+      const qSnap = await window.Firestore.getDocs(usersRef);
+
+      const avatarsRef = window.Firestore.collection(window.FirebaseDB, "avatars");
+      const avSnap = await window.Firestore.getDocs(avatarsRef);
+      const avatarsMap = {};
+      avSnap.forEach(doc => {
+        avatarsMap[doc.id] = doc.data();
+      });
+
+      const currentUsername = window.Auth ? window.Auth.currentUsername : "";
+      const currentTag = window.Auth?.currentUserTag || "0000";
+      const existingFriendIds = new Set(this.friends.map(friend => friend.uid));
+
+      const potentialFriends = [];
+      qSnap.forEach(doc => {
+        if (doc.id === fbUser.uid || existingFriendIds.has(doc.id)) return;
+
+        const u = doc.data();
+        const av = avatarsMap[doc.id];
+        if (!av || u.username === currentUsername) return;
+
+        potentialFriends.push({
+          username: u.username,
+          tag: u.tag || av.tag || "0000",
+          first_name: av.first_name || u.username,
+          b64: av.visual_base64 || "",
+          bio: u.bio || av.status || "Explorateur Hylia Plaza",
+          gender: av.gender || u.gender || "Joueur",
+          mii: 'public/assets/icons/logov2.webp',
+          playtime: u.playtime || "??",
+          creation: u.createdAt ? new Date(u.createdAt).getFullYear().toString() : "2024",
+          favapp: u.favoriteApp || "Pokémon Émeraude",
+          uid: doc.id
+        });
+      });
+
+      if (potentialFriends.length === 0) {
+        list.innerHTML = '<div style="text-align:center; padding: 18px; opacity:0.55;">Aucun autre utilisateur trouvé.</div>';
+        return;
+      }
+
+      list.innerHTML = '';
+      this.renderListItems(potentialFriends, list, "Aucun autre utilisateur trouvé.", true);
+    } catch (e) {
+      console.error("SocialSystem: Potential friends error:", e);
+      list.innerHTML = '<div style="text-align:center; padding: 18px; opacity:0.55;">Impossible de charger les autres utilisateurs.</div>';
     }
   },
 
@@ -725,34 +805,122 @@ window.SocialSystem = {
   },
 
   renderPrivateMessagesList(container) {
+    const fbUser = window.Auth?.currentUser;
+    if (!container || !fbUser) return;
+
+    if (this.unsubPrivateThreads) {
+      this.unsubPrivateThreads();
+      this.unsubPrivateThreads = null;
+    }
+    if (this.unsubPrivate) {
+      this.unsubPrivate();
+      this.unsubPrivate = null;
+    }
+
     container.innerHTML = `
-      <div style="padding: 20px;">
-        <div style="font-weight: bold; margin-bottom: 15px; opacity: 0.7;">Tes Amis</div>
-        <div id="chat-friends-list"></div>
+      <div style="padding: 20px; height: 100%; display: flex; flex-direction: column; gap: 14px; box-sizing: border-box;">
+        <div style="font-weight: 800; margin-bottom: 2px; opacity: 0.7;">Conversations privées</div>
+        <div id="private-threads-list" style="display:flex; flex-direction:column; gap:10px; flex:1; min-height:0;"></div>
       </div>
     `;
 
-    const friendsList = document.getElementById('chat-friends-list');
-    if (this.friends.length === 0) {
-      friendsList.innerHTML = '<div style="opacity:0.5;">Ajoute des amis pour discuter en privé.</div>';
-    } else {
-      this.friends.forEach(f => {
+    const threadsList = document.getElementById('private-threads-list');
+    if (!threadsList) return;
+
+    const chatsRef = window.Firestore.collection(window.FirebaseDB, "private_chats");
+    const chatsQuery = window.Firestore.query(
+      chatsRef,
+      window.Firestore.where("participants", "array-contains", fbUser.uid)
+    );
+
+    const formatTime = (value) => {
+      if (!value) return '';
+      const raw = value.seconds ? value.seconds * 1000 : new Date(value).getTime();
+      if (!Number.isFinite(raw)) return '';
+      return new Date(raw).toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+    };
+
+    this.unsubPrivateThreads = window.Firestore.onSnapshot(chatsQuery, async (snapshot) => {
+      const chats = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+      chats.sort((a, b) => {
+        const at = a.lastTimestamp?.seconds ? a.lastTimestamp.seconds * 1000 : 0;
+        const bt = b.lastTimestamp?.seconds ? b.lastTimestamp.seconds * 1000 : 0;
+        return bt - at;
+      });
+
+      if (chats.length === 0) {
+        threadsList.innerHTML = `
+          <div style="opacity:0.55; padding: 18px 10px; text-align:center;">
+            Aucune conversation pour le moment.
+            <div style="margin-top:8px; font-size:12px;">Envoie un premier message à un ami pour créer un fil privé.</div>
+          </div>
+        `;
+        return;
+      }
+
+      const threadData = await Promise.all(chats.map(async (chat) => {
+        const participants = Array.isArray(chat.participants) ? chat.participants : [];
+        const otherUid = participants.find((id) => id !== fbUser.uid) || participants[0] || null;
+        let displayName = 'Conversation privée';
+        let tag = '';
+
+        if (otherUid) {
+          try {
+            const userSnap = await window.Firestore.getDoc(window.Firestore.doc(window.FirebaseDB, "users", otherUid));
+            if (userSnap.exists()) {
+              const userData = userSnap.data();
+              displayName = userData.first_name || userData.username || displayName;
+              tag = userData.tag || '';
+            }
+          } catch (e) {
+            console.error('SocialSystem: private thread user fetch error', e);
+          }
+        }
+
+        return {
+          chatId: chat.id,
+          otherUid,
+          displayName,
+          tag,
+          lastMessage: chat.lastMessage || 'Message privé',
+          lastSeen: formatTime(chat.lastTimestamp),
+        };
+      }));
+
+      threadsList.innerHTML = '';
+      threadData.forEach((thread, index) => {
         const item = document.createElement('div');
         item.className = 'friend-card';
-        item.style.marginBottom = '10px';
+        if (index === 0) item.classList.add('active');
+        item.style.margin = '0';
+        item.style.cursor = 'pointer';
         item.innerHTML = `
-          <div class="friend-name">${f.first_name || f.username}</div>
-          <div style="font-size: 12px; opacity: 0.6;">Démarrer une discussion</div>
+          <div class="friend-name">${this.escapeHtml(thread.displayName)}${thread.tag ? `<span class="friend-tag">#${this.escapeHtml(thread.tag)}</span>` : ''}</div>
+          <div style="font-size: 12px; opacity: 0.72; margin-top: 4px;">${this.escapeHtml(thread.lastMessage)}</div>
+          <div style="font-size: 10px; opacity: 0.45; margin-top: 6px;">${this.escapeHtml(thread.lastSeen)}</div>
         `;
-        item.onclick = () => this.openPrivateChat(f.uid, f.first_name || f.username);
-        friendsList.appendChild(item);
+        item.onclick = () => {
+          if (!thread.otherUid) return;
+          this.openPrivateChat(thread.otherUid, thread.displayName);
+        };
+        threadsList.appendChild(item);
       });
-    }
+    });
   },
 
   async openPrivateChat(friendUid, friendName) {
     const user = window.Auth?.currentUser;
     if (!user) return;
+
+    if (this.unsubPrivateThreads) {
+      this.unsubPrivateThreads();
+      this.unsubPrivateThreads = null;
+    }
+
+    if (this.unsubPrivate) {
+      this.unsubPrivate();
+      this.unsubPrivate = null;
+    }
 
     const header = document.getElementById('social-header');
     const container = document.getElementById('social-list');
@@ -833,56 +1001,70 @@ window.SocialSystem = {
   // Direct view methods (show only the specific service)
   openFriendsView() {
     this.openOverlay('friends');
-    // Hide sidebar and right column to show only friends list
-    const sidebar = document.getElementById('main-sidebar');
-    const rightCol = document.getElementById('social-right-col');
-    if (sidebar) { sidebar.style.display = 'none'; }
-    if (rightCol) { rightCol.style.display = 'none'; }
-    // Adjust left column to take full width
-    const leftCol = document.getElementById('social-left-col');
-    if (leftCol) {
-      leftCol.style.width = '100%';
-      leftCol.style.padding = '0 20px';
-    }
-    // Adjust header
-    const header = document.getElementById('social-header');
-    if (header) { header.style.textAlign = 'center'; }
+    this.expandLeftPane();
   },
 
   openMessagesView() {
     this.openOverlay('messages');
-    // Hide sidebar and right column to show only messages list
-    const sidebar = document.getElementById('main-sidebar');
-    const rightCol = document.getElementById('social-right-col');
-    if (sidebar) { sidebar.style.display = 'none'; }
-    if (rightCol) { rightCol.style.display = 'none'; }
-    // Adjust left column to take full width
-    const leftCol = document.getElementById('social-left-col');
-    if (leftCol) {
-      leftCol.style.width = '100%';
-      leftCol.style.padding = '0 20px';
-    }
-    // Adjust header
-    const header = document.getElementById('social-header');
-    if (header) { header.style.textAlign = 'center'; }
+    this.expandLeftPane();
   },
 
   openGlobalView() {
     this.openOverlay('global');
-    // Hide sidebar and right column to show only global chat
+    this.expandLeftPane();
+  },
+
+  expandLeftPane() {
     const sidebar = document.getElementById('main-sidebar');
     const rightCol = document.getElementById('social-right-col');
+    const leftCol = document.getElementById('social-left-col');
+    const content = document.querySelector('.social-content');
+    const header = document.getElementById('social-header');
+
     if (sidebar) { sidebar.style.display = 'none'; }
     if (rightCol) { rightCol.style.display = 'none'; }
-    // Adjust left column to take full width
-    const leftCol = document.getElementById('social-left-col');
-    if (leftCol) {
-      leftCol.style.width = '100%';
-      leftCol.style.padding = '0 20px';
+    if (content) {
+      content.style.gap = '0';
     }
-    // Adjust header
-    const header = document.getElementById('social-header');
+    if (leftCol) {
+      leftCol.style.display = 'flex';
+      leftCol.style.flex = '1 1 auto';
+      leftCol.style.width = '100%';
+      leftCol.style.minWidth = '0';
+      leftCol.style.padding = '20px';
+      leftCol.style.boxSizing = 'border-box';
+    }
     if (header) { header.style.textAlign = 'center'; }
+  },
+
+  resetViewLayout() {
+    const sidebar = document.getElementById('main-sidebar');
+    const rightCol = document.getElementById('social-right-col');
+    const leftCol = document.getElementById('social-left-col');
+    const content = document.querySelector('.social-content');
+    const listInner = document.getElementById('social-list');
+
+    if (sidebar) { sidebar.style.display = ''; }
+    if (rightCol) { rightCol.style.display = ''; }
+    if (content) {
+      content.style.gap = '';
+    }
+    if (leftCol) {
+      leftCol.style.display = '';
+      leftCol.style.flex = '';
+      leftCol.style.width = '';
+      leftCol.style.minWidth = '';
+      leftCol.style.padding = '';
+      leftCol.style.boxSizing = '';
+    }
+    if (listInner) {
+      listInner.classList.add('social-list-scroll');
+      listInner.style.padding = '';
+      listInner.style.overflow = '';
+      listInner.style.display = '';
+      listInner.style.flex = '';
+      listInner.style.minHeight = '';
+    }
   },
 
   openNotificationsView() {

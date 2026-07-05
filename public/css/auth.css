@@ -9,7 +9,9 @@
   top: -30px;
   left: 50%;
   transform: translateX(-50%);
-  background: white;
+  background: rgba(255,255,255,0.72);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
   color: black;
   padding: 5px 10px;
   border-radius: 12px;
@@ -29,7 +31,7 @@
   transform: translateX(-50%);
   border-width: 5px 5px 0;
   border-style: solid;
-  border-color: white transparent transparent transparent;
+  border-color: rgba(255,255,255,0.72) transparent transparent transparent;
 }
 
 @keyframes floatMii {

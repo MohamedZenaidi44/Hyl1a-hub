@@ -42,7 +42,7 @@
 
 /* Active window style */
 .window-body.active {
-  box-shadow: 0 15px 40px rgba(0, 100, 200, 0.3), var(--shadow-inner-glow);
+  box-shadow: 0 15px 40px rgba(0, 100, 200, 0.22), var(--shadow-inner-glow);
 }
 
 .window-header {
@@ -114,7 +114,9 @@
 /* Window Content Area */
 .window-content {
   flex: 1;
-  background: rgba(255, 255, 255, 0.6);
+  background: rgba(255, 255, 255, 0.48);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
   border-bottom-left-radius: calc(var(--radius-window) - 1px);
   border-bottom-right-radius: calc(var(--radius-window) - 1px);
   padding: 20px;

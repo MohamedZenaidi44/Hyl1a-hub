@@ -8,14 +8,17 @@
   bottom: 0;
   z-index: 5000;
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: center;
-  transition: opacity 0.3s ease;
+  padding: 8px 12px 12px;
+  box-sizing: border-box;
+  transition: opacity 0.3s ease, visibility 0.3s ease;
 }
 
 #social-overlay.hidden {
   opacity: 0;
   pointer-events: none;
+  visibility: hidden;
 }
 
 .social-backdrop {
@@ -30,20 +33,20 @@
 
 .social-window {
   position: relative;
-  width: 85vw;
+  width: min(1400px, calc(100vw - 24px));
   max-width: 1400px;
-  height: 85vh;
-  max-height: 900px;
+  height: calc(100vh - 24px);
+  max-height: none;
   border-radius: 40px;
   display: flex;
   flex-direction: column;
   padding: 30px;
   animation: popIn 0.4s cubic-bezier(0.19, 1, 0.22, 1);
-  background: rgba(255, 255, 255, 0.45);
-  backdrop-filter: blur(30px) saturate(1.8);
-  -webkit-backdrop-filter: blur(30px) saturate(1.8);
-  border: 1px solid rgba(255, 255, 255, 0.6);
-  box-shadow: 0 15px 50px rgba(0, 0, 0, 0.15), inset 0 2px 4px rgba(255, 255, 255, 0.8);
+  background: rgba(255, 255, 255, 0.28);
+  backdrop-filter: blur(30px) saturate(1.5);
+  -webkit-backdrop-filter: blur(30px) saturate(1.5);
+  border: 1px solid rgba(255, 255, 255, 0.42);
+  box-shadow: 0 15px 50px rgba(0, 0, 0, 0.12), inset 0 2px 4px rgba(255, 255, 255, 0.52);
 }
 
 .social-window::before {
@@ -91,6 +94,7 @@
   height: 100%;
   position: relative;
   z-index: 5;
+  min-height: 0;
 }
 
 .social-col {
@@ -102,11 +106,14 @@
 
 #social-left-col {
   flex: 0 0 35%;
-  background: rgba(255, 255, 255, 0.4);
+  min-width: 0;
+  background: rgba(255, 255, 255, 0.22);
   border-radius: 30px;
   padding: 20px;
   box-shadow: inset 0 2px 10px rgba(0, 0, 0, 0.05);
   overflow: visible;
+  align-items: stretch;
+  justify-content: flex-start;
 }
 
 .sidebar-icon img {
@@ -119,12 +126,13 @@
 
 #social-right-col {
   flex: 1;
+  min-width: 0;
   position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
-  background: radial-gradient(circle at center, rgba(255, 255, 255, 0.3) 0%, transparent 70%);
+  justify-content: flex-start;
+  background: radial-gradient(circle at center, rgba(255, 255, 255, 0.18) 0%, transparent 70%);
   border-radius: 30px;
   overflow: visible;
 }
@@ -147,6 +155,7 @@
   padding-left: 8px;
   /* Room for active card scale */
   padding-bottom: 15px;
+  margin-top: 0;
   transform: translateZ(0); /* Force GPU scrolling to avoid parent blur recalculation lag */
   -webkit-overflow-scrolling: touch;
 }
@@ -162,7 +171,7 @@
 }
 
 .friend-card {
-  background: linear-gradient(to bottom, rgba(255, 255, 255, 0.95), rgba(255, 255, 255, 0.6));
+  background: linear-gradient(to bottom, rgba(255, 255, 255, 0.72), rgba(255, 255, 255, 0.46));
   border-radius: 20px;
   padding: 10px 16px;
   margin: 6px;
@@ -182,8 +191,8 @@
 .friend-card:hover,
 .friend-card.active {
   transform: translateY(-2px) scale(1.02);
-  box-shadow: 0 0 0 3px rgba(111, 208, 255, 0.6), 0 8px 15px rgba(0, 0, 0, 0.1);
-  background: linear-gradient(to bottom, rgba(255, 255, 255, 1), rgba(255, 255, 255, 0.8));
+  box-shadow: 0 0 0 3px rgba(111, 208, 255, 0.35), 0 8px 15px rgba(0, 0, 0, 0.08);
+  background: linear-gradient(to bottom, rgba(255, 255, 255, 0.82), rgba(255, 255, 255, 0.58));
 }
 
 .friend-name {
@@ -341,9 +350,9 @@
   /* Adjust based on social window size */
 
   /* --- FOND DU CHAT (AJOUTÉ À TA DEMANDE) --- */
-  background-color: rgba(190, 227, 241, 0.5);
+  background-color: rgba(190, 227, 241, 0.34);
   /* <-- TU PEUX CHANGER LA COULEUR/TRANSPARENCE ICI ! */
-  border: 4px solid rgba(157, 216, 243, 0.342);
+  border: 4px solid rgba(157, 216, 243, 0.22);
   border-radius: 30px;
   box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1);
   overflow: hidden;
@@ -395,7 +404,7 @@
 
 .message-bubble.other {
   align-self: flex-start;
-  background: white;
+  background: rgba(255,255,255,0.68);
   color: #333;
   border-bottom-left-radius: 4px;
 }

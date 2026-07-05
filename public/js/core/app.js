@@ -281,7 +281,7 @@ function initAppTriggers() {
     'nes':        { title: '🎮 Émulateur NES',       render: (c) => _lazy(c, '../../../apps/nes/js/nes.js') },
     'n64':        { title: '🎮 Émulateur N64',       render: (c) => _lazy(c, '../../../apps/n64/js/n64.js') },
     'miiManager': { title: '⚠️ Mii Manager',         render: (c) => _lazy(c, '../apps/miiManager.js') },
-    'themes':     { title: 'Thèmes & Couleurs',      render: (c) => _wip(c) },
+    'themes':     { title: 'Thèmes & Couleurs',      render: () => { if (window.ThemeManager && typeof window.ThemeManager.openSelector === 'function') window.ThemeManager.openSelector(); } },
     'bio': {
       title: '👤 À propos de Hyl1a',
       render: (container) => {
@@ -374,6 +374,24 @@ window.handleAppLaunch = function (trigger) {
   const appId = trigger.getAttribute('data-app');
   const appData = window.AppRegistry[appId];
 
+  if (appId === 'bio') {
+    if (window.CarouselManager && typeof window.CarouselManager.updateDescriptionBox === 'function') {
+      window.CarouselManager.updateDescriptionBox(trigger);
+    }
+    if (typeof AudioManager !== 'undefined') {
+      AudioManager.playClick();
+    }
+    return;
+  }
+
+  if (appId === 'themes') {
+    if (typeof AudioManager !== 'undefined') AudioManager.playPop();
+    if (window.ThemeManager && typeof window.ThemeManager.openSelector === 'function') {
+      window.ThemeManager.openSelector();
+    }
+    return;
+  }
+
 
   if (appData) {
     // AUDIO TRIGGER: Play sound as soon as splash appears
@@ -444,12 +462,6 @@ window.handleAppLaunch = function (trigger) {
             if (companion && !emuStillOpen) companion.play().catch(() => {});
           }, 300);
         };
-      } else if (appId === 'themes') {
-        if (appData.render) appData.render();
-        if (typeof AudioManager !== 'undefined') AudioManager.playPop();
-        // Themes overlay doesn't hide background, so keep video playing
-        const bgVid = document.getElementById('bg-video');
-        if (bgVid) bgVid.play().catch(()=>{});
       } else {
         // Windowed apps: open window and fade hub music back in
         WindowManager.openWindow(appId, appData.title, appData.render || function (container) {
