@@ -1,0 +1,478 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Hylia Plaza</title>
+
+  <!-- CSS -->
+  <link rel="stylesheet" href="public/css/main.css" />
+  <link rel="stylesheet" href="public/css/animations.css" />
+  <link rel="stylesheet" href="public/css/hub.css" />
+  <link rel="stylesheet" href="public/css/sidebar.css" />
+  <link rel="stylesheet" href="public/css/social.css" />
+  <link rel="stylesheet" href="public/css/window.css" />
+  <link rel="stylesheet" href="apps/mii_maker/css/mii.css" />
+  <link rel="stylesheet" href="public/css/visualizer.css" />
+  <link rel="stylesheet" href="public/css/splash.css" />
+  <link rel="stylesheet" href="public/css/nowPlaying.css" />
+  <link rel="stylesheet" href="public/css/auth.css" />
+  <link rel="stylesheet" href="public/css/responsive.css" />
+
+  <link rel="icon" type="image/webp" href="public/assets/icons/logov2.webp" />
+
+  <!-- Three.js and OrbitControls -->
+  <!-- Three.js chargé en lazy load par miiBuilder.js au lancement du Mii Maker -->
+  <style>@keyframes spin { to { transform: rotate(360deg); } }</style>
+</head>
+
+<body>
+  <!-- BACKGROUND VIDEO -->
+  <video autoplay loop muted playsinline id="bg-video">
+    <source src="public/assets/icons/video/menuBC.mp4" type="video/mp4">
+  </video>
+
+  <!-- AUTHENTICATION OVERLAY -->
+  <div id="auth-overlay"
+    style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 15, 15, 0.85); display: flex; align-items: center; justify-content: center; z-index: 10000; flex-direction: column; backdrop-filter: blur(10px); overflow: hidden;">
+    <div id="auth-bg" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: -1;"></div>
+    <img src="public/assets/icons/logov2.webp" alt="Hylia Plaza Logo" class="auth-logo" style="width: 320px; margin-bottom: 20px;">
+    <div style="position: relative; z-index: 10; background: rgba(0, 0, 0, 0.4); border: 1px solid rgba(255,255,255,0.2); border-radius: 24px; padding: 40px; text-align: center; color: white; width: 420px; box-shadow: 0 20px 50px rgba(0,0,0,0.6), inset 0 0 20px rgba(255,255,255,0.05); backdrop-filter: blur(25px); animation: fadeIn 0.8s ease-out; overflow: hidden;">
+      <div id="auth-error" style="color: #ff6b6b; font-size: 13px; margin-bottom: 20px; display: none; background: rgba(255,107,107,0.1); padding: 12px; border-radius: 8px; border: 1px solid rgba(255,107,107,0.3);"></div>
+      <div id="login-panel" style="display: block; transition: all 0.3s;">
+        <h2 style="margin: 0 0 10px 0; font-size: 24px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px;">Connexion</h2>
+        <p style="margin-bottom: 30px; font-size: 14px; color: rgba(255,255,255,0.6);">Entrez vos identifiants pour continuer.</p>
+        <div style="margin-bottom: 20px;"><input type="text" id="auth-login-username" placeholder="Nom d'utilisateur" class="auth-input"></div>
+        <div style="margin-bottom: 30px;"><input type="password" id="auth-login-password" placeholder="Mot de passe" class="auth-input"></div>
+        <button id="btn-login-submit" class="auth-btn highlight">Se Connecter</button>
+        <p style="margin-top: 20px; font-size: 13px; color: rgba(255,255,255,0.5);">Pas encore de compte ? <span id="toggle-to-register" style="color: #7ec4ff; cursor: pointer; font-weight: bold; text-decoration: underline;">S'inscrire</span></p>
+      </div>
+      <div id="register-panel" style="display: none; transition: all 0.3s;">
+        <h2 style="margin: 0 0 10px 0; font-size: 24px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px;">Inscription</h2>
+        <p style="margin-bottom: 30px; font-size: 14px; color: rgba(255,255,255,0.6);">Créez un compte pour sauvegarder vos données.</p>
+        <div style="margin-bottom: 20px;"><input type="text" id="auth-reg-username" placeholder="Choisissez un pseudo" class="auth-input"></div>
+        <div style="margin-bottom: 30px;"><input type="password" id="auth-reg-password" placeholder="Créez un mot de passe" class="auth-input"></div>
+        <button id="btn-register-submit" class="auth-btn highlight">Créer mon compte</button>
+        <p style="margin-top: 20px; font-size: 13px; color: rgba(255,255,255,0.5);">Déjà un compte ? <span id="toggle-to-login" style="color: #7ec4ff; cursor: pointer; font-weight: bold; text-decoration: underline;">Se connecter</span></p>
+      </div>
+    </div>
+    <style>
+  .auth-input { width: 100%; padding: 14px 18px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.15); background: rgba(255,255,255,0.05); color: white; outline: none; box-sizing: border-box; transition: all 0.3s; font-size: 15px; }
+  .auth-input:focus { background: rgba(255,255,255,0.1); border-color: #7ec4ff; box-shadow: 0 0 15px rgba(126,196,255,0.3); }
+  .auth-btn { width: 100%; padding: 14px; border-radius: 12px; border: none; font-weight: bold; font-size: 16px; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s, background 0.2s; }
+  .auth-btn.highlight { background: linear-gradient(135deg, #7ec4ff, #4a9fff); color: white; box-shadow: 0 4px 15px rgba(74, 159, 255, 0.4); }
+  .auth-btn.highlight:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(74, 159, 255, 0.6); }
+  .auth-btn.highlight:active { transform: scale(0.98); }
+  </style>
+  </div>
+
+  <!-- MII PLAZA LAYER -->
+  <div id="mii-plaza-layer"></div>
+
+  <!-- SOCIAL OVERLAY -->
+  <div id="social-overlay" class="hidden">
+    <div class="social-backdrop" onclick="SocialSystem.closeOverlay()"></div>
+    <div class="social-window mii-glass-panel">
+      <div class="social-close" onclick="SocialSystem.closeOverlay()">✕</div>
+      <div class="social-content">
+        <!-- LEFTMOST SIDEBAR -->
+        <div id="main-sidebar">
+
+          <div class="sidebar-nav">
+            <div class="sidebar-btn" id="btn-my-profile" onclick="SocialSystem.openOverlay('profile')">
+              <div class="sidebar-icon"><img src="public/assets/icons/profil.webp" alt="Profile"></div>
+              <div class="sidebar-label">Mon Profil</div>
+            </div>
+            <div class="sidebar-btn" id="btn-friends" onclick="SocialSystem.openOverlay('friends')">
+              <div class="sidebar-icon"><img src="public/assets/icons/ami.webp" alt="Amis"></div>
+              <div class="sidebar-label">Amis</div>
+            </div>
+            <div class="sidebar-btn" id="btn-global" onclick="SocialSystem.openOverlay('global')">
+              <div class="sidebar-icon"><img src="public/assets/icons/miiplaza.webp" alt="Global"></div>
+              <div class="sidebar-label">Global</div>
+            </div
+            <div class="sidebar-btn" id="btn-messages" onclick="SocialSystem.openOverlay('messages')">
+              <div class="sidebar-icon"><img src="public/assets/icons/message.webp" alt="Messages"></div>
+              <div class="sidebar-label">Messages</div>
+            </div>
+          </div>
+        </div>
+        <!-- MIDDLE COLUMN: LIST -->
+        <div id="social-left-col" class="social-col">
+          <div id="social-header" class="social-header">Amis</div>
+          <div id="social-list" class="social-list-scroll"></div>
+        </div>
+        <!-- RIGHT COLUMN: FOCUS ZONE -->
+        <div id="social-right-col" class="social-col">
+          <div id="social-focus-speech" class="speech-bubble mii-glass-panel" style="display: none;">
+            <span id="stat-bio"></span>
+          </div>
+          <div id="social-focus-mii-container">
+            <img id="social-focus-mii" src="public/assets/icons/mii.webp" alt="Mii" style="opacity: 0;">
+          </div>
+          <div id="social-focus-stats" class="stats-panel mii-glass-panel">
+            <div class="stat-wrapper"><div class="stat-label">Tag</div><div class="stat-header" id="stat-display-name"><span style="opacity:0.75;">#0000</span></div></div>
+            <div class="stat-wrapper"><div class="stat-label">Sexe</div><div class="stat-value" id="stat-gender">--</div></div>
+            <div class="stat-wrapper"><div class="stat-label">Début</div><div class="stat-value" id="stat-creation">--</div></div>
+            <div class="stat-wrapper"><div class="stat-label">Jeu préféré</div><div class="stat-value" id="stat-favapp">--</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TOP NAVIGATION & CLOCK -->
+  <!-- ═══════════════════════════════════════════════════════
+       BARRE PROFIL + MINI BOUTONS (haut gauche)
+       Heure supprimée volontairement
+  ═══════════════════════════════════════════════════════ -->
+  <div id="user-panel">
+
+    <!-- Avatar + nom -->
+    <div id="user-avatar-wrap" onclick="if(window.SocialSystem) SocialSystem.openOverlay('profile')" style="cursor:pointer;">
+      <div id="top-avatar-container"></div>
+      <div class="online-dot avatar-dot"></div>
+    </div>
+    <div id="user-info-text" onclick="if(window.SocialSystem) SocialSystem.openOverlay('profile')" style="cursor:pointer;">
+      <div id="top-username" class="top-name">Guest</div>
+      <div class="top-subname">username <div class="online-dot text-dot"></div></div>
+    </div>
+
+    <!-- Séparateur + bouton déco -->
+    <div style="width:1px;height:32px;background:rgba(255,255,255,0.15);margin:0 10px;flex-shrink:0;"></div>
+    <button id="btn-home-logout" onclick="if(window.Auth) Auth.logout()" title="Déconnexion"
+            style="background:rgba(255,107,107,0.15);border:1px solid rgba(255,107,107,0.3);color:#ff8e8e;width:30px;height:30px;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.2s;font-size:14px;flex-shrink:0;">⏻</button>
+
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════
+       BARRE 4 MINI BOUTONS — séparée du profil, juste en dessous
+       Icônes PNG/WEBP avec fond transparent
+       Dossier : public/assets/icons/ui/
+  ═══════════════════════════════════════════════════════ -->
+  <div id="quick-bar">
+
+    <!-- BOUTON 1 : Amis en ligne -->
+<button class="top-mini-btn" onclick="if(window.SocialSystem) SocialSystem.openFriendsView()" title="Amis en ligne">
+  <img src="public/assets/icons/app/friends.webp" alt="Amis"
+       onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"
+       style="width:55px;height:55px;object-fit:contain;filter:drop-shadow(0 1px 3px rgba(0,0,0,0.3));">
+  <span style="display:none;font-size:18px;">👥</span>
+  <span class="mini-btn-badge" id="friends-badge">0</span>
+</button>
+
+<!-- BOUTON 2 : Chat général -->
+<button class="top-mini-btn" onclick="if(window.SocialSystem) SocialSystem.openGlobalView()" title="Chat général">
+  <img src="public/assets/icons/app/internet.webp" alt="Chat"
+       onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"
+       style="width:55px;height:55px;object-fit:contain;filter:drop-shadow(0 1px 3px rgba(0,0,0,0.3));">
+  <span style="display:none;font-size:18px;">💬</span>
+  <span class="mini-btn-badge" id="chat-badge" style="display:none;"></span>
+</button>
+
+<!-- BOUTON 3 : Chat privé -->
+<button class="top-mini-btn" onclick="if(window.SocialSystem) SocialSystem.openMessagesView()" title="Messages privés">
+  <img src="public/assets/icons/app/edit.webp" alt="DM"
+       onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"
+       style="width:55px;height:55px;object-fit:contain;filter:drop-shadow(0 1px 3px rgba(0,0,0,0.3));">
+  <span style="display:none;font-size:18px;">✉️</span>
+  <span class="mini-btn-badge" id="dm-badge" style="display:none;"></span>
+</button>
+
+<!-- BOUTON 4 : Notifications -->
+<button class="top-mini-btn" id="btn-notif" onclick="if(window.NotifSystem) NotifSystem.openPanel()" title="Notifications">
+  <img src="public/assets/icons/app/messages.webp" alt="Notifs"
+       onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"
+       style="width:55px;height:55px;object-fit:contain;filter:drop-shadow(0 1px 3px rgba(0,0,0,0.3));">
+  <span style="display:none;font-size:18px;">🔔</span>
+  <span class="mini-btn-badge" id="notif-badge" style="display:none;"></span>
+</button>
+
+  </div>
+
+  <!-- huge-profile-btn masqué -->
+  <div id="huge-profile-btn" style="display:none!important"></div>
+
+  <!-- Heure supprimée (clock-panel masqué) -->
+  <div id="clock-panel" style="display:none!important">
+    <div id="top-time">12:00 <span class="am-pm">PM</span></div>
+    <div id="top-date">Monday, Jan 01</div>
+  </div>
+
+  <!-- CENTRAL APP GRID -->
+  <div id="main-container">
+    <div id="floating-title-pill" class="hidden"><span id="floating-title-text">App Name</span></div>
+    <div id="focus-glow"></div>
+    <button id="carousel-nav-prev" class="carousel-nav-btn" aria-label="Page précédente">‹</button>
+
+    <div id="hub-layout">
+
+      <!-- ══════════════════════════════════════════
+           COLONNE GAUCHE : GRILLE DES APPS
+      ══════════════════════════════════════════ -->
+      <div id="grid-column">
+        <div id="app-grid">
+
+        <div class="grid-tile tile-wiiu-small app-trigger"
+     data-app="bio"
+     data-title="Hyl1a Bio"
+     data-description="test jecris un truc ?"
+     data-preview="public/assets/icons/app/TLoZ_Series_Link_Render.webp"
+     data-page="0" tabindex="0">
+  <img class="tile-bg-img" src="public/assets/icons/app/warning.webp" alt="">
+  <div class="tile-placeholder">Image 1</div>
+  <div class="tile-wiiu-label">Hyl1a Bio</div>
+</div>
+
+          <div class="grid-tile tile-wiiu-small app-trigger"
+               data-app="gallery"
+               data-title="Memory Gallery"
+               data-description="MET LA DESCRIPTION ICI"
+               data-preview=""
+               data-page="0" tabindex="0">
+            <img class="tile-bg-img" src="public/assets/icons/app/camera.webp" alt="">
+            <div class="tile-placeholder">Image 2</div>
+            <div class="tile-wiiu-label">Memory Gallery</div>
+          </div>
+
+          <div class="grid-tile tile-wiiu-small app-trigger" id="theme-tile"
+               data-app="themes"
+               data-title="Themes"
+               data-description="MET LA DESCRIPTION ICI"
+               data-preview=""
+               data-page="0" tabindex="0">
+            <img class="tile-bg-img" src="public/assets/icons/app/eshop.webp" alt="">
+            <div class="tile-placeholder">Image 3</div>
+            <div class="tile-wiiu-label">Themes</div>
+          </div>
+
+          <div class="grid-tile tile-wiiu-small app-trigger"
+               data-app="miiMaker"
+               data-title="Mii Maker"
+               data-description="MET LA DESCRIPTION ICI"
+               data-preview=""
+               data-page="0" tabindex="0">
+            <img class="tile-bg-img" src="public/assets/icons/app/mii.webp" alt="">
+            <div class="tile-placeholder">Image 4</div>
+            <div class="tile-wiiu-label">Mii Maker</div>
+          </div>
+
+          <div class="grid-tile tile-wiiu-small app-trigger"
+               data-app="miiPlaza"
+               data-title="Mii Plaza"
+               data-description="MET LA DESCRIPTION ICI"
+               data-preview=""
+               data-page="0" tabindex="0">
+            <img class="tile-bg-img" src="public/assets/icons/app/miiplazac.webp" alt="">
+            <div class="tile-placeholder">Image 5</div>
+            <div class="tile-wiiu-label">Mii Plaza</div>
+          </div>
+
+          <div class="grid-tile tile-wiiu-small"
+               onclick="if(window.SocialSystem) SocialSystem.openOverlay('global')"
+               data-title="Global Chat"
+               data-description="MET LA DESCRIPTION ICI"
+               data-preview=""
+               data-page="0" tabindex="0">
+            <img class="tile-bg-img" src="" alt="">
+            <div class="tile-placeholder">Image 6</div>
+            <div class="tile-wiiu-label">Global Chat</div>
+          </div>
+
+          <div class="grid-tile tile-wiiu-small app-trigger"
+               data-app="gba"
+               data-title="GBA Emulator"
+               data-description="MET LA DESCRIPTION ICI"
+               data-preview=""
+               data-page="0" tabindex="0">
+            <img class="tile-bg-img" src="public/assets/icons/app/gba.webp" alt="">
+            <div class="tile-placeholder">Image 7</div>
+            <div class="tile-wiiu-label">GBA Emulator</div>
+          </div>
+
+          <div class="grid-tile tile-wiiu-small app-trigger"
+               data-app="ds"
+               data-title="DS Emulator"
+               data-description="MET LA DESCRIPTION ICI"
+               data-preview=""
+               data-page="0" tabindex="0">
+            <img class="tile-bg-img" src="public/assets/icons/app/nds.webp" alt="">
+            <div class="tile-placeholder">Image 8</div>
+            <div class="tile-wiiu-label">DS Emulator</div>
+          </div>
+
+          <div class="grid-tile tile-wiiu-small app-trigger"
+               data-app="nes"
+               data-title="NES Emulator"
+               data-description="MET LA DESCRIPTION ICI"
+               data-preview=""
+               data-page="0" tabindex="0">
+            <img class="tile-bg-img" src="" alt="">
+            <div class="tile-placeholder">Image 9</div>
+            <div class="tile-wiiu-label">NES Emulator</div>
+          </div>
+
+          <div class="grid-tile tile-wiiu-small app-trigger"
+               data-app="n64"
+               data-title="N64 Emulator"
+               data-description="MET LA DESCRIPTION ICI"
+               data-preview=""
+               data-page="0" tabindex="0">
+            <img class="tile-bg-img" src="public/assets/icons/app/pj64.webp" alt="">
+            <div class="tile-placeholder">Image 10</div>
+            <div class="tile-wiiu-label">N64 Emulator</div>
+          </div>
+
+          <!-- ══ PAGE 1 — 10 tiles ══ -->
+
+          <div class="grid-tile tile-wiiu-small app-trigger"
+               data-app="browser"
+               data-title="Internet Browser"
+               data-description="MET LA DESCRIPTION ICI"
+               data-preview=""
+               data-page="1" tabindex="0">
+            <img class="tile-bg-img" src="" alt="">
+            <div class="tile-placeholder">Image 11</div>
+            <div class="tile-wiiu-label">Internet Browser</div>
+          </div>
+
+          <div class="grid-tile tile-wiiu-small app-trigger"
+               data-app="miiManager"
+               data-title="Mii Manager"
+               data-description="MET LA DESCRIPTION ICI"
+               data-preview=""
+               data-page="1" tabindex="0">
+            <img class="tile-bg-img" src="" alt="">
+            <div class="tile-placeholder">Image 12</div>
+            <div class="tile-wiiu-label">Mii Manager</div>
+          </div>
+
+          <!-- SLOTS VIDES page 1 (tiles 13→20) — à remplir plus tard -->
+          <div class="grid-tile tile-wiiu-small" data-title="Slot libre" data-description="" data-page="1" tabindex="0"><div class="tile-placeholder">Vide</div><div class="tile-wiiu-label"></div></div>
+          <div class="grid-tile tile-wiiu-small" data-title="Slot libre" data-description="" data-page="1" tabindex="0"><div class="tile-placeholder">Vide</div><div class="tile-wiiu-label"></div></div>
+          <div class="grid-tile tile-wiiu-small" data-title="Slot libre" data-description="" data-page="1" tabindex="0"><div class="tile-placeholder">Vide</div><div class="tile-wiiu-label"></div></div>
+          <div class="grid-tile tile-wiiu-small" data-title="Slot libre" data-description="" data-page="1" tabindex="0"><div class="tile-placeholder">Vide</div><div class="tile-wiiu-label"></div></div>
+          <div class="grid-tile tile-wiiu-small" data-title="Slot libre" data-description="" data-page="1" tabindex="0"><div class="tile-placeholder">Vide</div><div class="tile-wiiu-label"></div></div>
+          <div class="grid-tile tile-wiiu-small" data-title="Slot libre" data-description="" data-page="1" tabindex="0"><div class="tile-placeholder">Vide</div><div class="tile-wiiu-label"></div></div>
+          <div class="grid-tile tile-wiiu-small" data-title="Slot libre" data-description="" data-page="1" tabindex="0"><div class="tile-placeholder">Vide</div><div class="tile-wiiu-label"></div></div>
+          <div class="grid-tile tile-wiiu-small" data-title="Slot libre" data-description="" data-page="1" tabindex="0"><div class="tile-placeholder">Vide</div><div class="tile-wiiu-label"></div></div>
+
+        </div>
+
+        <!-- Dots pagination sous la grille -->
+        <div id="grid-pagination">
+          <span class="page-dot active"></span>
+          <span class="page-dot"></span>
+        </div>
+      </div>
+      <!-- /COLONNE GAUCHE -->
+
+      <!-- ══════════════════════════════════════════
+           COLONNE DROITE : PANNEAU PREVIEW
+      ══════════════════════════════════════════ -->
+      <div id="app-preview-panel">
+        <div id="preview-image-wrap">
+          <img id="preview-image" src="" alt="">
+          <div id="preview-image-placeholder">🎮</div>
+        </div>
+        <div id="preview-app-name"></div>
+        <div id="preview-app-desc"></div>
+        <button id="preview-open-btn">▶ Ouvrir</button>
+      </div>
+      <!-- /COLONNE DROITE -->
+
+    </div>
+    <!-- /hub-layout -->
+
+    <div id="app-description-box" class="hidden">
+      <p id="app-description-text"></p>
+    </div>
+
+    <button id="carousel-nav-next" class="carousel-nav-btn" aria-label="Page suivante">›</button>
+  </div>
+  <!-- TILE EDIT MODAL -->
+  <div id="tile-edit-modal" style="display:none;position:fixed;inset:0;z-index:9000;align-items:center;justify-content:center;background:rgba(0,0,0,0.55);backdrop-filter:blur(10px);">
+    <div style="background:rgba(255,255,255,0.12);backdrop-filter:blur(30px);border:1px solid rgba(255,255,255,0.25);border-radius:28px;padding:36px 40px;width:360px;box-shadow:0 24px 60px rgba(0,0,0,0.4);">
+      <h2 style="color:white;font-size:20px;font-weight:800;margin:0 0 24px;text-align:center;text-shadow:0 2px 8px rgba(0,0,0,0.4);">✎ Modifier la tile</h2>
+      <label style="color:rgba(255,255,255,0.75);font-size:13px;font-weight:700;display:block;margin-bottom:6px;">Nom de l'app</label>
+      <input id="tile-edit-name" type="text" style="width:100%;padding:10px 14px;border-radius:12px;border:1px solid rgba(255,255,255,0.25);background:rgba(255,255,255,0.12);color:white;font-size:15px;font-weight:700;outline:none;box-sizing:border-box;margin-bottom:18px;"/>
+      <label style="color:rgba(255,255,255,0.75);font-size:13px;font-weight:700;display:block;margin-bottom:10px;">Couleur de fond</label>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:24px;" id="tile-edit-colors">
+        <div class="edit-color-swatch" data-grad="linear-gradient(145deg,#5bc8f5,#2575fc)" style="background:linear-gradient(145deg,#5bc8f5,#2575fc)"></div>
+        <div class="edit-color-swatch" data-grad="linear-gradient(145deg,#ff9a56,#e63e6d)" style="background:linear-gradient(145deg,#ff9a56,#e63e6d)"></div>
+        <div class="edit-color-swatch" data-grad="linear-gradient(145deg,#c471ed,#4a90e2)" style="background:linear-gradient(145deg,#c471ed,#4a90e2)"></div>
+        <div class="edit-color-swatch" data-grad="linear-gradient(145deg,#43e97b,#38f9d7)" style="background:linear-gradient(145deg,#43e97b,#38f9d7)"></div>
+        <div class="edit-color-swatch" data-grad="linear-gradient(145deg,#f7b733,#fc4a1a)" style="background:linear-gradient(145deg,#f7b733,#fc4a1a)"></div>
+        <div class="edit-color-swatch" data-grad="linear-gradient(145deg,#a18cd1,#fbc2eb)" style="background:linear-gradient(145deg,#a18cd1,#fbc2eb)"></div>
+        <div class="edit-color-swatch" data-grad="linear-gradient(145deg,#7028e4,#e5b2ca)" style="background:linear-gradient(145deg,#7028e4,#e5b2ca)"></div>
+        <div class="edit-color-swatch" data-grad="linear-gradient(145deg,#56ab2f,#a8e063)" style="background:linear-gradient(145deg,#56ab2f,#a8e063)"></div>
+        <div class="edit-color-swatch" data-grad="linear-gradient(145deg,#4facfe,#00f2fe)" style="background:linear-gradient(145deg,#4facfe,#00f2fe)"></div>
+        <div class="edit-color-swatch" data-grad="linear-gradient(145deg,#ff758c,#ff7eb3)" style="background:linear-gradient(145deg,#ff758c,#ff7eb3)"></div>
+      </div>
+      <div style="display:flex;gap:12px;">
+        <button id="tile-edit-cancel" style="flex:1;padding:11px;border-radius:12px;border:1px solid rgba(255,255,255,0.2);background:rgba(255,255,255,0.08);color:rgba(255,255,255,0.7);font-weight:700;font-size:14px;cursor:pointer;">Annuler</button>
+        <button id="tile-edit-save" style="flex:1;padding:11px;border-radius:12px;border:none;background:linear-gradient(135deg,#4facfe,#00d2ff);color:white;font-weight:800;font-size:14px;cursor:pointer;box-shadow:0 4px 14px rgba(79,172,254,0.4);">Sauvegarder</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- VISUALIZER -->
+  <div id="modern-visualizer-container">
+    <canvas id="visualizer-canvas"></canvas>
+  </div>
+
+  <!-- MARQUEE / MUSIC / COMPANION -->
+  <div id="marquee-bar">
+    <div class="welcome-marquee">
+      <span class="marquee-text">Bienvenue à Hylia Plaza ! Explorez vos applications, personnalisez votre profil et profitez de l'ambiance • Welcome to Hylia Plaza! Explore your apps, customize your profile, and enjoy the vibe •</span>
+      <span class="marquee-text">Bienvenue à Hylia Plaza ! Explorez vos applications, personnalisez votre profil et profitez de l'ambiance • Welcome to Hylia Plaza! Explore your apps, customize your profile, and enjoy the vibe •</span>
+    </div>
+  </div>
+  <div id="music-bar-container">
+    <button id="vis-prev" class="bottom-music-btn">⏮</button>
+    <button id="vis-play" class="bottom-music-btn play-btn">▶</button>
+    <button id="vis-next" class="bottom-music-btn">⏭</button>
+    <div class="music-info"><span id="vis-track-title">Chargement...</span></div>
+    <div class="music-time"><span id="vis-time-current">00:00</span> / <span id="vis-time-total">00:00</span></div>
+  </div>
+  <div id="companion-widget">
+    <div id="companion-bubble">Poyo !</div>
+    <div class="companion-glass">
+      <video autoplay loop muted playsinline id="companion-avatar" src="public/assets/gif/kirby-nintendo.webm" alt="Companion"></video>
+    </div>
+  </div>
+
+  <!-- DYNAMIC OS WINDOWS -->
+  <div id="window-layer"></div>
+
+  <!-- SPLASH SCREEN -->
+  <div id="app-splash-screen">
+    <div class="splash-content">
+      <img src="public/assets/icons/logov2.webp" alt="App Logo" id="splash-logo">
+    </div>
+  </div>
+
+  <!-- APP CONTAINERS -->
+  <div id="app-containers" style="display: none;"></div>
+
+  <!-- JS IMPORTS -->
+  <script type="module" src="public/js/firebase/init.js"></script>
+  <script type="module" src="public/js/core/firebase.js"></script>
+  <script type="module" src="public/js/core/auth.js"></script>
+  <script type="module" src="public/js/core/audio.js"></script>
+
+  <script src="public/js/core/windowManager.js" defer></script>
+
+  <script>
+    window.process = { env: { NODE_ENV: 'production' } };
+    window.global = window;
+  </script>
+
+  <script src="public/js/core/visualizer.js" defer></script>
+  <script src="public/js/core/carousel.js" defer></script>
+  <script src="public/js/core/social.js" defer></script>
+  <script src="public/js/core/cloudSave.js" defer></script>
+  <script src="public/js/core/app.js" defer></script>
+</body>
+</html>

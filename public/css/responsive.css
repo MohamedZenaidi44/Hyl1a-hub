@@ -1,0 +1,514 @@
+/* 
+  Responsive Overrides for different screen resolutions
+  Covers: Home menu, tiles, user panel, clock, music bar, marquee, companion
+*/
+
+/* ====================================================
+   MEDIUM SCREENS (1366x768, 1280x720 laptops)
+   ==================================================== */
+@media screen and (max-width: 1400px) {
+  /* User panel */
+  #user-panel {
+    top: 24px;
+    left: 20px;
+    padding: 10px 36px 10px 10px;
+    gap: 12px;
+  }
+
+  #top-avatar-container {
+    width: 72px;
+    height: 72px;
+    border-width: 3px;
+  }
+
+  .top-name {
+    font-size: 24px;
+  }
+
+  .top-subname {
+    font-size: 12px;
+  }
+
+  /* Clock */
+  #clock-panel {
+    top: 18px;
+    right: 20px;
+  }
+
+  #top-time {
+    font-size: 64px;
+  }
+
+  #top-time .am-pm {
+    font-size: 24px;
+  }
+
+  #top-date {
+    font-size: 20px;
+  }
+
+  /* Marquee */
+  #marquee-bar {
+    width: calc(100% - 420px);
+    min-width: 300px;
+    height: 42px;
+  }
+
+  .marquee-text {
+    font-size: 13px;
+  }
+
+  /* Music bar */
+  #music-bar-container {
+    width: calc(100% - 120px);
+    max-width: 700px;
+    height: 46px;
+  }
+
+  /* Tiles */
+  .grid-tile {
+    width: 140px !important;
+    height: 140px !important;
+  }
+
+  .tile-icon {
+    width: 68px;
+    height: 68px;
+    margin-bottom: 20px;
+  }
+
+  .tile-label {
+    font-size: 13px;
+    bottom: 10px;
+  }
+
+  /* Floating pill */
+  #floating-title-pill {
+    font-size: 17px;
+    padding: 6px 24px;
+    top: calc(50% - 145px);
+  }
+
+  /* Description box */
+  #app-description-box {
+    width: 400px;
+    font-size: 13px;
+    padding: 10px 20px;
+    top: calc(50% + 120px);
+  }
+
+  /* Nav arrows */
+  .carousel-nav-btn {
+    width: 44px;
+    height: 44px;
+    font-size: 22px;
+  }
+
+  #carousel-nav-prev { left: 20px; }
+  #carousel-nav-next { right: 20px; }
+
+  /* Companion */
+  #companion-widget {
+    transform: scale(0.85);
+  }
+
+  /* Huge profile btn */
+  #huge-profile-btn {
+    transform: scale(0.85);
+  }
+}
+
+/* ====================================================
+   SMALLER SCREENS (1024x768, old laptops)
+   ==================================================== */
+@media screen and (max-width: 1100px) {
+  /* User panel — shrink more */
+  #user-panel {
+    top: 16px;
+    left: 14px;
+    padding: 8px 28px 8px 8px;
+    gap: 10px;
+    border-radius: 50px;
+  }
+
+  #top-avatar-container {
+    width: 56px;
+    height: 56px;
+    border-width: 2px;
+  }
+
+  .top-name {
+    font-size: 18px;
+  }
+
+  .top-subname {
+    font-size: 11px;
+  }
+
+  #btn-home-logout {
+    width: 30px !important;
+    height: 30px !important;
+    font-size: 13px !important;
+  }
+
+  /* Clock */
+  #clock-panel {
+    top: 14px;
+    right: 14px;
+  }
+
+  #top-time {
+    font-size: 48px;
+  }
+
+  #top-time .am-pm {
+    font-size: 18px;
+  }
+
+  #top-date {
+    font-size: 16px;
+  }
+
+  /* Marquee */
+  #marquee-bar {
+    width: calc(100% - 340px);
+    min-width: 220px;
+    max-width: 500px;
+    height: 38px;
+    border-radius: 20px;
+  }
+
+  .marquee-text {
+    font-size: 12px;
+  }
+
+  /* Music bar */
+  #music-bar-container {
+    width: calc(100% - 80px);
+    max-width: 600px;
+    height: 42px;
+    bottom: 16px;
+  }
+
+  /* Tiles */
+  .grid-tile {
+    width: 120px !important;
+    height: 120px !important;
+    border-radius: 20px;
+  }
+
+  .tile-icon {
+    width: 52px;
+    height: 52px;
+    margin-bottom: 16px;
+  }
+
+  .tile-label {
+    font-size: 11px;
+    bottom: 8px;
+  }
+
+  .tile-sublabel {
+    font-size: 10px;
+  }
+
+  /* Floating pill */
+  #floating-title-pill {
+    font-size: 15px;
+    padding: 5px 20px;
+    top: calc(50% - 125px);
+    border-radius: 16px;
+  }
+
+  /* Description box */
+  #app-description-box {
+    width: 340px;
+    font-size: 12px;
+    padding: 8px 16px;
+    top: calc(50% + 105px);
+    border-radius: 14px;
+  }
+
+  /* Nav arrows */
+  .carousel-nav-btn {
+    width: 38px;
+    height: 38px;
+    font-size: 20px;
+    bottom: 160px;
+  }
+
+  #carousel-nav-prev { left: 12px; }
+  #carousel-nav-next { right: 12px; }
+
+  /* Companion smaller */
+  #companion-widget {
+    transform: scale(0.7);
+    transform-origin: bottom right;
+  }
+
+  #huge-profile-btn {
+    transform: scale(0.75);
+  }
+}
+
+/* ====================================================
+   VERY SMALL / TABLETS (< 850px)
+   ==================================================== */
+@media screen and (max-width: 850px) {
+  #user-panel {
+    top: 10px;
+    left: 10px;
+    padding: 6px 20px 6px 6px;
+    gap: 8px;
+  }
+
+  #top-avatar-container {
+    width: 44px;
+    height: 44px;
+  }
+
+  .top-name {
+    font-size: 15px;
+  }
+
+  .top-subname {
+    font-size: 10px;
+  }
+
+  #top-logout-container {
+    display: none !important;
+  }
+
+  #clock-panel {
+    top: 10px;
+    right: 10px;
+  }
+
+  #top-time {
+    font-size: 36px;
+  }
+
+  #top-time .am-pm {
+    font-size: 14px;
+  }
+
+  #top-date {
+    font-size: 13px;
+  }
+
+  #marquee-bar {
+    display: none;
+  }
+
+  #music-bar-container {
+    width: calc(100% - 40px);
+    height: 40px;
+    bottom: 10px;
+  }
+
+  .grid-tile {
+    width: 100px !important;
+    height: 100px !important;
+    border-radius: 18px;
+  }
+
+  .tile-icon {
+    width: 42px;
+    height: 42px;
+    margin-bottom: 12px;
+  }
+
+  .tile-label {
+    font-size: 10px;
+    bottom: 6px;
+  }
+
+  #floating-title-pill {
+    font-size: 13px;
+    padding: 4px 16px;
+    top: calc(50% - 108px);
+  }
+
+  #app-description-box {
+    width: 280px;
+    font-size: 11px;
+    top: calc(50% + 90px);
+  }
+
+  .carousel-nav-btn {
+    width: 34px;
+    height: 34px;
+    font-size: 18px;
+    bottom: 130px;
+  }
+
+  #carousel-nav-prev { left: 8px; }
+  #carousel-nav-next { right: 8px; }
+
+  #companion-widget {
+    transform: scale(0.6);
+    transform-origin: bottom right;
+  }
+
+  #huge-profile-btn {
+    transform: scale(0.65);
+  }
+}
+
+/* ====================================================
+   MOBILE (< 600px)
+   ==================================================== */
+@media screen and (max-width: 600px) {
+  .auth-logo {
+    width: 200px !important;
+  }
+
+  #auth-overlay > div:nth-of-type(3) {
+    width: 92% !important;
+    padding: 25px 16px !important;
+  }
+
+  #user-panel {
+    top: 6px;
+    left: 6px;
+    padding: 4px 12px 4px 4px;
+  }
+
+  #top-avatar-container {
+    width: 36px;
+    height: 36px;
+  }
+
+  .top-name {
+    font-size: 13px;
+  }
+
+  .top-subname {
+    display: none;
+  }
+
+  #clock-panel {
+    top: 6px;
+    right: 6px;
+  }
+
+  #top-time {
+    font-size: 28px;
+  }
+
+  #top-time .am-pm {
+    font-size: 12px;
+  }
+
+  #top-date {
+    font-size: 11px;
+  }
+
+  .grid-tile {
+    width: 85px !important;
+    height: 85px !important;
+    border-radius: 16px;
+  }
+
+  .tile-icon {
+    width: 36px;
+    height: 36px;
+    margin-bottom: 10px;
+  }
+
+  .tile-label {
+    font-size: 9px;
+    bottom: 5px;
+  }
+
+  #floating-title-pill {
+    font-size: 12px;
+    padding: 4px 14px;
+    top: calc(50% - 95px);
+  }
+
+  #app-description-box {
+    width: 220px;
+    font-size: 10px;
+    top: calc(50% + 78px);
+  }
+
+  .carousel-nav-btn {
+    width: 30px;
+    height: 30px;
+    font-size: 16px;
+  }
+
+  #companion-widget {
+    display: none;
+  }
+
+  #huge-profile-btn {
+    display: none;
+  }
+
+  .os-window {
+    width: 95% !important;
+    height: 80vh !important;
+    max-width: none !important;
+    max-height: none !important;
+  }
+}
+
+/* ====================================================
+   HEIGHT-CONSTRAINED (768px tall screens)
+   ==================================================== */
+@media screen and (max-height: 750px) {
+  #user-panel {
+    top: 12px;
+  }
+
+  #top-avatar-container {
+    width: 60px;
+    height: 60px;
+  }
+
+  .top-name {
+    font-size: 20px;
+  }
+
+  #clock-panel {
+    top: 12px;
+  }
+
+  #top-time {
+    font-size: 52px;
+  }
+
+  #top-date {
+    font-size: 18px;
+  }
+
+  .grid-tile {
+    width: 130px !important;
+    height: 130px !important;
+  }
+
+  .tile-icon {
+    width: 56px;
+    height: 56px;
+  }
+
+  #floating-title-pill {
+    top: calc(50% - 135px);
+  }
+
+  #app-description-box {
+    top: calc(50% + 115px);
+  }
+
+  #music-bar-container {
+    bottom: 12px;
+    height: 44px;
+  }
+
+  #companion-widget {
+    transform: scale(0.75);
+    transform-origin: bottom right;
+  }
+}

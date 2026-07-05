@@ -1,0 +1,13 @@
+name = "gba-saves"
+main = "./worker.js"
+compatibility_date = "2024-01-01"
+
+[vars]
+# optional: you can put non-secret config here
+
+[env.production]
+# vars for prod if needed
+
+[[r2_buckets]]
+binding = "SAVES"
+bucket_name = "saves"

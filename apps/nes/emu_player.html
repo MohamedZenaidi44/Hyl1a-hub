@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body, html { margin:0; padding:0; width:100%; height:100%; overflow:hidden; background:#000; }
+        #game { width:100vw; height:100vh; display:flex; align-items:center; justify-content:center; color:white; font-family:sans-serif; }
+    </style>
+</head>
+<body>
+    <div id="game">Loading Emulator...</div>
+    <script>
+        const paramsString = window.location.search || window.location.hash.substring(1);
+        const urlParams = new URLSearchParams(paramsString.replace(/^#/, ''));
+        let romUrl = urlParams.get('rom');
+        let gameName = urlParams.get('name') || 'Unknown Game';
+        let core = urlParams.get('core') || 'fceumm';
+        const type = urlParams.get('type') || 'nes';
+
+        if (romUrl) {
+            const currentUser = localStorage.getItem('nostalgia_current_user') || 'Guest';
+            gameName = `${currentUser}_${gameName}`;
+
+            window.EJS_player = '#game';
+            window.EJS_core = core;
+            window.EJS_gameUrl = romUrl;
+            window.EJS_gameName = gameName;
+            window.EJS_pathtodata = 'https://cdn.emulatorjs.org/latest/data/';
+            window.EJS_startOnLoaded = true;
+            window.EJS_threads = false;
+            window.EJS_defaultOptions = {
+                // 'save-state-location': 'browser', 
+                'performance': 'true',
+                'lowlatency': 'true',
+                'rewind': 'false'
+            };
+            window.EJS_fixedSaveInterval = 5000;
+
+            const keysOverlay = document.createElement('div');
+            keysOverlay.style.cssText = `
+                position:fixed; top:50%; left:20px; transform:translateY(-50%);
+                color:rgba(255,255,255,0.4); font-family:'Segoe UI',sans-serif;
+                font-size:11px; text-transform:uppercase; letter-spacing:1px;
+                line-height:2; pointer-events:none; z-index:1000;
+                text-shadow:0 2px 4px rgba(0,0,0,0.5);
+            `;
+            const controls = type === 'ds'
+                ? `<b>FLÈCHES</b> : DIR<br><b>X</b> : A<br><b>Z</b> : B<br><b>A</b> : X<br><b>S</b> : Y<br><b>C</b> : L<br><b>V</b> : R<br><b>ENTRER</b> : START<br><b>SHIFT</b> : SELECT`
+                : `<b>FLÈCHES</b> : DIR<br><b>X</b> : A<br><b>Z</b> : B<br><b>ENTRER</b> : START<br><b>SHIFT</b> : SELECT`;
+            keysOverlay.innerHTML = `<div style="font-weight:800;color:#c87fff;margin-bottom:10px;font-size:13px;">CONTROLES</div>${controls}`;
+            document.body.appendChild(keysOverlay);
+
+            // Cloud Save Hooks
+            window.EJS_onSaveState = function(data) {
+                if (window.parent && window.parent.CloudSaveManager) {
+                    window.parent.CloudSaveManager.saveStateToCloud(gameName, core, data.state);
+                }
+            };
+
+            function loadEmu() {
+                const script = document.createElement('script');
+                script.src = 'https://cdn.emulatorjs.org/latest/data/loader.js';
+                document.body.appendChild(script);
+            }
+
+            if (window.parent && window.parent.CloudSaveManager) {
+                window.parent.CloudSaveManager.checkCloudSave(gameName, core).then(url => {
+                    if (url) {
+                        window.EJS_StateUrl = url;
+                        window.parent.CloudSaveManager.showNotification('☁️ Chargement de la sauvegarde Cloud...');
+                    }
+                    loadEmu();
+                }).catch(() => loadEmu());
+            } else {
+                loadEmu();
+            }
+
+            window.focus();
+            document.addEventListener('mousedown', () => window.focus());
+            window.addEventListener('mousemove', e => window.parent.postMessage({ type:'mousemove', x:e.clientX, y:e.clientY }, '*'));
+            window.addEventListener('mousedown', e => window.parent.postMessage({ type:'mousedown', x:e.clientX, y:e.clientY }, '*'));
+        } else {
+            document.getElementById('game').innerText = 'No ROM provided!';
+        }
+    </script>
+</body>
+</html>

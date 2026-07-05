@@ -1,0 +1,3 @@
+*.exe
+*.log
+node_modules/

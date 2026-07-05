@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Mii Import</title>
+</head>
+<body>
+    <h1>Testing...</h1>
+    <div id="result">Waiting...</div>
+    <script type="module">
+        try {
+            console.log("Loading module...");
+            import Mii from './js/external/mii.js';
+            console.log("Loaded:", Mii);
+            window.Mii = Mii;
+            document.getElementById('result').innerText = "Loaded successfully!";
+        } catch (e) {
+            console.error("Failed to load mii:", e);
+            document.getElementById('result').innerText = "Error: " + e.message;
+        }
+    </script>
+</body>
+</html>

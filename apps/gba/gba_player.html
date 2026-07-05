@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>GBA Player – Hyl1a-hub</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body { width: 100%; height: 100%; background: #0a0a0a; overflow: hidden; }
+    #game-container { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; }
+    #emulator-wrapper { width: 100%; height: 100%; }
+    #error-screen {
+      display: none; flex-direction: column; align-items: center; justify-content: center;
+      color: #ff4444; font-family: monospace; font-size: 14px; gap: 12px; text-align: center; padding: 24px;
+    }
+    #error-screen.visible { display: flex; }
+  </style>
+</head>
+<body>
+
+<div id="game-container">
+  <div id="emulator-wrapper"></div>
+  <div id="error-screen">
+    <span style="font-size:2rem;">⚠️</span>
+    <span id="error-msg">Une erreur est survenue.</span>
+  </div>
+</div>
+
+<!-- gba-save-sync.js doit être chargé AVANT le script inline -->
+<script src="./js/gba-save-sync.js"></script>
+
+<script>
+(function () {
+  const hash     = location.hash.slice(1);
+  const params   = new URLSearchParams(hash);
+  const romUrl   = params.get('rom')  || '';
+  const gameName = params.get('name') || 'Unknown Game';
+
+  if (!romUrl) {
+    showError('Aucune URL de ROM fournie. Ajoutez #rom=<url>&name=<titre> à l\'URL.');
+    return;
+  }
+
+  /* ── Config EmulatorJS ────────────────────────────────────────────── */
+  window.EJS_player        = '#emulator-wrapper';
+  window.EJS_gameUrl       = romUrl;
+  window.EJS_core          = 'mgba';
+  window.EJS_gameName      = gameName;
+  window.EJS_pathtodata    = 'https://cdn.emulatorjs.org/latest/data/';
+  window.EJS_startOnLoaded = true;
+  window.EJS_color         = '#7c3aed';
+
+  /* ── postMessage : Load State ─────────────────────────────────────── */
+  window.addEventListener('message', function (event) {
+    if (!event.data || event.data.type !== 'LOAD_SAVE_STATE') return;
+    const raw = event.data.state;
+    if (!raw) return;
+    const uint8 = raw instanceof Uint8Array ? raw : new Uint8Array(raw);
+    waitForEmulator(function () {
+      try { window.EJS_emulator.loadState(uint8); }
+      catch (err) { console.error('[gba_player] loadState failed:', err); }
+    });
+  });
+
+  /* ── postMessage : Trigger Save ───────────────────────────────────── */
+  window.addEventListener('message', function (event) {
+    if (!event.data || event.data.type !== 'TRIGGER_SAVE') return;
+    waitForEmulator(function () {
+      try { window.EJS_emulator.saveState(); }
+      catch (err) { console.error('[gba_player] saveState trigger failed:', err); }
+    });
+  });
+
+  window.addEventListener('beforeunload', function (e) {
+    e.preventDefault(); e.returnValue = '';
+  });
+
+  /* ── Contrôles overlay ────────────────────────────────────────────── */
+  var keysOverlay = document.createElement('div');
+  keysOverlay.style.cssText = 'position:fixed;top:50%;left:20px;transform:translateY(-50%);'
+    + 'color:rgba(255,255,255,0.4);font-family:Segoe UI,sans-serif;font-size:11px;'
+    + 'text-transform:uppercase;letter-spacing:1px;line-height:2;pointer-events:none;'
+    + 'z-index:1000;text-shadow:0 2px 4px rgba(0,0,0,0.5);';
+  keysOverlay.innerHTML = '<div style="font-weight:800;color:#7ec4ff;margin-bottom:10px;font-size:13px;">CONTROLES</div>'
+    + '<b>FLÈCHES</b> : DIR<br><b>X</b> : A<br><b>Z</b> : B<br>'
+    + '<b>A</b> : L<br><b>S</b> : R<br><b>ENTRÉE</b> : START<br><b>MAJ</b> : SELECT';
+  document.body.appendChild(keysOverlay);
+
+  /* ── Chargement loader.js ─────────────────────────────────────────── */
+  // v4 : on charge loader.js directement, sans bloquer.
+  // gba-save-sync.js utilise EJS_onGameStart pour injecter la save APRÈS
+  // que le core mGBA est prêt — plus de race condition IDB possible.
+  function loadEmulatorScript() {
+    var script = document.createElement('script');
+    script.src = 'https://cdn.emulatorjs.org/latest/data/loader.js';
+    script.onerror = function () {
+      showError('Impossible de charger EmulatorJS. Vérifie ta connexion réseau.');
+    };
+    document.body.appendChild(script);
+  }
+
+  // Laisser gba-save-sync.js s'initialiser d'abord (il a besoin de poser
+  // EJS_onGameStart avant que loader.js ne démarre), puis charger loader.js.
+  // Un simple setTimeout(0) suffit pour passer après le script sync.
+  setTimeout(loadEmulatorScript, 0);
+
+  /* ── Focus & mouse reporting ──────────────────────────────────────── */
+  window.focus();
+  document.addEventListener('mousedown', function () { window.focus(); });
+  window.addEventListener('mousemove', function (e) {
+    window.parent.postMessage({ type: 'mii-mousemove', x: e.clientX, y: e.clientY }, '*');
+  });
+  window.addEventListener('mousedown', function (e) {
+    window.parent.postMessage({ type: 'mii-mousedown', x: e.clientX, y: e.clientY }, '*');
+  });
+
+  /* ── Helpers ──────────────────────────────────────────────────────── */
+  function waitForEmulator(cb, retries) {
+    retries = retries === undefined ? 40 : retries;
+    if (window.EJS_emulator) { cb(); return; }
+    if (retries <= 0) { console.warn('[gba_player] Émulateur non prêt.'); return; }
+    setTimeout(function () { waitForEmulator(cb, retries - 1); }, 250);
+  }
+
+  function showError(msg) {
+    var el = document.getElementById('error-screen');
+    var msgEl = document.getElementById('error-msg');
+    if (el) el.classList.add('visible');
+    if (msgEl) msgEl.textContent = msg;
+    console.error('[gba_player]', msg);
+  }
+})();
+</script>
+
+</body>
+</html>

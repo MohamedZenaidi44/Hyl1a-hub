@@ -1,0 +1,198 @@
+/* Now Playing Notification Styles */
+
+.now-playing-container {
+    position: fixed;
+    top: 185px;
+    /* Lowered a tiny bit more */
+    left: -500px;
+    z-index: 11000;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    /* Increased gap */
+    padding: 16px 28px;
+    /* Enlarged */
+    background: rgba(255, 255, 255, 0.2);
+    /* Semi-transparent for glass effect */
+    backdrop-filter: blur(25px);
+    /* Only blur, no saturation to avoid hypersensitive blue */
+    -webkit-backdrop-filter: blur(25px);
+    border: 1.5px solid rgb(11, 198, 255);
+    border-radius: 20px;
+    box-shadow: 0 15px 50px rgba(0, 0, 0, 0.4);
+    transition: left 0.8s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 1.5s ease-in-out;
+    pointer-events: none;
+    max-width: 450px;
+    overflow: hidden;
+    /* For the shine effect */
+}
+
+.now-playing-container::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -150%;
+    width: 50%;
+    height: 100%;
+    background: linear-gradient(to right,
+            transparent,
+            rgba(255, 255, 255, 0.4),
+            transparent);
+    transform: skewX(-25deg);
+    transition: 0.75s;
+}
+
+.now-playing-container.active::before {
+    animation: shine-sweep 3s infinite delay 1s;
+}
+
+@keyframes shine-sweep {
+    0% {
+        left: -150%;
+    }
+
+    20% {
+        left: 150%;
+    }
+
+    100% {
+        left: 150%;
+    }
+}
+
+.now-playing-container.active {
+    left: 30px;
+    opacity: 1;
+}
+
+.now-playing-container.exit {
+    left: 30px;
+    opacity: 0;
+    /* Clear 1.5s fade out */
+}
+
+.now-playing-text {
+    display: flex;
+    flex-direction: column;
+}
+
+.now-playing-bars {
+    display: flex;
+    align-items: flex-end;
+    gap: 3px;
+    height: 30px;
+    width: 30px;
+}
+
+.now-playing-bars span {
+    width: 4px;
+    background: rgba(255, 255, 255, 0.5);
+    /* Semi-transparent white/grey */
+    border-radius: 2px;
+    animation: bars-grow 1s infinite ease-in-out;
+}
+
+.now-playing-bars span:nth-child(1) {
+    height: 40%;
+    animation-delay: 0.1s;
+}
+
+.now-playing-bars span:nth-child(2) {
+    height: 80%;
+    animation-delay: 0.3s;
+}
+
+.now-playing-bars span:nth-child(3) {
+    height: 60%;
+    animation-delay: 0.2s;
+}
+
+.now-playing-bars span:nth-child(4) {
+    height: 30%;
+    animation-delay: 0.4s;
+}
+
+@keyframes bars-grow {
+
+    0%,
+    100% {
+        height: 20%;
+    }
+
+    50% {
+        height: 100%;
+    }
+}
+
+.now-playing-label {
+    font-size: 13px;
+    /* Slightly larger */
+    text-transform: uppercase;
+    letter-spacing: 2.5px;
+    color: rgba(0, 183, 255, 0.7);
+    font-weight: 800;
+    margin-bottom: 4px;
+}
+
+.now-playing-title {
+    font-size: 20px;
+    font-weight: 900;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+
+    /* Premium RGB Gradient Text */
+    background: linear-gradient(to right,
+            #3cb7ff, #3cf8ff, #3cb7ff, #3ccbff, #3cb7ff, #3ce2ff);
+    background-size: 300% auto;
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+
+    /* Use filter instead of text-shadow to avoid the boxy/rectangular artifact */
+    filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.4));
+
+    display: inline-block;
+    /* Ensure clipping is tight to text */
+    vertical-align: middle;
+
+    animation:
+        textAppear 1s cubic-bezier(0.16, 1, 0.3, 1) forwards,
+        rgb-gradient 4s linear infinite;
+}
+
+@keyframes rgb-gradient {
+    0% {
+        background-position: 0% center;
+    }
+
+    100% {
+        background-position: 300% center;
+    }
+}
+
+@keyframes musicPulse {
+
+    0%,
+    100% {
+        transform: scale(1);
+    }
+
+    50% {
+        transform: scale(1.1);
+    }
+}
+
+@keyframes textAppear {
+    from {
+        opacity: 0;
+        transform: translateX(10px);
+        filter: blur(5px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateX(0);
+        filter: blur(0);
+    }
+}

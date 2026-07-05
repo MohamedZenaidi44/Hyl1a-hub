@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <style>
+        body,
+        html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background: #000;
+        }
+
+        #game {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-family: sans-serif;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="game">Loading Emulator...</div>
+    <script>
+        // Use hash for robust passing without server interference, fallback to search if not in hash
+        const paramsString = window.location.hash ? window.location.hash.substring(1) : window.location.search;
+        const urlParams = new URLSearchParams(paramsString);
+        let romUrl = urlParams.get('rom');
+        let gameName = urlParams.get('name') || 'Unknown Game';
+        let core = urlParams.get('core') || 'mupen64plus_next';
+        
+        // If the URL has #rom=... but not parsed well, try to manually extract
+        if (!romUrl && window.location.hash.includes('rom=')) {
+            const hashParts = window.location.hash.substring(1).split('&');
+            for (let part of hashParts) {
+                if (part.startsWith('rom=')) romUrl = decodeURIComponent(part.split('=')[1]);
+                if (part.startsWith('name=')) gameName = decodeURIComponent(part.split('=')[1]);
+                if (part.startsWith('core=')) core = part.split('=')[1];
+            }
+        }
+
+        // Isolate save states by user profile
+        const currentUser = localStorage.getItem('nostalgia_current_user') || 'Guest';
+        gameName = `${currentUser}_${gameName}`.replace(/[^a-zA-Z0-9_-]/g, '_');
+
+        if (romUrl) {
+            window.EJS_player = '#game';
+            window.EJS_core = core; 
+            window.EJS_gameUrl = romUrl;
+            window.EJS_gameName = gameName; 
+            window.EJS_pathtodata = 'https://cdn.emulatorjs.org/latest/data/'; 
+            window.EJS_startOnLoaded = true;
+            // Activer le multithreading SI le navigateur le supporte (boost énorme de FPS)
+            window.EJS_threads = typeof SharedArrayBuffer !== 'undefined';
+            
+            // Options du Core Mupen64Plus-Next pour forcer des grosses performances
+            window.EJS_coreOptions = {
+                "mupen64plus-next-CountPerOp": "1", // Mode haute performance (1 au lieu de 2)
+                "mupen64plus-next-EnableFBEmulation": "False", // Désactiver l'émulation du Framebuffer (très lourd)
+                "mupen64plus-next-BilinearMode": "standard",
+                "mupen64plus-next-Vsync": "False"
+            };
+            
+            window.EJS_defaultOptions = {
+                'save-state-location': 'browser',
+                'performance': 'true',
+                'lowlatency': 'true',
+                'rewind': 'false',
+                'vsync': 'false' // Désactiver VSync pour éviter la perte de FPS
+            };
+            
+            window.EJS_fixedSaveInterval = 2000;
+
+            window.addEventListener('beforeunload', (e) => {
+                const msg = "Attention : vos sauvegardes en jeu récentes risquent d'être perdues. Veuillez utiliser le menu de sauvegarde (Save State) de l'émulateur avant de quitter !";
+                e.preventDefault();
+                e.returnValue = msg;
+                return msg;
+            });
+
+            // UI Enhancement: Show controls on the sides
+            const keysOverlay = document.createElement('div');
+            keysOverlay.style.cssText = `
+                position: fixed;
+                top: 50%;
+                left: 20px;
+                transform: translateY(-50%);
+                color: rgba(255,255,255,0.4);
+                font-family: 'Segoe UI', sans-serif;
+                font-size: 11px;
+                text-transform: uppercase;
+                letter-spacing: 1px;
+                line-height: 2;
+                pointer-events: none;
+                z-index: 1000;
+                text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+            `;
+            keysOverlay.innerHTML = `
+                <div style="font-weight: 800; color: #7ec4ff; margin-bottom: 10px; font-size: 13px;">CONTROLES</div>
+                <b>FLÈCHES</b> : DIR<br>
+                <b>X</b> : BOUTON A<br>
+                <b>Z</b> : BOUTON B<br>
+                <b>A</b> : GACHETTE L<br>
+                <b>S</b> : GACHETTE R<br>
+                <b>I</b> : C-HAUT<br>
+                <b>K</b> : C-BAS<br>
+                <b>J</b> : C-GAUCHE<br>
+                <b>L</b> : C-DROITE<br>
+                <b>Q</b> : Z TRIGGER<br>
+                <b>ENTRER</b> : START
+            `;
+            document.body.appendChild(keysOverlay);
+
+            // Cloud Save Hooks
+            window.EJS_onSaveState = function(data) {
+                if (window.parent && window.parent.CloudSaveManager) {
+                    window.parent.CloudSaveManager.saveStateToCloud(gameName, core, data.state);
+                }
+            };
+
+            function loadEmu() {
+                const script = document.createElement('script');
+                script.src = 'https://cdn.emulatorjs.org/latest/data/loader.js';
+                document.body.appendChild(script);
+            }
+
+            if (window.parent && window.parent.CloudSaveManager) {
+                window.parent.CloudSaveManager.checkCloudSave(gameName, core).then(url => {
+                    if (url) {
+                        window.EJS_StateUrl = url;
+                        window.parent.CloudSaveManager.showNotification('☁️ Chargement de la sauvegarde Cloud...');
+                    }
+                    loadEmu();
+                }).catch(() => loadEmu());
+            } else {
+                loadEmu();
+            }
+
+            // Auto-focus window for keys
+            window.focus();
+            document.addEventListener('mousedown', () => window.focus());
+
+            // Report mouse acts to parent for custom cursor support
+            window.addEventListener('mousemove', (e) => {
+                window.parent.postMessage({ type: 'mii-mousemove', x: e.clientX, y: e.clientY }, '*');
+            });
+            window.addEventListener('mousedown', (e) => {
+                window.parent.postMessage({ type: 'mii-mousedown', x: e.clientX, y: e.clientY }, '*');
+            });
+        } else {
+            document.getElementById('game').innerText = "No ROM provided!";
+        }
+    </script>
+</body>
+
+</html>
