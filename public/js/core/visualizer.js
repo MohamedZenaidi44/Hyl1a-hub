@@ -12,6 +12,11 @@ const ModernVisualizer = {
   bars: 80, // Number of frequency bars per side (mirrored)
   barData: [], // Store previous values for lerping
   lerpFactor: 0.15, // Smoothing factor for animation
+  getAudioBarsColor: function() {
+    const value = getComputedStyle(document.documentElement).getPropertyValue('--audio-bars-color').trim();
+    if (value) return value;
+    return window.ThemeManager && window.ThemeManager.currentTheme === 'black' ? '#f5f5f5' : '#101010';
+  },
   
   init: function() {
     this.container = document.getElementById('modern-visualizer-container');
@@ -156,14 +161,12 @@ const ModernVisualizer = {
         // Calculate final height assuring a minimum dimension for dead zones (barWidth)
         const barHeight = Math.max(barWidth, Math.min(maxHeight, normalizedValue * maxHeight));
         
-        // Use the exact soft blue requested: #6fd0ff (Hue ~200, Sat ~100%, Light ~72%)
-        const color = `rgba(111, 208, 255, 0.85)`;
+        const color = this.getAudioBarsColor();
         this.ctx.fillStyle = color;
         
         // Performance optimization: Disable expensive shadowBlur if the bar is practically idle
         if (barHeight > barWidth * 2) {
-            // Iconic bright soft blue/white glow, characteristic of Wii interfaces
-            this.ctx.shadowColor = `rgba(111, 208, 255, 0.6)`;
+            this.ctx.shadowColor = color;
             this.ctx.shadowBlur = width > 800 ? 12 : 8; // Refined blur
         } else {
             this.ctx.shadowBlur = 0; // Saves massive GPU cost on idle

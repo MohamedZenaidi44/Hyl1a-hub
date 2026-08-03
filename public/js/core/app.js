@@ -281,7 +281,7 @@ function initAppTriggers() {
     'nes':        { title: '🎮 Émulateur NES',       render: (c) => _lazy(c, '../../../apps/nes/js/nes.js') },
     'n64':        { title: '🎮 Émulateur N64',       render: (c) => _lazy(c, '../../../apps/n64/js/n64.js') },
     'miiManager': { title: '⚠️ Mii Manager',         render: (c) => _lazy(c, '../apps/miiManager.js') },
-    'themes':     { title: 'Thèmes & Couleurs',      render: () => { if (window.ThemeManager && typeof window.ThemeManager.openSelector === 'function') window.ThemeManager.openSelector(); } },
+    'themes':     { title: 'Thèmes',                 render: () => { if (window.ThemeManager && typeof window.ThemeManager.openSelector === 'function') window.ThemeManager.openSelector(); } },
     'bio': {
       title: '👤 À propos de Hyl1a',
       render: (container) => {
@@ -412,8 +412,9 @@ window.handleAppLaunch = function (trigger) {
     window.showSplashScreen(() => {
       if (appId === 'miiMaker' || appId === 'gba' || appId === 'gbaTurbo' || appId === 'miiManager' || appId === 'ds' || appId === 'nes' || appId === 'n64') {
         const bgVid = document.getElementById('bg-video');
-        // Let Mii Maker handle its own video transition to avoid race conditions with pause/play
-        if (bgVid && appId !== 'miiMaker' && !bgVid.paused) bgVid.pause();
+        // Let Mii Maker handle its own video transition to avoid race conditions with pause/play.
+        // GBA garde aussi la vidéo active : son interface est transparente, le fond doit rester animé.
+        if (bgVid && appId !== 'miiMaker' && appId !== 'gba' && !bgVid.paused) bgVid.pause();
         // Pause la vidéo companion pour libérer le GPU pendant l'émulateur
         const companion = document.getElementById('companion-avatar');
         if (companion) companion.pause();
@@ -523,21 +524,10 @@ function initAuth() {
   };
 
   window.checkForcedMiiCreation = async function () {
-    // Anti-duplication guard: don't trigger if a fullscreen app is already open
-    if (document.querySelector('.mii-fullscreen-container')) return;
-
-    const user = window.Auth ? window.Auth.getCurrentUser() : null;
-    if (user) {
-      const hasMii = await window.Auth.hasMii(user);
-      if (!hasMii) {
-        // Double check after small delay to be sure
-        setTimeout(() => {
-          if (document.querySelector('.mii-fullscreen-container')) return;
-          const miiMakerTile = document.querySelector('.app-trigger[data-app="miiMaker"]');
-          if (miiMakerTile) miiMakerTile.click();
-        }, 800);
-      }
-    }
+    // DÉSACTIVÉ : Mii Maker en cours de build, on ne force plus la création
+    // d'un Mii à la connexion/inscription. Fonction conservée (no-op) pour
+    // ne pas casser les appels existants (auth.js, handleAuthResponse...).
+    return;
   };
 
   async function generateAuthBackground() {

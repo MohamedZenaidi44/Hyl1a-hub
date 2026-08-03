@@ -12,12 +12,12 @@
 	<library_images>
 		<image id="env0-image" name="env0">
 			<init_from>
-				<ref>env0.png</ref>
+				<ref>env0.webp</ref>
 			</init_from>
 		</image>
 		<image id="shadow-image" name="shadow">
 			<init_from>
-				<ref>shadow.png</ref>
+				<ref>shadow.webp</ref>
 			</init_from>
 		</image>
 	</library_images>

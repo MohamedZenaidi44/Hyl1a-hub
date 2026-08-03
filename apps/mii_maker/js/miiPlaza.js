@@ -9,6 +9,7 @@ const loadScript = url => new Promise((resolve) => {
 
 
 export default async function initMiiPlaza(container) {
+  await loadScript('apps/mii_maker/js/miiBuilder.js'); // définit window.loadThreeJS
   await window.loadThreeJS();
 
   try {
@@ -71,10 +72,13 @@ export default async function initMiiPlaza(container) {
   canvasArea.appendChild(renderer.domElement);
 
   // Lighting
-  const ambient = new THREE.AmbientLight(0xffffff, 0.7);
+  const hemi = new THREE.HemisphereLight(0xffffff, 0x444444, 0.9);
+  scene.add(hemi);
+
+  const ambient = new THREE.AmbientLight(0xffffff, 1.0);
   scene.add(ambient);
   
-  const dirLight = new THREE.DirectionalLight(0xffffff, 0.6);
+  const dirLight = new THREE.DirectionalLight(0xffffff, 1.1);
   dirLight.position.set(20, 30, 10);
   dirLight.castShadow = true;
   dirLight.shadow.camera.left = -30;
@@ -179,7 +183,13 @@ export default async function initMiiPlaza(container) {
         if (child.isMesh) {
           child.castShadow = true;
           child.receiveShadow = true;
-          if(child.material) child.material.side = THREE.DoubleSide;
+          if (child.material) {
+            child.material.side = THREE.DoubleSide;
+            if ('metalness' in child.material) child.material.metalness = 0;
+            if ('roughness' in child.material) child.material.roughness = 1;
+            if ('envMapIntensity' in child.material) child.material.envMapIntensity = 0;
+            child.material.needsUpdate = true;
+          }
         }
       });
       

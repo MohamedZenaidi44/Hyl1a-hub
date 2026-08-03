@@ -7,7 +7,7 @@
    LIQUID GLASS EFFECT
    ============================================================ */
 .glossy-glass {
-  background: rgba(255, 255, 255, 0.28);
+  background: var(--hud-tint-base, rgba(255, 255, 255, 0.28));
   backdrop-filter: blur(20px) saturate(1.9);
   -webkit-backdrop-filter: blur(20px) saturate(1.9);
   border: 1.5px solid rgba(255, 255, 255, 0.6);
@@ -55,7 +55,6 @@
 }
 
 /* ── User panel — floating card at top-left ── */
-/* ── User panel — floating card at top-left ── */
 #user-panel {
   position: fixed;
   top: 36px;
@@ -64,14 +63,14 @@
   display: flex;
   align-items: center;
   gap: 16px;
-  background: linear-gradient(to bottom, rgba(255, 255, 255, 0.72), rgba(255, 255, 255, 0.22)), rgba(255, 255, 255, 0.38);
+  background: linear-gradient(to bottom, var(--hud-tint-top, rgba(255, 255, 255, 0.72)), var(--hud-tint-bottom, rgba(255, 255, 255, 0.22))), var(--hud-tint-base, rgba(255, 255, 255, 0.38));
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
   border-radius: 60px;
   border: none;
-  padding: 12px 48px 12px 12px;
+  padding: 12px 50px 12px 12px;
   box-shadow:
-    0 8px 20px rgba(0, 0, 0, 0.10),
+    0 8px 20px rgba(0, 0, 0, 0.61),
     inset 0 2px 4px rgba(255, 255, 255, 0.6),
     inset 0 -3px 8px rgba(0, 0, 0, 0.08);
   transition: margin-top 0.25s ease, filter 0.25s ease, box-shadow 0.25s ease;
@@ -102,8 +101,8 @@ body.app-open-active #companion-widget {
 }
 
 #top-avatar-container {
-  width: 92px;
-  height: 92px;
+  width: 100px;
+  height: 100px;
   border-radius: 50%;
   background: rgba(255, 255, 255, 0.5);
   display: flex;
@@ -136,6 +135,14 @@ body.app-open-active #companion-widget {
   justify-content: center;
   line-height: 1.1;
   margin-top: -2px;
+}
+
+#user-panel .top-name {
+  font-size: 34px;
+}
+
+#user-panel .top-subname {
+  font-size: 13px;
 }
 
 .top-name {
@@ -318,7 +325,7 @@ body.app-open-active #companion-widget {
   /* Positioned higher above the active tile */
   left: 50%;
   transform: translateX(-50%);
-  background: linear-gradient(to bottom, rgba(255, 255, 255, 0.72), rgba(255, 255, 255, 0.22)), rgba(255, 255, 255, 0.38);
+  background: linear-gradient(to bottom, var(--hud-tint-top, rgba(255, 255, 255, 0.72)), var(--hud-tint-bottom, rgba(255, 255, 255, 0.22))), var(--hud-tint-base, rgba(255, 255, 255, 0.38));
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
   border-radius: 20px;
@@ -517,6 +524,8 @@ body.app-open-active #companion-widget {
   line-height: 1.65;
   width: 100%;
   max-width: 500px;
+  position: relative;
+  left: 50px;
   text-shadow: 0 1px 4px rgba(0,0,0,0.4);
 }
 
@@ -582,13 +591,13 @@ body.app-open-active #companion-widget {
   pointer-events: none;
   padding: 18px 20px;
   /* Panneau translucide façon menu console */
-  background: linear-gradient(160deg,
+  background: var(--app-grid-bg, linear-gradient(160deg,
     rgba(255, 255, 255, 0.68) 0%,
-    rgba(232, 240, 248, 0.50) 100%);
+    rgba(232, 240, 248, 0.50) 100%));
   backdrop-filter: blur(18px) saturate(1.2);
   -webkit-backdrop-filter: blur(18px) saturate(1.2);
   border-radius: 18px;
-  border: 2px solid rgba(255, 255, 255, 0.45);
+  border: 2px solid var(--app-grid-border, rgba(255, 255, 255, 0.45));
   box-shadow:
     0 26px 70px rgba(0, 0, 0, 0.18),
     inset 0 1px 0 rgba(255, 255, 255, 0.75),
@@ -934,7 +943,7 @@ body.app-open-active #companion-widget {
   min-width: 400px;
   max-width: 800px;
   height: 48px;
-  background: linear-gradient(to bottom, rgba(255, 255, 255, 0.72), rgba(255, 255, 255, 0.22)), rgba(255, 255, 255, 0.38);
+  background: linear-gradient(to bottom, var(--hud-tint-top, rgba(255, 255, 255, 0.72)), var(--hud-tint-bottom, rgba(255, 255, 255, 0.22))), var(--hud-tint-base, rgba(255, 255, 255, 0.38));
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
   border-radius: 24px;
@@ -986,7 +995,7 @@ body.app-open-active #companion-widget {
   width: calc(100% - 160px);
   max-width: 800px;
   height: 52px;
-  background: linear-gradient(to bottom, rgba(255, 255, 255, 0.72), rgba(255, 255, 255, 0.22)), rgba(255, 255, 255, 0.38);
+  background: linear-gradient(to bottom, var(--hud-tint-top, rgba(255, 255, 255, 0.72)), var(--hud-tint-bottom, rgba(255, 255, 255, 0.22))), var(--hud-tint-base, rgba(255, 255, 255, 0.38));
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
   border-radius: 26px;
@@ -1579,7 +1588,7 @@ body.app-open-active #companion-widget {
 .companion-glass {
   width: 90px;
   height: 90px;
-  background: rgba(255, 255, 255, 0.4);
+  background: var(--hud-tint-companion, rgba(255, 255, 255, 0.4));
   backdrop-filter: blur(15px);
   -webkit-backdrop-filter: blur(15px);
   border: 1.5px solid rgba(255, 255, 255, 0.6);
@@ -1595,7 +1604,7 @@ body.app-open-active #companion-widget {
 
 .companion-glass:hover {
   transform: scale(1.1) translateY(-5px);
-  background: rgba(255, 255, 255, 0.55);
+  background: var(--hud-tint-companion-hover, rgba(255, 255, 255, 0.55));
   box-shadow: 0 12px 40px rgba(100, 180, 255, 0.4);
 }
 
@@ -1891,22 +1900,22 @@ body.app-open-active #companion-widget {
 
 /* Rétrécir le panel profil */
 #user-panel {
-  padding: 8px 16px 8px 8px !important;
-  gap: 8px !important;
-  border-radius: 50px !important;
+  padding: 16px 60px 16px 16px !important;
+  gap: 18px !important;
+  border-radius: 64px !important;
 }
 
 #top-avatar-container {
-  width: 44px !important;
-  height: 44px !important;
+  width: 112px !important;
+  height: 112px !important;
 }
 
 .top-name {
-  font-size: 14px !important;
+  font-size: 34px !important;
 }
 
 .top-subname {
-  font-size: 11px !important;
+  font-size: 14px !important;
 }
 
 /* Mini boutons */
@@ -1966,7 +1975,7 @@ body.app-open-active #companion-widget {
    LIQUID GLASS EFFECT
    ============================================================ */
 .glossy-glass {
-  background: rgba(255, 255, 255, 0.28);
+  background: var(--hud-tint-base, rgba(255, 255, 255, 0.28));
   backdrop-filter: blur(20px) saturate(1.9);
   -webkit-backdrop-filter: blur(20px) saturate(1.9);
   border: 1.5px solid rgba(255, 255, 255, 0.6);
@@ -2021,7 +2030,7 @@ body.app-open-active #companion-widget {
   display: flex;
   align-items: center;
   gap: 16px;
-  background: linear-gradient(to bottom, rgba(255, 255, 255, 0.72), rgba(255, 255, 255, 0.22)), rgba(255, 255, 255, 0.38);
+  background: linear-gradient(to bottom, var(--hud-tint-top, rgba(255, 255, 255, 0.72)), var(--hud-tint-bottom, rgba(255, 255, 255, 0.22))), var(--hud-tint-base, rgba(255, 255, 255, 0.38));
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
   border-radius: 60px;
@@ -2090,7 +2099,7 @@ body.app-open-active #user-panel {
 #quick-bar {
   position: fixed;
   top: 5%;
-  left: 15%;
+  left: 22%;
   display: flex;
   flex-direction: row;
   gap: 10px;

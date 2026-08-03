@@ -1,52 +1,50 @@
 /**
  * Theme Manager
- * Handles switching between visual themes (backgrounds + color accents).
- * Themes: Default, Zelda (Link), Mario, Dragon Ball
+ * Handles switching between the two monochrome visual themes.
+ * Themes: White, Black
  */
 
 const ThemeManager = {
   themes: {
-    default: {
-      name: 'Default',
-      emoji: '🏠',
-      bgGradient: 'linear-gradient(135deg, #f0f0f0 0%, #e0e4e8 50%, #d5dce3 100%)',
-      videoSrc: 'public/assets/icons/video/menuBC.mp4',
-      previewVideo: 'public/assets/icons/video/ps3-xmb-hd-ytmp4.savetube.vip.mp4',
-      accentColor: '#00d2ff',
-      textColor: '#555',
-      pillBg: 'linear-gradient(to bottom, rgba(255,255,255,0.95), rgba(240,240,240,0.9))'
+    white: {
+      name: 'White',
+      emoji: '☀️',
+      bgGradient: 'linear-gradient(135deg, #f7f7f7 0%, #ececec 50%, #dedede 100%)',
+      videoSrc: 'public/assets/icons/video/3dsW.mp4',
+      previewVideo: 'public/assets/icons/video/3dsW.mp4',
+      accentColor: '#101010',
+      textColor: '#111111',
+      audioBarsColor: '#101010',
+      appGridBg: 'linear-gradient(160deg, rgba(255, 255, 255, 0.68) 0%, rgba(232, 240, 248, 0.50) 100%)',
+      appGridBorder: 'rgba(255, 255, 255, 0.45)',
+      pillBg: 'linear-gradient(to bottom, rgba(255,255,255,0.96), rgba(238,238,238,0.92))',
+      hudTintTop: 'rgba(255, 255, 255, 0.78)',
+      hudTintBottom: 'rgba(255, 255, 255, 0.28)',
+      hudTintBase: 'rgba(255, 255, 255, 0.40)',
+      hudTintCompanion: 'rgba(255, 255, 255, 0.48)',
+      hudTintCompanionHover: 'rgba(255, 255, 255, 0.62)'
     },
-    violet: {
-      name: 'Violet',
-      emoji: '🔮',
-      bgGradient: 'linear-gradient(135deg, #4a1c6f 0%, #2d0a4f 40%, #1a0533 70%, #6f1cba 100%)',
-      videoSrc: 'public/assets/icons/video/purpleBC.mp4',
-      previewVideo: 'public/assets/icons/video/xmb-ps3-back-waves-ytmp4.savetube.vip.mp4',
-      accentColor: '#b700ffff',
-      textColor: '#4a1c6f',
-      pillBg: 'linear-gradient(to bottom, rgba(230,200,255,0.95), rgba(200, 150, 255, 0.9))'
-    },
-    mario: {
-      name: 'Mario',
-      emoji: '🍄',
-      bgGradient: 'linear-gradient(135deg, #e52521 0%, #c41e1a 30%, #d96b4aff 60%, #ebb487ff 100%)',
-      videoSrc: null,
-      accentColor: '#e52521',
-      textColor: '#c41e1a',
-      pillBg: 'linear-gradient(to bottom, rgba(255,255,255,0.95), rgba(255,230,230,0.9))'
-    },
-    dragonball: {
-      name: 'Dragon Ball',
-      emoji: '🐉',
-      bgGradient: 'linear-gradient(135deg, #2d0d35ff 0%, #9422a3ff 35%, #871fa7ff 65%, #3b0739ff 100%)',
-      videoSrc: null,
-      accentColor: '#b700ffff',
-      textColor: '#661088ff',
-      pillBg: 'linear-gradient(to bottom, rgba(241, 220, 255, 0.95), rgba(232, 140, 255, 0.9))'
+    black: {
+      name: 'Black',
+      emoji: '🌙',
+      bgGradient: 'linear-gradient(135deg, #050505 0%, #101010 50%, #1b1b1b 100%)',
+      videoSrc: 'public/assets/icons/video/3dsB.mp4',
+      previewVideo: 'public/assets/icons/video/3dsB.mp4',
+      accentColor: '#f5f5f5',
+      textColor: '#f5f5f5',
+      audioBarsColor: '#f5f5f5',
+      appGridBg: 'linear-gradient(160deg, rgba(30, 30, 30, 0.92) 0%, rgba(12, 12, 12, 0.96) 100%)',
+      appGridBorder: 'rgba(255, 255, 255, 0.10)',
+      pillBg: 'linear-gradient(to bottom, rgba(28,28,28,0.96), rgba(10,10,10,0.92))',
+      hudTintTop: 'rgba(16, 16, 16, 0.86)',
+      hudTintBottom: 'rgba(8, 8, 8, 0.70)',
+      hudTintBase: 'rgba(12, 12, 12, 0.78)',
+      hudTintCompanion: 'rgba(18, 18, 18, 0.82)',
+      hudTintCompanionHover: 'rgba(30, 30, 30, 0.92)'
     }
   },
 
-  currentTheme: 'default',
+  currentTheme: 'white',
 
   async init() {
     // Load saved theme
@@ -73,6 +71,8 @@ const ThemeManager = {
     const saved = localStorage.getItem('nostalgia-theme');
     if (saved && this.themes[saved]) {
       this.apply(saved, false);
+    } else {
+      this.apply('white', false);
     }
   },
 
@@ -96,7 +96,7 @@ const ThemeManager = {
       }
     }
 
-    // Background Video and Color Fallback
+    // Background video + monochrome theme variables
     const bgVideo = document.getElementById('bg-video');
     if (bgVideo) {
       if (theme.videoSrc) {
@@ -115,10 +115,17 @@ const ThemeManager = {
         document.body.style.background = theme.bgGradient;
     }
 
-    // Accent color for hover borders
+    const root = document.documentElement.style;
     root.setProperty('--theme-accent', theme.accentColor);
-    root.setProperty('--theme-tile-overlay', theme.tileOverlay);
+    root.setProperty('--audio-bars-color', theme.audioBarsColor);
+    root.setProperty('--app-grid-bg', theme.appGridBg);
+    root.setProperty('--app-grid-border', theme.appGridBorder);
     root.setProperty('--theme-pill-bg', theme.pillBg);
+    root.setProperty('--hud-tint-top', theme.hudTintTop);
+    root.setProperty('--hud-tint-bottom', theme.hudTintBottom);
+    root.setProperty('--hud-tint-base', theme.hudTintBase);
+    root.setProperty('--hud-tint-companion', theme.hudTintCompanion);
+    root.setProperty('--hud-tint-companion-hover', theme.hudTintCompanionHover);
 
     // Update the title pill styling
     const pill = document.getElementById('dynamic-title-pill');

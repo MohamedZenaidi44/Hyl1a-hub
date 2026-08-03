@@ -30,7 +30,7 @@
 <body>
   <!-- BACKGROUND VIDEO -->
   <video autoplay loop muted playsinline id="bg-video">
-    <source src="public/assets/icons/video/ps3-xmb-wave-white-ytmp4.savetube.vip.mp4" type="video/mp4">
+    <source src="public/assets/icons/video/3dsW.mp4" type="video/mp4">
   </video>
 
   <!-- AUTHENTICATION OVERLAY -->
@@ -275,7 +275,7 @@
                data-description="MET LA DESCRIPTION ICI"
                data-preview=""
                data-page="0" tabindex="0">
-            <img class="tile-bg-img" src="" alt="">
+            <img class="tile-bg-img" src= "public\assets\icons\socialpng.png" alt="">
             <div class="tile-placeholder">Image 6</div>
             <div class="tile-wiiu-label">Global Chat</div>
           </div>
@@ -308,7 +308,7 @@
                data-description="MET LA DESCRIPTION ICI"
                data-preview=""
                data-page="0" tabindex="0">
-            <img class="tile-bg-img" src="" alt="">
+            <img class="tile-bg-img" src="public\assets\icons\snesx9.png" alt="">
             <div class="tile-placeholder">Image 9</div>
             <div class="tile-wiiu-label">NES Emulator</div>
           </div>
@@ -332,7 +332,7 @@
                data-description="MET LA DESCRIPTION ICI"
                data-preview=""
                data-page="1" tabindex="0">
-            <img class="tile-bg-img" src="" alt="">
+            <img class="tile-bg-img" src="public\assets\icons\internet.webp" alt="">
             <div class="tile-placeholder">Image 11</div>
             <div class="tile-wiiu-label">Internet Browser</div>
           </div>
@@ -343,7 +343,7 @@
                data-description="MET LA DESCRIPTION ICI"
                data-preview=""
                data-page="1" tabindex="0">
-            <img class="tile-bg-img" src="" alt="">
+            <img class="tile-bg-img" src="public\assets\icons\app\warning.webp" alt="">
             <div class="tile-placeholder">Image 12</div>
             <div class="tile-wiiu-label">Mii Manager</div>
           </div>
@@ -473,6 +473,26 @@
   <script src="public/js/core/carousel.js" defer></script>
   <script src="public/js/core/social.js" defer></script>
   <script src="public/js/core/cloudSave.js" defer></script>
+  <script src="public/js/core/app.js" defer></script>
+
+  <!-- JS IMPORTS -->
+  <script type="module" src="public/js/firebase/init.js"></script>
+  <script type="module" src="public/js/core/firebase.js"></script>
+  <script type="module" src="public/js/core/auth.js"></script>
+  <script type="module" src="public/js/core/audio.js"></script>
+
+  <script src="public/js/core/windowManager.js" defer></script>
+
+  <script>
+    window.process = { env: { NODE_ENV: 'production' } };
+    window.global = window;
+  </script>
+
+  <script src="public/js/core/visualizer.js" defer></script>
+  <script src="public/js/core/carousel.js" defer></script>
+  <script src="public/js/core/social.js" defer></script>
+  <script src="public/js/core/cloudSave.js" defer></script>
+  <script src="public/js/core/themeManager.js" defer></script>
   <script src="public/js/core/app.js" defer></script>
 </body>
 </html>

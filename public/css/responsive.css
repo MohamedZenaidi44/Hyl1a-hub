@@ -11,13 +11,13 @@
   #user-panel {
     top: 24px;
     left: 20px;
-    padding: 10px 36px 10px 10px;
-    gap: 12px;
+    padding: 14px 52px 14px 14px;
+    gap: 16px;
   }
 
   #top-avatar-container {
-    width: 72px;
-    height: 72px;
+    width: 104px;
+    height: 104px;
     border-width: 3px;
   }
 
@@ -126,14 +126,14 @@
   #user-panel {
     top: 16px;
     left: 14px;
-    padding: 8px 28px 8px 8px;
-    gap: 10px;
+    padding: 12px 38px 12px 12px;
+    gap: 14px;
     border-radius: 50px;
   }
 
   #top-avatar-container {
-    width: 56px;
-    height: 56px;
+    width: 78px;
+    height: 78px;
     border-width: 2px;
   }
 

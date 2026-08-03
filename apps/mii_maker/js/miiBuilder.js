@@ -22,6 +22,7 @@ window.loadThreeJS = async function() {
     loadScript('https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js'),
     loadScript('https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js'),
     loadScript('https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/ColladaLoader.js'),
+    loadScript('https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/OBJLoader.js'),
   ]);
 };
 
