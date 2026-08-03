@@ -1,6 +1,17 @@
 /**
  * gba.js — apps/gba/js/gba.js
- * Écran de sélection GBA 
+ *
+ * Écran de sélection GBA — inspiré de la XMB (PSP) et des interfaces
+ * modernes façon PS5 / Steam Big Picture (structure IISU), mais avec
+ * une identité graphique propre :
+ *   - colonne verticale de jaquettes empilées, une seule mise en avant
+ *   - fond transparent : le fond d'écran de l'accueil (bg-video) reste
+ *     visible derrière l'interface, pas de panneaux blancs/opaques
+ *   - panneau d'info à droite : titre, description, temps de jeu,
+ *     bouton Jouer, aperçu du jeu
+ *
+ * NOTE: cette interface est volontairement neuve — elle ne réutilise
+ * pas les classes/styles de l'ancienne version "Frutiger Aero".
  */
 
 const GBA_GAMES = [
@@ -37,53 +48,81 @@ const GBA_GAMES = [
       'public/assets/gba/screenshots/pokemon-emeraude/3.png',
     ],
   },
-
- 
-{
-    name: 'Castlevania: Aria of Sorrow',
+  {
+    name: 'Castlevania - Aria of Sorrow',
     file: 'https://pub-045046eb23854c6e897afff1193bf9bf.r2.dev/gba/Castlevania%20-%20Aria%20of%20Sorrow.zip',
-    cover: 'public/assets/gba/covers/Castlevania1.jpg',
-    description: "En l'an 2035, Soma Cruz est entraîné dans le château de Dracula, où il découvre un mystérieux pouvoir lui permettant d'absorber les âmes de ses ennemis. Explorez le château, affrontez des créatures redoutables et percez le secret de votre destinée.",
+    cover: 'public/assets/gba/covers/castlevania-aria-of-sorrow.jpg',
+    description: "En l'an 2035, Soma Cruz se retrouve piégé dans un château hanté apparu lors d'une éclipse solaire. Doté du pouvoir d'absorber les âmes des monstres qu'il vainc, il explore un vaste labyrinthe gothique pour percer le mystère de son propre destin.",
     screenshots: [
-      'public/assets/gba/screenshots/Castlevania-Aria/image 1.webp',
-      'public/assets/gba/screenshots/Castlevania-Aria/image 2.jpg',
-      'public/assets/gba/screenshots/Castlevania-Aria/image 3.png',
+      'public/assets/gba/screenshots/castlevania-aria-of-sorrow/1.jpg',
+      'public/assets/gba/screenshots/castlevania-aria-of-sorrow/2.jpg',
+      'public/assets/gba/screenshots/castlevania-aria-of-sorrow/3.jpg',
     ],
   },
-
   {
     name: 'Final Fantasy VI Advance',
     file: 'https://pub-045046eb23854c6e897afff1193bf9bf.r2.dev/gba/Final%20Fantasy%20VI%20Advance.zip',
-    cover: 'public/assets/gba/covers/Final-Fantasy-VI-Advance.jpg',
-    description: "Dans un monde où la magie renaît, un groupe de héros s'unit pour s'opposer à l'Empire et au dangereux Kefka. Vivez une aventure épique mêlant combats au tour par tour, personnages mémorables et histoire riche en émotions.",
+    cover: 'public/assets/gba/covers/final-fantasy-vi-advance.jpg',
+    description: "Dans un monde ravagé par la magie et la machine, un groupe de rebelles s'oppose à l'Empire Gestahlien et au bouffon démoniaque Kefka. Cette version Advance ajoute de nouveaux donjons, objets et l'Arène des Dragons.",
     screenshots: [
-      'public/assets/gba/screenshots/Final-Fantasy-VI-Advance/image 1.webp',
-      'public/assets/gba/screenshots/Final-Fantasy-VI-Advance/image 2.jpg',
-      'public/assets/gba/screenshots/Final-Fantasy-VI-Advance/image 3.jpg',
+      'public/assets/gba/screenshots/final-fantasy-vi-advance/1.jpg',
+      'public/assets/gba/screenshots/final-fantasy-vi-advance/2.jpg',
+      'public/assets/gba/screenshots/final-fantasy-vi-advance/3.jpg',
     ],
   },
-
- {
-    name: 'Golden Sun: The Lost Age',
-    file: 'https://pub-045046eb23854c6e897afff1193bf9bf.r2.dev/gba/Golden%20Sun%20-%20L%27Age%20Perdu.zip',
-    cover: 'public/assets/gba/covers/Golden-Sun-The-Lost-Age.jpg',
-    description: "Dans un monde où la magie renaît, un groupe de héros s'unit pour s'opposer à l'Empire et au dangereux Kefka. Vivez une aventure épique mêlant combats au tour par tour, personnages mémorables et histoire riche en émotions.",
-    screenshots: [
-      'public/assets/gba/screenshots/Golden-Sun-The-Lost-Age/image 1.webp',
-      'public/assets/gba/screenshots/Golden-Sun-The-Lost-Age/image 2.jpg',
-      'public/assets/gba/screenshots/Golden-Sun-The-Lost-Age/image 3.png',
-    ],
-  },
-
   {
     name: 'Fire Emblem',
     file: 'https://pub-045046eb23854c6e897afff1193bf9bf.r2.dev/gba/Fire%20Emblem.zip',
-    cover: 'public/assets/gba/covers/Fire-Emblem.jpg',
-    description: "Dans un monde où la magie renaît, un groupe de héros s'unit pour s'opposer à l'Empire et au dangereux Kefka. Vivez une aventure épique mêlant combats au tour par tour, personnages mémorables et histoire riche en émotions.",
+    cover: 'public/assets/gba/covers/fire-emblem.jpg',
+    description: "Premier épisode occidental de la saga, ce tactical-RPG suit le prince Eliwood dans une guerre tragique à travers le continent d'Elibe. Chaque unité perdue au combat disparaît définitivement, imposant prudence et stratégie.",
     screenshots: [
-      'public/assets/gba/screenshots/Fire-Emblem/image 1.png',
-      'public/assets/gba/screenshots/Fire-Emblem/image 2.jpg',
-      'public/assets/gba/screenshots/Fire-Emblem/image 3.jpg',
+      'public/assets/gba/screenshots/fire-emblem/1.jpg',
+      'public/assets/gba/screenshots/fire-emblem/2.jpg',
+      'public/assets/gba/screenshots/fire-emblem/3.jpg',
+    ],
+  },
+  {
+    name: "Golden Sun - L'Âge Perdu",
+    file: "https://pub-045046eb23854c6e897afff1193bf9bf.r2.dev/gba/Golden%20Sun%20-%20L'Age%20Perdu.zip",
+    cover: 'public/assets/gba/covers/golden-sun-lage-perdu.jpg',
+    description: "Suite directe de Golden Sun, Félix et ses compagnons poursuivent leur quête pour allumer les Phares Elémentaires, tandis qu'Isaac et son groupe tentent de les en empêcher pour sauver le monde de Weyard.",
+    screenshots: [
+      'public/assets/gba/screenshots/golden-sun-lage-perdu/1.jpg',
+      'public/assets/gba/screenshots/golden-sun-lage-perdu/2.jpg',
+      'public/assets/gba/screenshots/golden-sun-lage-perdu/3.jpg',
+    ],
+  },
+  {
+    name: 'Metroid Fusion',
+    file: 'https://pub-045046eb23854c6e897afff1193bf9bf.r2.dev/gba/Metroid%20Fusion.zip',
+    cover: 'public/assets/gba/covers/metroid-fusion.jpg',
+    description: "Infectée par le parasite X, Samus Aran doit composer avec une IA de bord autoritaire et un doppelgänger appelé SA-X, aussi puissant qu'elle, qui rôde dans les couloirs de la station BSL.",
+    screenshots: [
+      'public/assets/gba/screenshots/metroid-fusion/1.jpg',
+      'public/assets/gba/screenshots/metroid-fusion/2.jpg',
+      'public/assets/gba/screenshots/metroid-fusion/3.jpg',
+    ],
+  },
+  {
+    name: 'Pokémon Version Rouge Feu',
+    file: 'https://pub-045046eb23854c6e897afff1193bf9bf.r2.dev/gba/Pokemon%20-%20Version%20Rouge%20Feu%20(France).gba',
+    cover: 'public/assets/gba/covers/pokemon-rouge-feu.jpg',
+    description: "Remake du tout premier jeu Pokémon, votre aventure débute à Bourg Palette. Explorez la région de Kanto, affrontez les huit Champions d'Arène et la Ligue Pokémon, tout en déjouant les plans de la Team Rocket.",
+    screenshots: [
+      'public/assets/gba/screenshots/pokemon-rouge-feu/1.jpg',
+      'public/assets/gba/screenshots/pokemon-rouge-feu/2.jpg',
+      'public/assets/gba/screenshots/pokemon-rouge-feu/3.jpg',
+    ],
+  },
+  {
+    name: 'Pokémon Donjon Mystère - Équipe de Secours Rouge',
+    file: 'https://pub-045046eb23854c6e897afff1193bf9bf.r2.dev/gba/Pokemon%20Donjon%20Mystre%20%20Equipe%20de%20Secours%20Rouge.zip',
+    cover: 'public/assets/gba/covers/pokemon-donjon-mystere.jpg',
+    description: "Transformé en Pokémon suite à un mystérieux évènement, vous fondez avec un compagnon une équipe de secours chargée d'explorer des donjons générés aléatoirement pour venir en aide aux Pokémon en détresse.",
+    screenshots: [
+      'public/assets/gba/screenshots/pokemon-donjon-mystere/1.jpg',
+      'public/assets/gba/screenshots/pokemon-donjon-mystere/2.jpg',
+      'public/assets/gba/screenshots/pokemon-donjon-mystere/3.jpg',
     ],
   },
 ];
@@ -98,9 +137,19 @@ let currentGbaGameName     = null;
 let gxmbIndex               = 0;
 let gxmbSlideIndex          = 0;
 let gxmbSlideTimer          = null;
+let gxmbGames               = GBA_GAMES; // liste affichée (filtrée par la recherche ou non)
+let gxmbSearchQuery         = '';
+let gxmbClockTimer          = null;
+
+/* Normalise une chaîne pour une recherche insensible à la casse et aux accents */
+function gxmbNormalize(str) {
+  return (str || '')
+    .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase().trim();
+}
 
 /* Géométrie de la pile de jaquettes (colonne gauche) */
-const GXMB_GAP        = 232;  // écart vertical entre le centre de deux jaquettes
+const GXMB_GAP        = 268;  // écart vertical entre le centre de deux jaquettes
 const GXMB_MAX_DIST   = 2;    // au-delà, la jaquette est masquée (peu d'éléments visibles)
 const GXMB_CURVE      = 18;   // intensité de la courbe (arc) — px de décalage horizontal par cran
 
@@ -151,18 +200,15 @@ function injectGxmbStyles() {
         linear-gradient(180deg, rgba(0,0,0,0.30) 0%, rgba(0,0,0,0) 18%, rgba(0,0,0,0) 82%, rgba(0,0,0,0.30) 100%);
     }
 
-    /* ── Bandeau supérieur : minimal, pas de barre pleine ── */
+    /* ── Bandeau supérieur : trois zones (recherche | bannière | horloge+retour) ── */
     .gxmb-topbar {
       position: absolute; top: 0; left: 0; right: 0; z-index: 6;
-      display: flex; align-items: center; justify-content: space-between;
-      padding: 30px 40px 0 44px; pointer-events: none;
+      display: flex; align-items: center; gap: 18px;
+      padding: 28px 40px 0 44px; pointer-events: none;
     }
-    .gxmb-kicker {
-      display: flex; align-items: baseline; gap: 10px; pointer-events: none;
-      font-size: 12px; font-weight: 800; letter-spacing: 3px; text-transform: uppercase;
-      color: rgba(255,255,255,0.75); text-shadow: 0 2px 8px rgba(0,0,0,0.6);
+    .gxmb-search-zone {
+      pointer-events: auto; flex: 0 0 auto; display: flex; flex-direction: column; gap: 6px;
     }
-    .gxmb-kicker span.gxmb-count { color: rgba(255,255,255,0.4); letter-spacing: 1px; }
     .gxmb-exit {
       pointer-events: auto; display: flex; align-items: center; gap: 8px; cursor: pointer;
       user-select: none; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.16);
@@ -176,9 +222,81 @@ function injectGxmbStyles() {
       display: flex; align-items: center; justify-content: center; font-size: 10px;
     }
 
+    /* ── Barre de recherche : ancrée le plus à gauche, un peu plus grande ── */
+    .gxmb-search {
+      pointer-events: auto; display: flex; align-items: center; gap: 10px;
+      background: rgba(255,255,255,0.09); border: 1px solid rgba(255,255,255,0.18);
+      backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+      border-radius: 44px; padding: 11px 20px; width: 280px;
+      transition: width .25s ease, background .2s ease, border-color .2s ease;
+    }
+    .gxmb-search:focus-within {
+      width: 360px; background: rgba(255,255,255,0.15);
+      border-color: color-mix(in srgb, var(--theme-accent, #fff) 55%, transparent);
+    }
+    .gxmb-search svg { width: 17px; height: 17px; flex: 0 0 auto; stroke: rgba(255,255,255,0.65); }
+    .gxmb-search input {
+      flex: 1; min-width: 0; background: transparent; border: none; outline: none;
+      color: #fff; font-size: 14.5px; font-weight: 700; font-family: inherit;
+    }
+    .gxmb-search input::placeholder { color: rgba(255,255,255,0.45); font-weight: 600; }
+    .gxmb-search-clear {
+      flex: 0 0 auto; display: none; align-items: center; justify-content: center;
+      width: 18px; height: 18px; border-radius: 50%; cursor: pointer;
+      color: rgba(255,255,255,0.55); background: rgba(255,255,255,0.1);
+      font-size: 12px; line-height: 1;
+    }
+    .gxmb-search-clear:hover { background: rgba(255,255,255,0.2); color: #fff; }
+    .gxmb-search.has-query .gxmb-search-clear { display: flex; }
+    .gxmb-search-zone .gxmb-count {
+      padding-left: 22px; font-size: 11px; font-weight: 800; letter-spacing: 1.2px;
+      color: rgba(255,255,255,0.4); text-transform: uppercase;
+    }
+
+    /* ── Bannière centrale défilante, façon accueil ── */
+    .gxmb-banner-wrap {
+      pointer-events: none; flex: 1; min-width: 0; align-self: flex-start;
+      display: flex; justify-content: center;
+    }
+    .gxmb-banner {
+      max-width: min(820px, 100%); width: 100%; overflow: hidden;
+      background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.16);
+      backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+      border-radius: 44px; padding: 16px 0;
+      -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 8%, #000 92%, transparent 100%);
+              mask-image: linear-gradient(90deg, transparent 0, #000 8%, #000 92%, transparent 100%);
+    }
+    .gxmb-banner-track {
+      display: flex; width: max-content; white-space: nowrap;
+      animation: gxmb-marquee 26s linear infinite;
+    }
+    .gxmb-banner-text {
+      font-size: 17px; font-weight: 700; letter-spacing: 0.3px;
+      color: rgba(255,255,255,0.85); text-shadow: 0 2px 8px rgba(0,0,0,0.4);
+      padding-right: 56px;
+    }
+    @keyframes gxmb-marquee { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+
+    /* ── Zone droite : horloge + retour ── */
+    .gxmb-topright {
+      pointer-events: auto; flex: 0 0 auto; display: flex; align-items: center; gap: 16px;
+    }
+    .gxmb-clock {
+      display: flex; flex-direction: column; align-items: flex-end; line-height: 1.1;
+    }
+    .gxmb-clock-time {
+      font-size: 48px; font-weight: 900; color: #fff; text-shadow: 0 2px 14px rgba(0,0,0,0.6);
+      letter-spacing: 0.5px;
+    }
+    .gxmb-clock-time .am-pm { font-size: 16px; font-weight: 800; opacity: 0.7; margin-left: 4px; }
+    .gxmb-clock-date {
+      font-size: 14px; font-weight: 700; letter-spacing: 0.5px; text-transform: uppercase;
+      color: rgba(255,255,255,0.55);
+    }
+
     /* ── Colonne gauche : pile verticale de jaquettes ── */
     .gxmb-stage {
-      position: relative; z-index: 2; flex: 0 0 420px;
+      position: relative; z-index: 2; flex: 0 0 470px;
       display: flex; align-items: center; justify-content: center;
       padding-left: 56px;
     }
@@ -186,12 +304,29 @@ function injectGxmbStyles() {
 
     .gxmb-item {
       position: absolute; top: 50%; left: 40px;
-      width: 148px; height: 208px;
+      width: 174px; height: 244px;
       transform: translate(0, -50%);
       transition: transform .55s cubic-bezier(.22,1,.36,1),
                   opacity .5s ease, filter .5s ease;
       will-change: transform, opacity;
       cursor: pointer;
+    }
+    /* Contour dégradé rose→violet animé, derrière chaque jaquette */
+    .gxmb-item::before {
+      content: '';
+      position: absolute; inset: -5px; z-index: -1;
+      border-radius: 19px;
+      background: linear-gradient(125deg, #ff53d6, #b34bff, #6a5cff, #ff53d6);
+      background-size: 300% 300%;
+      animation: gxmb-border-flow 6s ease-in-out infinite;
+      opacity: 0.85;
+      transition: opacity .5s ease;
+    }
+    .gxmb-item.is-active::before { opacity: 1; }
+    @keyframes gxmb-border-flow {
+      0%   { background-position: 0% 50%; }
+      50%  { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
     }
     .gxmb-cover {
       width: 100%; height: 100%; border-radius: 14px; overflow: hidden; position: relative;
@@ -199,10 +334,7 @@ function injectGxmbStyles() {
       transition: box-shadow .5s ease;
     }
     .gxmb-item.is-active .gxmb-cover {
-      box-shadow:
-        0 0 0 1.5px color-mix(in srgb, var(--theme-accent, #fff) 75%, transparent),
-        0 0 34px color-mix(in srgb, var(--theme-accent, #fff) 30%, transparent),
-        0 24px 50px rgba(0,0,0,0.55);
+      box-shadow: 0 24px 50px rgba(0,0,0,0.55);
     }
     .gxmb-cover img {
       width: 100%; height: 100%; object-fit: cover; display: block;
@@ -220,7 +352,7 @@ function injectGxmbStyles() {
 
     /* Chevrons discrets, visibles seulement s'il y a plus d'items */
     .gxmb-nav {
-      position: absolute; left: 40px; width: 148px; z-index: 3;
+      position: absolute; left: 40px; width: 174px; z-index: 3;
       display: flex; align-items: center; justify-content: center; height: 34px;
       color: rgba(255,255,255,0.45); cursor: pointer; opacity: 0; transition: opacity .25s ease, color .2s ease;
       pointer-events: none;
@@ -277,10 +409,21 @@ function injectGxmbStyles() {
     /* ── Aperçu (droite du panneau, centré verticalement, agrandi) ── */
     .gxmb-preview { flex-shrink: 0; width: min(860px, 56vw); display: flex; flex-direction: column; gap: 18px; }
     .gxmb-preview-frame {
-      position: relative; width: 100%; aspect-ratio: 3 / 2; border-radius: 18px; overflow: hidden;
-      background: rgba(255,255,255,0.05);
-      border: 1px solid rgba(255,255,255,0.14);
+      position: relative; z-index: 0; width: 100%; aspect-ratio: 3 / 2; border-radius: 18px;
       box-shadow: 0 24px 60px rgba(0,0,0,0.5);
+    }
+    /* Même contour dégradé animé que les jaquettes */
+    .gxmb-preview-frame::before {
+      content: '';
+      position: absolute; inset: -5px; z-index: -1;
+      border-radius: 23px;
+      background: linear-gradient(125deg, #ff53d6, #b34bff, #6a5cff, #ff53d6);
+      background-size: 300% 300%;
+      animation: gxmb-border-flow 6s ease-in-out infinite;
+    }
+    .gxmb-preview-inner {
+      position: relative; width: 100%; height: 100%; border-radius: 18px; overflow: hidden;
+      background: rgba(255,255,255,0.05);
     }
     .gxmb-preview-img {
       position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover;
@@ -315,12 +458,18 @@ function injectGxmbStyles() {
     @media (max-width: 900px) {
       .gxmb-panel { flex-direction: column; align-items: flex-start; justify-content: center; gap: 20px; }
       .gxmb-preview { width: min(460px, 80vw); }
-      .gxmb-stage { flex-basis: 260px; padding-left: 30px; }
-      .gxmb-item { width: 116px; height: 164px; left: 20px; }
-      .gxmb-nav { left: 20px; width: 116px; }
+      .gxmb-stage { flex-basis: 280px; padding-left: 30px; }
+      .gxmb-item { width: 132px; height: 186px; left: 20px; }
+      .gxmb-nav { left: 20px; width: 132px; }
       .gxmb-corner {
         position: static; align-items: flex-start; margin: 12px clamp(24px, 4vw, 56px) 24px;
       }
+      .gxmb-topbar { padding: 18px 20px 0 24px; gap: 10px; }
+      .gxmb-banner-wrap { display: none; } /* pas assez de place en dessous de 900px */
+      .gxmb-search { width: 160px; padding: 8px 14px; }
+      .gxmb-search:focus-within { width: 200px; }
+      .gxmb-clock-time { font-size: 16px; }
+      .gxmb-clock-date { display: none; }
     }
   `;
   document.head.appendChild(style);
@@ -329,14 +478,9 @@ function injectGxmbStyles() {
 /* ════════════════════════════════════════════════════════════════════
    RENDU
    ════════════════════════════════════════════════════════════════════ */
-function renderGbaMenu(container) {
-  injectGxmbStyles();
-
-  if (gxmbIndex < 0) gxmbIndex = 0;
-  if (gxmbIndex >= GBA_GAMES.length) gxmbIndex = GBA_GAMES.length - 1;
-
+function buildGxmbItemsHtml(games) {
   let itemsHtml = '';
-  GBA_GAMES.forEach((game, i) => {
+  games.forEach((game, i) => {
     const inner = game.cover
       ? `<img src="${game.cover}" alt="${game.name}"
            onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />
@@ -353,14 +497,66 @@ function renderGbaMenu(container) {
         <div class="gxmb-cover">${inner}</div>
       </div>`;
   });
+  return itemsHtml;
+}
+
+/* (Ré)attache le clic sur chaque jaquette du track courant */
+function bindGxmbItemClicks(container) {
+  container.querySelectorAll('.gxmb-item').forEach((item) => {
+    item.addEventListener('click', () => {
+      const i = parseInt(item.getAttribute('data-index'), 10);
+      if (i === gxmbIndex) {
+        if (typeof AudioManager !== 'undefined') AudioManager.playClick();
+        launchGbaEmulator(container, gxmbGames[gxmbIndex]);
+      } else {
+        setGxmbIndex(container, i);
+      }
+    });
+  });
+}
+
+function renderGbaMenu(container) {
+  injectGxmbStyles();
+
+  // Réinitialise la recherche à chaque (ré)ouverture du menu
+  gxmbGames = GBA_GAMES;
+  gxmbSearchQuery = '';
+
+  if (gxmbIndex < 0) gxmbIndex = 0;
+  if (gxmbIndex >= gxmbGames.length) gxmbIndex = gxmbGames.length - 1;
+
+  const itemsHtml = buildGxmbItemsHtml(gxmbGames);
 
   container.innerHTML = `
     <div class="gxmb-root" tabindex="-1">
       <div class="gxmb-scrim"></div>
 
       <div class="gxmb-topbar">
-        <div class="gxmb-kicker">Game Boy Advance <span class="gxmb-count" id="gxmb-count"></span></div>
-        <div class="gxmb-exit" id="gxmb-exit"><b>B</b> Retour</div>
+        <div class="gxmb-search-zone">
+          <div class="gxmb-search" id="gxmb-search">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            <input type="text" id="gxmb-search-input" placeholder="Rechercher un jeu…" autocomplete="off" spellcheck="false" />
+            <div class="gxmb-search-clear" id="gxmb-search-clear">✕</div>
+          </div>
+          <div class="gxmb-count" id="gxmb-count"></div>
+        </div>
+
+        <div class="gxmb-banner-wrap">
+          <div class="gxmb-banner">
+            <div class="gxmb-banner-track">
+              <span class="gxmb-banner-text">Bienvenue sur l'émulateur GBA · Choisis un jeu dans la pile, découvre sa fiche et lance-toi · Ta progression est sauvegardée automatiquement ·</span>
+              <span class="gxmb-banner-text" aria-hidden="true">Bienvenue sur l'émulateur GBA · Choisis un jeu dans la pile, découvre sa fiche et lance-toi · Ta progression est sauvegardée automatiquement ·</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="gxmb-topright">
+          <div class="gxmb-clock" id="gxmb-clock">
+            <div class="gxmb-clock-time" id="gxmb-clock-time">--:--</div>
+            <div class="gxmb-clock-date" id="gxmb-clock-date"></div>
+          </div>
+          <div class="gxmb-exit" id="gxmb-exit"><b>B</b> Retour</div>
+        </div>
       </div>
 
       <div class="gxmb-stage">
@@ -381,7 +577,9 @@ function renderGbaMenu(container) {
         </div>
         <div class="gxmb-preview" id="gxmb-preview">
           <div class="gxmb-preview-frame" id="gxmb-preview-frame">
-            <div class="gxmb-preview-empty" id="gxmb-preview-empty">Aperçu à venir</div>
+            <div class="gxmb-preview-inner" id="gxmb-preview-inner">
+              <div class="gxmb-preview-empty" id="gxmb-preview-empty">Aperçu à venir</div>
+            </div>
           </div>
           <div class="gxmb-preview-dots" id="gxmb-preview-dots"></div>
         </div>
@@ -403,40 +601,44 @@ function renderGbaMenu(container) {
   // Le fond reste visible derrière ce menu (transparent) : on s'assure qu'il tourne.
   document.getElementById('bg-video')?.play().catch(() => {});
 
-  if (GBA_GAMES.length === 0) return;
+  if (gxmbGames.length === 0) return;
 
-  /* Molette de la souris = naviguer dans la pile */
+  /* Molette de la souris = naviguer dans la pile (légèrement plus réactive) */
   let gxmbWheelLock = false;
   root.addEventListener('wheel', (e) => {
     e.preventDefault();
     if (gxmbWheelLock || Math.abs(e.deltaY) < 4) return;
-    if (e.deltaY > 0 && gxmbIndex < GBA_GAMES.length - 1) {
+    if (e.deltaY > 0 && gxmbIndex < gxmbGames.length - 1) {
       gxmbWheelLock = true;
       setGxmbIndex(container, gxmbIndex + 1);
-      setTimeout(() => { gxmbWheelLock = false; }, 420);
+      setTimeout(() => { gxmbWheelLock = false; }, 260);
     } else if (e.deltaY < 0 && gxmbIndex > 0) {
       gxmbWheelLock = true;
       setGxmbIndex(container, gxmbIndex - 1);
-      setTimeout(() => { gxmbWheelLock = false; }, 420);
+      setTimeout(() => { gxmbWheelLock = false; }, 260);
     }
   }, { passive: false });
 
   /* Sélection au clic sur une jaquette */
-  container.querySelectorAll('.gxmb-item').forEach((item) => {
-    item.addEventListener('click', () => {
-      const i = parseInt(item.getAttribute('data-index'), 10);
-      if (i === gxmbIndex) {
-        if (typeof AudioManager !== 'undefined') AudioManager.playClick();
-        launchGbaEmulator(container, GBA_GAMES[gxmbIndex]);
-      } else {
-        setGxmbIndex(container, i);
-      }
-    });
+  bindGxmbItemClicks(container);
+
+  /* Recherche : filtre la liste par nom (insensible casse/accents) */
+  const searchWrap  = container.querySelector('#gxmb-search');
+  const searchInput = container.querySelector('#gxmb-search-input');
+  const searchClear = container.querySelector('#gxmb-search-clear');
+  searchInput.addEventListener('input', () => applyGxmbSearch(container, searchInput.value));
+  searchClear.addEventListener('click', () => {
+    searchInput.value = '';
+    applyGxmbSearch(container, '');
+    searchInput.focus();
   });
+  // Ne pas laisser les flèches/Entrée taper dans le champ déclencher la navigation clavier globale
+  searchInput.addEventListener('keydown', (e) => e.stopPropagation());
 
   container.querySelector('#gxmb-play').addEventListener('click', () => {
+    if (!gxmbGames.length) return;
     if (typeof AudioManager !== 'undefined') AudioManager.playClick();
-    launchGbaEmulator(container, GBA_GAMES[gxmbIndex]);
+    launchGbaEmulator(container, gxmbGames[gxmbIndex]);
   });
 
   container.querySelector('#gxmb-nav-up').addEventListener('click', (e) => {
@@ -445,13 +647,14 @@ function renderGbaMenu(container) {
   });
   container.querySelector('#gxmb-nav-down').addEventListener('click', (e) => {
     e.stopPropagation();
-    if (gxmbIndex < GBA_GAMES.length - 1) setGxmbIndex(container, gxmbIndex + 1);
+    if (gxmbIndex < gxmbGames.length - 1) setGxmbIndex(container, gxmbIndex + 1);
   });
 
   container.querySelector('#gxmb-exit').addEventListener('click', () => {
     if (typeof AudioManager !== 'undefined') AudioManager.playClick();
     teardownGxmbKeys();
     if (gxmbSlideTimer) { clearInterval(gxmbSlideTimer); gxmbSlideTimer = null; }
+    if (gxmbClockTimer) { clearInterval(gxmbClockTimer); gxmbClockTimer = null; }
     if (window.AppRegistry?.['gba']?.close) window.AppRegistry['gba'].close();
   });
 
@@ -461,16 +664,23 @@ function renderGbaMenu(container) {
     if (!rootEl) { window.removeEventListener('keydown', keyHandler, true); return; }
     if (document.querySelector('iframe[src*="gba_player.html"]')) return;
 
+    // Le champ de recherche gère lui-même son clavier (frappe, Entrée...)
+    if (e.target && e.target.id === 'gxmb-search-input') {
+      if (e.key === 'Escape') e.target.blur();
+      return;
+    }
+
     if (!['ArrowUp', 'ArrowDown', 'Enter', 'b', 'Escape'].includes(e.key)) return;
     e.preventDefault(); e.stopPropagation();
 
-    if (e.key === 'ArrowDown' && gxmbIndex < GBA_GAMES.length - 1) {
+    if (e.key === 'ArrowDown' && gxmbIndex < gxmbGames.length - 1) {
       setGxmbIndex(container, gxmbIndex + 1);
     } else if (e.key === 'ArrowUp' && gxmbIndex > 0) {
       setGxmbIndex(container, gxmbIndex - 1);
     } else if (e.key === 'Enter') {
+      if (!gxmbGames.length) return;
       if (typeof AudioManager !== 'undefined') AudioManager.playClick();
-      launchGbaEmulator(container, GBA_GAMES[gxmbIndex]);
+      launchGbaEmulator(container, gxmbGames[gxmbIndex]);
     } else if (e.key === 'b' || e.key === 'Escape') {
       container.querySelector('#gxmb-exit')?.click();
     }
@@ -481,6 +691,7 @@ function renderGbaMenu(container) {
 
   layoutGxmbStack(container, false);
   updateGxmbInfo(container);
+  initGxmbClock(container);
 }
 
 function teardownGxmbKeys() {
@@ -488,6 +699,30 @@ function teardownGxmbKeys() {
     window.removeEventListener('keydown', window._gxmbKeyHandler, true);
     window._gxmbKeyHandler = null;
   }
+}
+
+/* Horloge du topbar — autonome, ne dépend pas du widget de l'accueil */
+function initGxmbClock(container) {
+  if (gxmbClockTimer) { clearInterval(gxmbClockTimer); gxmbClockTimer = null; }
+
+  const timeEl = container.querySelector('#gxmb-clock-time');
+  const dateEl = container.querySelector('#gxmb-clock-date');
+  if (!timeEl || !dateEl) return;
+
+  const days   = ['Dimanche', 'Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi'];
+  const months = ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Juin', 'Juil', 'Août', 'Sep', 'Oct', 'Nov', 'Déc'];
+
+  const tick = () => {
+    if (!document.body.contains(timeEl)) { clearInterval(gxmbClockTimer); gxmbClockTimer = null; return; }
+    const now = new Date();
+    const h = String(now.getHours()).padStart(2, '0');
+    const m = String(now.getMinutes()).padStart(2, '0');
+    timeEl.textContent = `${h}:${m}`;
+    dateEl.textContent = `${days[now.getDay()]} ${now.getDate()} ${months[now.getMonth()]}`;
+  };
+
+  tick();
+  gxmbClockTimer = setInterval(tick, 1000);
 }
 
 function setGxmbIndex(container, i) {
@@ -527,15 +762,55 @@ function layoutGxmbStack(container) {
   const upBtn = container.querySelector('#gxmb-nav-up');
   const downBtn = container.querySelector('#gxmb-nav-down');
   if (upBtn) upBtn.classList.toggle('is-visible', gxmbIndex > 0);
-  if (downBtn) downBtn.classList.toggle('is-visible', gxmbIndex < GBA_GAMES.length - 1);
+  if (downBtn) downBtn.classList.toggle('is-visible', gxmbIndex < gxmbGames.length - 1);
 
   const countEl = container.querySelector('#gxmb-count');
-  if (countEl) countEl.textContent = `— ${String(gxmbIndex + 1).padStart(2, '0')} / ${String(GBA_GAMES.length).padStart(2, '0')}`;
+  if (countEl) countEl.textContent = gxmbGames.length
+    ? `— ${String(gxmbIndex + 1).padStart(2, '0')} / ${String(gxmbGames.length).padStart(2, '0')}`
+    : '';
+}
+
+/* Filtre la liste de jeux affichée selon le texte tapé dans la recherche */
+function applyGxmbSearch(container, rawQuery) {
+  gxmbSearchQuery = rawQuery;
+  const searchWrap = container.querySelector('#gxmb-search');
+  const q = gxmbNormalize(rawQuery);
+  searchWrap?.classList.toggle('has-query', q.length > 0);
+
+  gxmbGames = q
+    ? GBA_GAMES.filter((g) => gxmbNormalize(g.name).includes(q))
+    : GBA_GAMES;
+  gxmbIndex = 0;
+
+  const track = container.querySelector('#gxmb-track');
+  const playBtn = container.querySelector('#gxmb-play');
+
+  if (gxmbGames.length === 0) {
+    track.innerHTML = '';
+    if (playBtn) playBtn.disabled = true;
+    container.querySelector('#gxmb-eyebrow').textContent = 'Sélection';
+    container.querySelector('#gxmb-title').textContent = 'Aucun résultat';
+    container.querySelector('#gxmb-desc').textContent = `Aucun jeu ne correspond à « ${rawQuery} ». Essaie un autre nom.`;
+    container.querySelector('#gxmb-meta').innerHTML = '';
+    const frame = container.querySelector('#gxmb-preview-inner');
+    const dots = container.querySelector('#gxmb-preview-dots');
+    if (frame) frame.innerHTML = '<div class="gxmb-preview-empty">Aperçu à venir</div>';
+    if (dots) dots.innerHTML = '';
+    layoutGxmbStack(container);
+    return;
+  }
+
+  if (playBtn) playBtn.disabled = false;
+  track.innerHTML = buildGxmbItemsHtml(gxmbGames);
+  bindGxmbItemClicks(container);
+  layoutGxmbStack(container);
+  updateGxmbInfo(container);
 }
 
 /* Met à jour titre / description / temps de jeu / aperçu */
 function updateGxmbInfo(container) {
-  const game = GBA_GAMES[gxmbIndex];
+  if (!gxmbGames.length) return;
+  const game = gxmbGames[gxmbIndex];
   const textCol = container.querySelector('#gxmb-info-text');
   const previewCol = container.querySelector('#gxmb-preview');
   const cornerCol = container.querySelector('#gxmb-corner');
@@ -572,7 +847,7 @@ function renderGxmbPreview(container, game) {
   if (gxmbSlideTimer) { clearInterval(gxmbSlideTimer); gxmbSlideTimer = null; }
   gxmbSlideIndex = 0;
 
-  const frame = container.querySelector('#gxmb-preview-frame');
+  const frame = container.querySelector('#gxmb-preview-inner');
   const dotsWrap = container.querySelector('#gxmb-preview-dots');
   frame.innerHTML = '';
   dotsWrap.innerHTML = '';
@@ -626,7 +901,7 @@ function renderGxmbPreview(container, game) {
 }
 
 function goToGxmbSlide(container, index) {
-  const frame = container.querySelector('#gxmb-preview-frame');
+  const frame = container.querySelector('#gxmb-preview-inner');
   if (!frame) return;
   const imgs = frame.querySelectorAll('.gxmb-preview-img');
   const dots = container.querySelectorAll('.gxmb-preview-dot');
@@ -645,6 +920,7 @@ function launchGbaEmulator(container, game) {
   const gameName = encodeURIComponent(game.name);
 
   if (gxmbSlideTimer) { clearInterval(gxmbSlideTimer); gxmbSlideTimer = null; }
+  if (gxmbClockTimer) { clearInterval(gxmbClockTimer); gxmbClockTimer = null; }
   teardownGxmbKeys();
   document.getElementById('bg-video')?.pause();
 
