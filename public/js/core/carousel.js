@@ -197,12 +197,10 @@ const CarouselManager = {
   },
 
   loadSavedLayout: function () {
-    const saved = localStorage.getItem('gridLayout');
-    if (!saved) return;
-    try {
-      const { cols, rows } = JSON.parse(saved);
-      this.applyLayout(cols, rows);
-    } catch {}
+    // Taille de grille verrouillée sur 5 × 2 : on ignore tout ancien layout
+    // qui aurait pu être sauvegardé avant ce verrouillage.
+    localStorage.setItem('gridLayout', JSON.stringify({ cols: 5, rows: 2 }));
+    this.applyLayout(5, 2);
   }
 };
 
@@ -218,14 +216,9 @@ const TileReorder = {
   _holdTimer: null,
   _dragOverTile: null,
 
-  // Layouts prédéfinis : { label, cols, rows }
+  // Layout unique imposé : 5 × 2 (le changement de taille de grille est désactivé)
   LAYOUTS: [
     { label: '5 × 2', cols: 5, rows: 2 },
-    { label: '4 × 3', cols: 4, rows: 3 },
-    { label: '3 × 4', cols: 3, rows: 4 },
-    { label: '6 × 2', cols: 6, rows: 2 },
-    { label: '4 × 2', cols: 4, rows: 2 },
-    { label: '3 × 3', cols: 3, rows: 3 },
   ],
 
   init: function () {
@@ -419,7 +412,7 @@ const TileReorder = {
     // Bouton toggle rapide
     const toggleBtn = document.createElement('button');
     toggleBtn.id = 'reorder-toggle-btn';
-    toggleBtn.title = 'Réorganiser / Changer le layout';
+    toggleBtn.title = 'Réorganiser les icônes';
     toggleBtn.textContent = '⊞';
     toggleBtn.addEventListener('click', () => {
       if (this.active) this.exitReorderMode();
@@ -432,29 +425,8 @@ const TileReorder = {
     const bar = document.createElement('div');
     bar.id = 'reorder-bar';
 
-    // Boutons layout
-    this.LAYOUTS.forEach(({ label, cols, rows }) => {
-      const btn = document.createElement('button');
-      btn.className = 'layout-btn';
-      btn.dataset.cols = cols;
-      btn.dataset.rows = rows;
-      btn.appendChild(this._makeLayoutCanvas(cols, rows));
-      const span = document.createElement('span');
-      span.textContent = label;
-      btn.appendChild(span);
-      btn.addEventListener('click', () => {
-        document.querySelectorAll('.layout-btn').forEach(b => b.classList.remove('active-layout'));
-        btn.classList.add('active-layout');
-        CarouselManager.applyLayout(cols, rows);
-        if (typeof AudioManager !== 'undefined') AudioManager.playClick();
-      });
-      bar.appendChild(btn);
-    });
-
-    // Séparateur
-    const sep = document.createElement('div');
-    sep.className = 'reorder-sep';
-    bar.appendChild(sep);
+    // Le choix de la taille de grille est désactivé : la grille reste fixée en 5 × 2.
+    // (plus de boutons layout / séparateur ici)
 
     // Bouton terminer
     const exitBtn = document.createElement('button');
@@ -468,7 +440,7 @@ const TileReorder = {
     // Toast
     const toast = document.createElement('div');
     toast.id = 'reorder-toast';
-    toast.textContent = '✦ Maintenir appuyé · Glisse les icônes · Choisis le layout';
+    toast.textContent = '✦ Maintenir appuyé · Glisse les icônes pour réorganiser';
     document.body.appendChild(toast);
   },
 

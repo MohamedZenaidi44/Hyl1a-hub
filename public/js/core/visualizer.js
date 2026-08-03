@@ -15,7 +15,7 @@ const ModernVisualizer = {
   getAudioBarsColor: function() {
     const value = getComputedStyle(document.documentElement).getPropertyValue('--audio-bars-color').trim();
     if (value) return value;
-    return window.ThemeManager && window.ThemeManager.currentTheme === 'black' ? '#f5f5f5' : '#101010';
+    return window.ThemeManager && window.ThemeManager.currentTheme === 'black' ? '#f5f5f5' : '#0aa8ff';
   },
   
   init: function() {

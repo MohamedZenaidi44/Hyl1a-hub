@@ -1,17 +1,6 @@
 /**
  * gba.js — apps/gba/js/gba.js
- *
- * Écran de sélection GBA — inspiré de la XMB (PSP) et des interfaces
- * modernes façon PS5 / Steam Big Picture (structure IISU), mais avec
- * une identité graphique propre :
- *   - colonne verticale de jaquettes empilées, une seule mise en avant
- *   - fond transparent : le fond d'écran de l'accueil (bg-video) reste
- *     visible derrière l'interface, pas de panneaux blancs/opaques
- *   - panneau d'info à droite : titre, description, temps de jeu,
- *     bouton Jouer, aperçu du jeu
- *
- * NOTE: cette interface est volontairement neuve — elle ne réutilise
- * pas les classes/styles de l'ancienne version "Frutiger Aero".
+ * Écran de sélection GBA 
  */
 
 const GBA_GAMES = [
@@ -48,81 +37,53 @@ const GBA_GAMES = [
       'public/assets/gba/screenshots/pokemon-emeraude/3.png',
     ],
   },
-  {
-    name: 'Castlevania - Aria of Sorrow',
+
+ 
+{
+    name: 'Castlevania: Aria of Sorrow',
     file: 'https://pub-045046eb23854c6e897afff1193bf9bf.r2.dev/gba/Castlevania%20-%20Aria%20of%20Sorrow.zip',
-    cover: 'public/assets/gba/covers/castlevania-aria-of-sorrow.jpg',
-    description: "En l'an 2035, Soma Cruz se retrouve piégé dans un château hanté apparu lors d'une éclipse solaire. Doté du pouvoir d'absorber les âmes des monstres qu'il vainc, il explore un vaste labyrinthe gothique pour percer le mystère de son propre destin.",
+    cover: 'public/assets/gba/covers/Castlevania1.jpg',
+    description: "En l'an 2035, Soma Cruz est entraîné dans le château de Dracula, où il découvre un mystérieux pouvoir lui permettant d'absorber les âmes de ses ennemis. Explorez le château, affrontez des créatures redoutables et percez le secret de votre destinée.",
     screenshots: [
-      'public/assets/gba/screenshots/castlevania-aria-of-sorrow/1.jpg',
-      'public/assets/gba/screenshots/castlevania-aria-of-sorrow/2.jpg',
-      'public/assets/gba/screenshots/castlevania-aria-of-sorrow/3.jpg',
+      'public/assets/gba/screenshots/Castlevania-Aria/image 1.webp',
+      'public/assets/gba/screenshots/Castlevania-Aria/image 2.jpg',
+      'public/assets/gba/screenshots/Castlevania-Aria/image 3.png',
     ],
   },
+
   {
     name: 'Final Fantasy VI Advance',
     file: 'https://pub-045046eb23854c6e897afff1193bf9bf.r2.dev/gba/Final%20Fantasy%20VI%20Advance.zip',
-    cover: 'public/assets/gba/covers/final-fantasy-vi-advance.jpg',
-    description: "Dans un monde ravagé par la magie et la machine, un groupe de rebelles s'oppose à l'Empire Gestahlien et au bouffon démoniaque Kefka. Cette version Advance ajoute de nouveaux donjons, objets et l'Arène des Dragons.",
+    cover: 'public/assets/gba/covers/Final-Fantasy-VI-Advance.jpg',
+    description: "Dans un monde où la magie renaît, un groupe de héros s'unit pour s'opposer à l'Empire et au dangereux Kefka. Vivez une aventure épique mêlant combats au tour par tour, personnages mémorables et histoire riche en émotions.",
     screenshots: [
-      'public/assets/gba/screenshots/final-fantasy-vi-advance/1.jpg',
-      'public/assets/gba/screenshots/final-fantasy-vi-advance/2.jpg',
-      'public/assets/gba/screenshots/final-fantasy-vi-advance/3.jpg',
+      'public/assets/gba/screenshots/Final-Fantasy-VI-Advance/image 1.webp',
+      'public/assets/gba/screenshots/Final-Fantasy-VI-Advance/image 2.jpg',
+      'public/assets/gba/screenshots/Final-Fantasy-VI-Advance/image 3.jpg',
     ],
   },
+
+ {
+    name: 'Golden Sun: The Lost Age',
+    file: 'https://pub-045046eb23854c6e897afff1193bf9bf.r2.dev/gba/Golden%20Sun%20-%20L%27Age%20Perdu.zip',
+    cover: 'public/assets/gba/covers/Golden-Sun-The-Lost-Age.jpg',
+    description: "Dans un monde où la magie renaît, un groupe de héros s'unit pour s'opposer à l'Empire et au dangereux Kefka. Vivez une aventure épique mêlant combats au tour par tour, personnages mémorables et histoire riche en émotions.",
+    screenshots: [
+      'public/assets/gba/screenshots/Golden-Sun-The-Lost-Age/image 1.webp',
+      'public/assets/gba/screenshots/Golden-Sun-The-Lost-Age/image 2.jpg',
+      'public/assets/gba/screenshots/Golden-Sun-The-Lost-Age/image 3.png',
+    ],
+  },
+
   {
     name: 'Fire Emblem',
     file: 'https://pub-045046eb23854c6e897afff1193bf9bf.r2.dev/gba/Fire%20Emblem.zip',
-    cover: 'public/assets/gba/covers/fire-emblem.jpg',
-    description: "Premier épisode occidental de la saga, ce tactical-RPG suit le prince Eliwood dans une guerre tragique à travers le continent d'Elibe. Chaque unité perdue au combat disparaît définitivement, imposant prudence et stratégie.",
+    cover: 'public/assets/gba/covers/Fire-Emblem.jpg',
+    description: "Dans un monde où la magie renaît, un groupe de héros s'unit pour s'opposer à l'Empire et au dangereux Kefka. Vivez une aventure épique mêlant combats au tour par tour, personnages mémorables et histoire riche en émotions.",
     screenshots: [
-      'public/assets/gba/screenshots/fire-emblem/1.jpg',
-      'public/assets/gba/screenshots/fire-emblem/2.jpg',
-      'public/assets/gba/screenshots/fire-emblem/3.jpg',
-    ],
-  },
-  {
-    name: "Golden Sun - L'Âge Perdu",
-    file: "https://pub-045046eb23854c6e897afff1193bf9bf.r2.dev/gba/Golden%20Sun%20-%20L'Age%20Perdu.zip",
-    cover: 'public/assets/gba/covers/golden-sun-lage-perdu.jpg',
-    description: "Suite directe de Golden Sun, Félix et ses compagnons poursuivent leur quête pour allumer les Phares Elémentaires, tandis qu'Isaac et son groupe tentent de les en empêcher pour sauver le monde de Weyard.",
-    screenshots: [
-      'public/assets/gba/screenshots/golden-sun-lage-perdu/1.jpg',
-      'public/assets/gba/screenshots/golden-sun-lage-perdu/2.jpg',
-      'public/assets/gba/screenshots/golden-sun-lage-perdu/3.jpg',
-    ],
-  },
-  {
-    name: 'Metroid Fusion',
-    file: 'https://pub-045046eb23854c6e897afff1193bf9bf.r2.dev/gba/Metroid%20Fusion.zip',
-    cover: 'public/assets/gba/covers/metroid-fusion.jpg',
-    description: "Infectée par le parasite X, Samus Aran doit composer avec une IA de bord autoritaire et un doppelgänger appelé SA-X, aussi puissant qu'elle, qui rôde dans les couloirs de la station BSL.",
-    screenshots: [
-      'public/assets/gba/screenshots/metroid-fusion/1.jpg',
-      'public/assets/gba/screenshots/metroid-fusion/2.jpg',
-      'public/assets/gba/screenshots/metroid-fusion/3.jpg',
-    ],
-  },
-  {
-    name: 'Pokémon Version Rouge Feu',
-    file: 'https://pub-045046eb23854c6e897afff1193bf9bf.r2.dev/gba/Pokemon%20-%20Version%20Rouge%20Feu%20(France).gba',
-    cover: 'public/assets/gba/covers/pokemon-rouge-feu.jpg',
-    description: "Remake du tout premier jeu Pokémon, votre aventure débute à Bourg Palette. Explorez la région de Kanto, affrontez les huit Champions d'Arène et la Ligue Pokémon, tout en déjouant les plans de la Team Rocket.",
-    screenshots: [
-      'public/assets/gba/screenshots/pokemon-rouge-feu/1.jpg',
-      'public/assets/gba/screenshots/pokemon-rouge-feu/2.jpg',
-      'public/assets/gba/screenshots/pokemon-rouge-feu/3.jpg',
-    ],
-  },
-  {
-    name: 'Pokémon Donjon Mystère - Équipe de Secours Rouge',
-    file: 'https://pub-045046eb23854c6e897afff1193bf9bf.r2.dev/gba/Pokemon%20Donjon%20Mystre%20%20Equipe%20de%20Secours%20Rouge.zip',
-    cover: 'public/assets/gba/covers/pokemon-donjon-mystere.jpg',
-    description: "Transformé en Pokémon suite à un mystérieux évènement, vous fondez avec un compagnon une équipe de secours chargée d'explorer des donjons générés aléatoirement pour venir en aide aux Pokémon en détresse.",
-    screenshots: [
-      'public/assets/gba/screenshots/pokemon-donjon-mystere/1.jpg',
-      'public/assets/gba/screenshots/pokemon-donjon-mystere/2.jpg',
-      'public/assets/gba/screenshots/pokemon-donjon-mystere/3.jpg',
+      'public/assets/gba/screenshots/Fire-Emblem/image 1.png',
+      'public/assets/gba/screenshots/Fire-Emblem/image 2.jpg',
+      'public/assets/gba/screenshots/Fire-Emblem/image 3.jpg',
     ],
   },
 ];

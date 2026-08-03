@@ -14,7 +14,7 @@ const ThemeManager = {
       previewVideo: 'public/assets/icons/video/3dsW.mp4',
       accentColor: '#101010',
       textColor: '#111111',
-      audioBarsColor: '#101010',
+      audioBarsColor: '#0aa8ff',
       appGridBg: 'linear-gradient(160deg, rgba(255, 255, 255, 0.68) 0%, rgba(232, 240, 248, 0.50) 100%)',
       appGridBorder: 'rgba(255, 255, 255, 0.45)',
       pillBg: 'linear-gradient(to bottom, rgba(255,255,255,0.96), rgba(238,238,238,0.92))',

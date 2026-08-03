@@ -1,0 +1,141 @@
+diff --git a/public/css/hub.css b/public/css/hub.css
+index d22f6e9..5204d66 100644
+--- a/public/css/hub.css
++++ b/public/css/hub.css
+@@ -446,8 +446,8 @@ body.app-open-active #companion-widget {
+   flex-direction: column;
+   align-items: center;
+   justify-content: center;
+-  margin-left: 0;
+-  padding: 0 3vw 0 5vw;
++  margin-left: 6vw;
++  padding: 0 2vw 0 3vw;
+   pointer-events: none;
+   min-width: 320px;
+   max-width: 620px;
+diff --git a/public/css/nowPlaying.css b/public/css/nowPlaying.css
+index a128cd2..c3fdb90 100644
+--- a/public/css/nowPlaying.css
++++ b/public/css/nowPlaying.css
+@@ -86,7 +86,7 @@
+ 
+ .now-playing-bars span {
+     width: 4px;
+-    background: var(--audio-bars-color, #101010);
++    background: var(--audio-bars-color, #0aa8ff);
+     border-radius: 2px;
+     animation: bars-grow 1s infinite ease-in-out;
+ }
+diff --git a/public/js/core/carousel.js b/public/js/core/carousel.js
+index 1df8817..d93d803 100644
+--- a/public/js/core/carousel.js
++++ b/public/js/core/carousel.js
+@@ -197,12 +197,10 @@ const CarouselManager = {
+   },
+ 
+   loadSavedLayout: function () {
+-    const saved = localStorage.getItem('gridLayout');
+-    if (!saved) return;
+-    try {
+-      const { cols, rows } = JSON.parse(saved);
+-      this.applyLayout(cols, rows);
+-    } catch {}
++    // Taille de grille verrouillée sur 5 × 2 : on ignore tout ancien layout
++    // qui aurait pu être sauvegardé avant ce verrouillage.
++    localStorage.setItem('gridLayout', JSON.stringify({ cols: 5, rows: 2 }));
++    this.applyLayout(5, 2);
+   }
+ };
+ 
+@@ -218,14 +216,9 @@ const TileReorder = {
+   _holdTimer: null,
+   _dragOverTile: null,
+ 
+-  // Layouts prédéfinis : { label, cols, rows }
++  // Layout unique imposé : 5 × 2 (le changement de taille de grille est désactivé)
+   LAYOUTS: [
+     { label: '5 × 2', cols: 5, rows: 2 },
+-    { label: '4 × 3', cols: 4, rows: 3 },
+-    { label: '3 × 4', cols: 3, rows: 4 },
+-    { label: '6 × 2', cols: 6, rows: 2 },
+-    { label: '4 × 2', cols: 4, rows: 2 },
+-    { label: '3 × 3', cols: 3, rows: 3 },
+   ],
+ 
+   init: function () {
+@@ -419,7 +412,7 @@ const TileReorder = {
+     // Bouton toggle rapide
+     const toggleBtn = document.createElement('button');
+     toggleBtn.id = 'reorder-toggle-btn';
+-    toggleBtn.title = 'Réorganiser / Changer le layout';
++    toggleBtn.title = 'Réorganiser les icônes';
+     toggleBtn.textContent = '⊞';
+     toggleBtn.addEventListener('click', () => {
+       if (this.active) this.exitReorderMode();
+@@ -432,29 +425,8 @@ const TileReorder = {
+     const bar = document.createElement('div');
+     bar.id = 'reorder-bar';
+ 
+-    // Boutons layout
+-    this.LAYOUTS.forEach(({ label, cols, rows }) => {
+-      const btn = document.createElement('button');
+-      btn.className = 'layout-btn';
+-      btn.dataset.cols = cols;
+-      btn.dataset.rows = rows;
+-      btn.appendChild(this._makeLayoutCanvas(cols, rows));
+-      const span = document.createElement('span');
+-      span.textContent = label;
+-      btn.appendChild(span);
+-      btn.addEventListener('click', () => {
+-        document.querySelectorAll('.layout-btn').forEach(b => b.classList.remove('active-layout'));
+-        btn.classList.add('active-layout');
+-        CarouselManager.applyLayout(cols, rows);
+-        if (typeof AudioManager !== 'undefined') AudioManager.playClick();
+-      });
+-      bar.appendChild(btn);
+-    });
+-
+-    // Séparateur
+-    const sep = document.createElement('div');
+-    sep.className = 'reorder-sep';
+-    bar.appendChild(sep);
++    // Le choix de la taille de grille est désactivé : la grille reste fixée en 5 × 2.
++    // (plus de boutons layout / séparateur ici)
+ 
+     // Bouton terminer
+     const exitBtn = document.createElement('button');
+@@ -468,7 +440,7 @@ const TileReorder = {
+     // Toast
+     const toast = document.createElement('div');
+     toast.id = 'reorder-toast';
+-    toast.textContent = '✦ Maintenir appuyé · Glisse les icônes · Choisis le layout';
++    toast.textContent = '✦ Maintenir appuyé · Glisse les icônes pour réorganiser';
+     document.body.appendChild(toast);
+   },
+ 
+diff --git a/public/js/core/themeManager.js b/public/js/core/themeManager.js
+index 3dd58cb..7d0ec5c 100644
+--- a/public/js/core/themeManager.js
++++ b/public/js/core/themeManager.js
+@@ -14,7 +14,7 @@ const ThemeManager = {
+       previewVideo: 'public/assets/icons/video/3dsW.mp4',
+       accentColor: '#101010',
+       textColor: '#111111',
+-      audioBarsColor: '#101010',
++      audioBarsColor: '#0aa8ff',
+       appGridBg: 'linear-gradient(160deg, rgba(255, 255, 255, 0.68) 0%, rgba(232, 240, 248, 0.50) 100%)',
+       appGridBorder: 'rgba(255, 255, 255, 0.45)',
+       pillBg: 'linear-gradient(to bottom, rgba(255,255,255,0.96), rgba(238,238,238,0.92))',
+diff --git a/public/js/core/visualizer.js b/public/js/core/visualizer.js
+index be04069..a36834d 100644
+--- a/public/js/core/visualizer.js
++++ b/public/js/core/visualizer.js
+@@ -15,7 +15,7 @@ const ModernVisualizer = {
+   getAudioBarsColor: function() {
+     const value = getComputedStyle(document.documentElement).getPropertyValue('--audio-bars-color').trim();
+     if (value) return value;
+-    return window.ThemeManager && window.ThemeManager.currentTheme === 'black' ? '#f5f5f5' : '#101010';
++    return window.ThemeManager && window.ThemeManager.currentTheme === 'black' ? '#f5f5f5' : '#0aa8ff';
+   },
+   
+   init: function() {

@@ -86,7 +86,7 @@
 
 .now-playing-bars span {
     width: 4px;
-    background: var(--audio-bars-color, #101010);
+    background: var(--audio-bars-color, #0aa8ff);
     border-radius: 2px;
     animation: bars-grow 1s infinite ease-in-out;
 }
