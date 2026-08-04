@@ -18,34 +18,27 @@ document.addEventListener('DOMContentLoaded', () => {
     window.addEventListener('firebase-ready', () => initAuth(), { once: true });
   }
   if (typeof initMiiPlaza === 'function') initMiiPlaza(); // Initialize Mii background characters
-  initCompanion();        // Initialize virtual companion
 
-  // Auto-play music on first user interaction (browser requires user gesture)
-  function autoPlayOnce() {
+  // La musique du hub NE démarre PLUS automatiquement au chargement de la page :
+  // elle attend que l'écran d'avertissement Wii soit refermé (touche/clic sur
+  // "Press A to continue", voir wiiWarning.js) pour ne jamais se superposer au
+  // son du login ou de l'écran Wii.
+  function startHubMusic() {
     if (typeof AudioManager !== 'undefined' && !AudioManager.isPlayingMusic && !AudioManager.isExternalMusicPlaying) {
       AudioManager.playNextMusic();
-      // Update visualizer display
       if (window.updateVisualizerDisplay) window.updateVisualizerDisplay();
     }
-    document.removeEventListener('click', autoPlayOnce);
-    document.removeEventListener('keydown', autoPlayOnce);
   }
 
-  // Try aggressive immediate autoplay (might be blocked by browser policy)
-  setTimeout(() => {
-    if (typeof AudioManager !== 'undefined' && !AudioManager.isPlayingMusic) {
-      try {
-        AudioManager.playNextMusic();
-        if (window.updateVisualizerDisplay) window.updateVisualizerDisplay();
-        document.removeEventListener('click', autoPlayOnce);
-        document.removeEventListener('keydown', autoPlayOnce);
-      } catch (e) { /* Blocked by browser */ }
-    }
-  }, 1000);
+  document.addEventListener('hylia:wii-warning-dismissed', startHubMusic, { once: true });
 
-  // Fallback: start on first interaction if blocked
-  document.addEventListener('click', autoPlayOnce);
-  document.addEventListener('keydown', autoPlayOnce);
+  // Filet de sécurité : si jamais l'écran Wii n'est pas présent dans la page,
+  // on retombe sur l'ancien comportement (démarrage au premier clic/touche)
+  // pour ne jamais rester sans musique.
+  if (!document.getElementById('wii-warning-overlay')) {
+    document.addEventListener('click', startHubMusic, { once: true });
+    document.addEventListener('keydown', startHubMusic, { once: true });
+  }
 });
 
 /* ============================================================
@@ -508,14 +501,17 @@ function initAuth() {
   const errorMsg = document.getElementById('auth-error');
   const topUsername = document.getElementById('top-username');
 
-  // Check if logged in via local storage fallback (Firebase auth listener will overwrite this)
-  const currentUser = Auth.getCurrentUser();
-  if (currentUser) {
-    overlay.style.display = 'none';
-    if (topUsername) topUsername.textContent = currentUser;
-  } else {
-    overlay.style.display = 'flex';
-    generateAuthBackground();
+  // On ne se fie plus au localStorage pour décider de sauter le login :
+  // cette valeur peut rester "collée" d'une session précédente même si elle
+  // n'est plus valide côté Firebase, ce qui bloquait totalement l'accès au
+  // formulaire de connexion. Le login s'affiche donc TOUJOURS par défaut ;
+  // seul Firebase (onAuthStateChanged dans auth.js) peut le masquer, une fois
+  // qu'il a réellement confirmé une session active.
+  overlay.style.display = 'flex';
+  generateAuthBackground();
+  if (topUsername) {
+    const cachedUser = Auth.getCurrentUser();
+    if (cachedUser) topUsername.textContent = cachedUser; // pré-remplissage cosmétique uniquement
   }
 
   // Re-load current user Mii when called manually
@@ -626,11 +622,9 @@ function initAuth() {
       errorMsg.style.color = '#7eff7e'; // green success
       errorMsg.textContent = res.message;
 
-      // Start music automatically on login successfully
-      if (typeof AudioManager !== 'undefined') {
-        AudioManager.playNextMusic();
-        if (window.updateVisualizerDisplay) window.updateVisualizerDisplay();
-      }
+      // La musique du hub ne démarre plus ici : elle attend la fermeture de
+      // l'écran d'avertissement Wii (évènement 'hylia:wii-warning-dismissed'
+      // écouté dans app.js) pour ne pas se superposer au son de cet écran.
 
       // Short delay for user feedback on successful registration/login
       setTimeout(() => {

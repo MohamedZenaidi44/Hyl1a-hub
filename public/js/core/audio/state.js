@@ -28,9 +28,8 @@ export const AudioState = {
   },
 
   playlist: [
-    { name: 'Dancing Fantasy - Aisha - Javi Chalzard', file: 'public/assets/audio/Dancing Fantasy - Aisha - Javi Chalzard.mp3', cover: 'public/assets/icons/eshop.webp' },
-    { name: 'channel music - WII', file: 'public/assets/audio/channel music - WII.mp3', cover: 'public/assets/icons/miiplaza.webp' },
-    { name: 'Beyond The Horizon', file: 'public/assets/audio/Beyond The Horizon.mp3', cover: 'public/assets/icons/nico.webp' },
-    { name: 'The place of your dreams', file: 'public/assets/audio/The place of your dreams.mp3', cover: 'public/assets/icons/miiplaza.webp' }
+    { name: 'DSi Camera Album', file: 'public/assets/OST/DSi  Camera Album.mp3', cover: 'public/assets/icons/miiplaza.webp' },
+    { name: 'Home Menu', file: 'public/assets/OST/Home Menu.mp3', cover: 'public/assets/icons/miiplaza.webp' },
+    { name: 'Wii U Home Menu', file: 'public/assets/OST/Wii U Home Menu.mp3', cover: 'public/assets/icons/miiplaza.webp' }
   ]
 };

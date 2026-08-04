@@ -12,7 +12,28 @@ export default function init() {
   });
   
   if (!AudioState._hasSetupFallback) {
+    // Tant que le login (#auth-overlay) ou l'écran d'avertissement Wii
+    // (#wii-warning-overlay) sont encore affichés, un clic ne doit PAS lancer
+    // la musique du hub — sinon elle démarre en même temps que le son du
+    // login/de l'écran Wii. On ignore les clics tant que l'intro n'est pas
+    // terminée ; l'écouteur reste actif et retentera au clic suivant.
+    const isIntroBlocking = () => {
+      const authOverlay = document.getElementById('auth-overlay');
+      const wiiOverlay = document.getElementById('wii-warning-overlay');
+
+      const authVisible = authOverlay &&
+        window.getComputedStyle(authOverlay).display !== 'none';
+
+      const wiiVisible = wiiOverlay &&
+        window.getComputedStyle(wiiOverlay).display !== 'none' &&
+        !wiiOverlay.classList.contains('is-hiding');
+
+      return !!authVisible || !!wiiVisible;
+    };
+
     const playPending = () => {
+      if (isIntroBlocking()) return; // on retentera au prochain clic/touche
+
       if (AudioState._pendingConnectSuccess) {
         _play('connectSuccess');
         AudioState._pendingConnectSuccess = false;

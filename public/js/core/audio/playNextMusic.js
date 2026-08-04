@@ -13,8 +13,11 @@ export default function playNextMusic() {
 
   let nextIndex;
   if (AudioState.currentTrackIndex === -1) {
-    nextIndex = AudioState.playlist.findIndex(t => t.name.toLowerCase() === 'bxnji');
-    if (nextIndex === -1) nextIndex = 0;
+    // Premier lancement : piste aléatoire (au lieu de toujours retomber sur
+    // l'index 0 via une recherche de nom de piste qui n'existe plus).
+    nextIndex = AudioState.playlist.length > 0
+      ? Math.floor(Math.random() * AudioState.playlist.length)
+      : 0;
   } else if (AudioState.playlist.length > 1) {
     do { nextIndex = Math.floor(Math.random() * AudioState.playlist.length); } while (nextIndex === AudioState.currentTrackIndex);
   } else {

@@ -34,31 +34,7 @@
     <source src="public/assets/icons/video/3dsW.mp4" type="video/mp4">
   </video>
 
-  <!-- WII WARNING SCREEN (avant le login) -->
-  <div id="wii-warning-overlay">
-    <div class="wii-warning-content">
-      <div class="wii-warning-header">
-        <svg class="wii-warning-triangle" viewBox="0 0 200 180" xmlns="http://www.w3.org/2000/svg">
-          <path d="M100 8 C105 8 110 11 112.5 16.5 L192 156 C197 165 191 176 180 176 L20 176 C9 176 3 165 8 156 L87.5 16.5 C90 11 95 8 100 8 Z" fill="#ffcc00" stroke="#141414" stroke-width="6"/>
-          <rect x="90" y="58" width="20" height="62" rx="4" fill="#141414"/>
-          <circle cx="100" cy="140" r="11" fill="#141414"/>
-        </svg>
-        <h1 class="wii-warning-title">WARNING&#8211;HEALTH AND SAFETY</h1>
-      </div>
-
-      <p class="wii-warning-body">Please use the Hylia Plaza strap, as controllers do not have a flared base and can completely insert into an orifice, become lodged, and require medical intervention to remove.</p>
-
-      <div class="wii-warning-online">
-        <span>Also online at</span><br>
-        <a class="wii-warning-github" href="https://web2-rho-one.vercel.app/" target="_blank" rel="noopener noreferrer">
-          hyl1a-web.vercel.app
-        </a>
-      </div>
-    </div>
-    <div class="wii-warning-continue">Press <span class="wii-a-btn">A</span> to continue.</div>
-  </div>
-
-  <!-- AUTHENTICATION OVERLAY -->
+  <!-- AUTHENTICATION OVERLAY (affiché en premier, avant le menu Wii) -->
   <div id="auth-overlay"
     style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 15, 15, 0.85); display: flex; align-items: center; justify-content: center; z-index: 10000; flex-direction: column; backdrop-filter: blur(10px); overflow: hidden;">
     <div id="auth-bg" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: -1;"></div>
@@ -92,8 +68,48 @@
   </style>
   </div>
 
+  <!-- WII WARNING SCREEN (affiché après le login, une fois qu'on a une interaction utilisateur pour le son) -->
+  <div id="wii-warning-overlay">
+    <div class="wii-warning-content">
+      <div class="wii-warning-header">
+        <svg class="wii-warning-triangle" viewBox="0 0 200 180" xmlns="http://www.w3.org/2000/svg">
+          <path d="M100 8 C105 8 110 11 112.5 16.5 L192 156 C197 165 191 176 180 176 L20 176 C9 176 3 165 8 156 L87.5 16.5 C90 11 95 8 100 8 Z" fill="#ffcc00" stroke="#141414" stroke-width="6"/>
+          <rect x="90" y="58" width="20" height="62" rx="4" fill="#141414"/>
+          <circle cx="100" cy="140" r="11" fill="#141414"/>
+        </svg>
+        <h1 class="wii-warning-title">WARNING&#8211;HEALTH AND SAFETY</h1>
+      </div>
+
+      <p class="wii-warning-body">Please use the Hylia Plaza strap, as controllers do not have a flared base and can completely insert into an orifice, become lodged, and require medical intervention to remove.</p>
+
+      <div class="wii-warning-online">
+        <span>Also online at</span><br>
+        <a class="wii-warning-github" href="https://web2-rho-one.vercel.app/" target="_blank" rel="noopener noreferrer">
+          hyl1a-web.vercel.app
+        </a>
+      </div>
+    </div>
+    <div class="wii-warning-continue">Press <span class="wii-a-btn">A</span> to continue.</div>
+  </div>
+
   <!-- MII PLAZA LAYER -->
   <div id="mii-plaza-layer"></div>
+
+  <!-- CHANGELOG PANEL — journal des mises à jour, tout à droite -->
+  <div id="changelog-panel">
+    <div id="changelog-header">
+      <span id="changelog-icon">🛠️</span>
+      <span id="changelog-title">Mises à jour</span>
+    </div>
+    <div id="changelog-list">
+      <!-- Chaque entrée : .changelog-entry avec .changelog-date + .changelog-item-title + .changelog-item-desc -->
+      <div class="changelog-entry">
+        <div class="changelog-date">À venir</div>
+        <div class="changelog-item-title">Journal des mises à jour</div>
+        <div class="changelog-item-desc">Les prochaines mises à jour du site apparaîtront ici.</div>
+      </div>
+    </div>
+  </div>
 
   <!-- SOCIAL OVERLAY -->
   <div id="social-overlay" class="hidden">
@@ -219,8 +235,8 @@
   <!-- huge-profile-btn masqué -->
   <div id="huge-profile-btn" style="display:none!important"></div>
 
-  <!-- Heure supprimée (clock-panel masqué) -->
-  <div id="clock-panel" style="display:none!important">
+  <!-- Horloge en haut à droite -->
+  <div id="clock-panel">
     <div id="top-time">12:00 <span class="am-pm">PM</span></div>
     <div id="top-date">Monday, Jan 01</div>
   </div>
@@ -253,7 +269,7 @@
           <div class="grid-tile tile-wiiu-small app-trigger"
                data-app="gallery"
                data-title="Memory Gallery"
-               data-description="MET LA DESCRIPTION ICI"
+               data-description="Retrouve tes captures d'écran prises en jeu grâce à une touche dédiée. (Bientôt disponible)"
                data-preview=""
                data-page="0" tabindex="0">
             <img class="tile-bg-img" src="public/assets/icons/app/camera.webp" alt="">
@@ -264,7 +280,7 @@
           <div class="grid-tile tile-wiiu-small app-trigger" id="theme-tile"
                data-app="themes"
                data-title="Themes"
-               data-description="MET LA DESCRIPTION ICI"
+               data-description="Personnalise le fond d'écran de ton hub parmi une sélection de thèmes."
                data-preview=""
                data-page="0" tabindex="0">
             <img class="tile-bg-img" src="public/assets/icons/app/eshop.webp" alt="">
@@ -275,7 +291,7 @@
           <div class="grid-tile tile-wiiu-small app-trigger"
                data-app="miiMaker"
                data-title="Mii Maker"
-               data-description="MET LA DESCRIPTION ICI"
+               data-description="Crée et personnalise ton propre Mii, ton avatar sur Hylia Plaza."
                data-preview=""
                data-page="0" tabindex="0">
             <img class="tile-bg-img" src="public/assets/icons/app/mii.webp" alt="">
@@ -286,7 +302,7 @@
           <div class="grid-tile tile-wiiu-small app-trigger"
                data-app="miiPlaza"
                data-title="Mii Plaza"
-               data-description="MET LA DESCRIPTION ICI"
+               data-description="Fais se rencontrer les Mii de la communauté. (En cours de développement)"
                data-preview=""
                data-page="0" tabindex="0">
             <img class="tile-bg-img" src="public/assets/icons/app/miiplazac.webp" alt="">
@@ -297,7 +313,7 @@
           <div class="grid-tile tile-wiiu-small"
                onclick="if(window.SocialSystem) SocialSystem.openOverlay('global')"
                data-title="Global Chat"
-               data-description="MET LA DESCRIPTION ICI"
+               data-description="Discute avec toute la communauté Hylia Plaza en direct."
                data-preview=""
                data-page="0" tabindex="0">
             <img class="tile-bg-img" src= "public\assets\icons\socialpng.png" alt="">
@@ -308,7 +324,7 @@
           <div class="grid-tile tile-wiiu-small app-trigger"
                data-app="gba"
                data-title="GBA Emulator"
-               data-description="MET LA DESCRIPTION ICI"
+               data-description="Joue à tes jeux Game Boy Advance directement depuis ton navigateur."
                data-preview=""
                data-page="0" tabindex="0">
             <img class="tile-bg-img" src="public/assets/icons/app/gba.webp" alt="">
@@ -319,7 +335,7 @@
           <div class="grid-tile tile-wiiu-small app-trigger"
                data-app="ds"
                data-title="DS Emulator"
-               data-description="MET LA DESCRIPTION ICI"
+               data-description="Joue à tes jeux Nintendo DS directement depuis ton navigateur."
                data-preview=""
                data-page="0" tabindex="0">
             <img class="tile-bg-img" src="public/assets/icons/app/nds.webp" alt="">
@@ -330,7 +346,7 @@
           <div class="grid-tile tile-wiiu-small app-trigger"
                data-app="nes"
                data-title="NES Emulator"
-               data-description="MET LA DESCRIPTION ICI"
+               data-description="Joue à tes jeux NES directement depuis ton navigateur."
                data-preview=""
                data-page="0" tabindex="0">
             <img class="tile-bg-img" src="public\assets\icons\snesx9.png" alt="">
@@ -341,7 +357,7 @@
           <div class="grid-tile tile-wiiu-small app-trigger"
                data-app="n64"
                data-title="N64 Emulator"
-               data-description="MET LA DESCRIPTION ICI"
+               data-description="Joue à tes jeux Nintendo 64 directement depuis ton navigateur."
                data-preview=""
                data-page="0" tabindex="0">
             <img class="tile-bg-img" src="public/assets/icons/app/pj64.webp" alt="">
@@ -354,7 +370,7 @@
           <div class="grid-tile tile-wiiu-small app-trigger"
                data-app="browser"
                data-title="Internet Browser"
-               data-description="MET LA DESCRIPTION ICI"
+               data-description="Navigue sur le web directement depuis Hylia Plaza."
                data-preview=""
                data-page="1" tabindex="0">
             <img class="tile-bg-img" src="public\assets\icons\internet.webp" alt="">
@@ -365,7 +381,7 @@
           <div class="grid-tile tile-wiiu-small app-trigger"
                data-app="miiManager"
                data-title="Mii Manager"
-               data-description="MET LA DESCRIPTION ICI"
+               data-description="Outil de gestion des Mii. (Réservé à l'administration)"
                data-preview=""
                data-page="1" tabindex="0">
             <img class="tile-bg-img" src="public\assets\icons\app\warning.webp" alt="">
@@ -460,12 +476,6 @@
     <button id="vis-next" class="bottom-music-btn">⏭</button>
     <div class="music-info"><span id="vis-track-title">Chargement...</span></div>
     <div class="music-time"><span id="vis-time-current">00:00</span> / <span id="vis-time-total">00:00</span></div>
-  </div>
-  <div id="companion-widget">
-    <div id="companion-bubble">Poyo !</div>
-    <div class="companion-glass">
-      <video autoplay loop muted playsinline id="companion-avatar" src="public/assets/gif/kirby-nintendo.webm" alt="Companion"></video>
-    </div>
   </div>
 
   <!-- DYNAMIC OS WINDOWS -->
