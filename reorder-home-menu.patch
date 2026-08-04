@@ -1,0 +1,118 @@
+diff --git a/index.html b/index.html
+index 52fd76f..8a3acf9 100644
+--- a/index.html
++++ b/index.html
+@@ -266,17 +266,6 @@
+   <div class="tile-wiiu-label">Hyl1a Bio</div>
+ </div>
+ 
+-          <div class="grid-tile tile-wiiu-small app-trigger"
+-               data-app="gallery"
+-               data-title="Memory Gallery"
+-               data-description="Retrouve tes captures d'écran prises en jeu grâce à une touche dédiée. (Bientôt disponible)"
+-               data-preview=""
+-               data-page="0" tabindex="0">
+-            <img class="tile-bg-img" src="public/assets/icons/app/camera.webp" alt="">
+-            <div class="tile-placeholder">Image 2</div>
+-            <div class="tile-wiiu-label">Memory Gallery</div>
+-          </div>
+-
+           <div class="grid-tile tile-wiiu-small app-trigger" id="theme-tile"
+                data-app="themes"
+                data-title="Themes"
+@@ -284,7 +273,7 @@
+                data-preview=""
+                data-page="0" tabindex="0">
+             <img class="tile-bg-img" src="public/assets/icons/app/eshop.webp" alt="">
+-            <div class="tile-placeholder">Image 3</div>
++            <div class="tile-placeholder">Image 2</div>
+             <div class="tile-wiiu-label">Themes</div>
+           </div>
+ 
+@@ -295,7 +284,7 @@
+                data-preview=""
+                data-page="0" tabindex="0">
+             <img class="tile-bg-img" src="public/assets/icons/app/mii.webp" alt="">
+-            <div class="tile-placeholder">Image 4</div>
++            <div class="tile-placeholder">Image 3</div>
+             <div class="tile-wiiu-label">Mii Maker</div>
+           </div>
+ 
+@@ -306,19 +295,19 @@
+                data-preview=""
+                data-page="0" tabindex="0">
+             <img class="tile-bg-img" src="public/assets/icons/app/miiplazac.webp" alt="">
+-            <div class="tile-placeholder">Image 5</div>
++            <div class="tile-placeholder">Image 4</div>
+             <div class="tile-wiiu-label">Mii Plaza</div>
+           </div>
+ 
+-          <div class="grid-tile tile-wiiu-small"
+-               onclick="if(window.SocialSystem) SocialSystem.openOverlay('global')"
+-               data-title="Global Chat"
+-               data-description="Discute avec toute la communauté Hylia Plaza en direct."
++          <div class="grid-tile tile-wiiu-small app-trigger"
++               data-app="gallery"
++               data-title="Memory Gallery"
++               data-description="Retrouve tes captures d'écran prises en jeu grâce à une touche dédiée. (Bientôt disponible)"
+                data-preview=""
+                data-page="0" tabindex="0">
+-            <img class="tile-bg-img" src= "public\assets\icons\socialpng.png" alt="">
+-            <div class="tile-placeholder">Image 6</div>
+-            <div class="tile-wiiu-label">Global Chat</div>
++            <img class="tile-bg-img" src="public/assets/icons/app/camera.webp" alt="">
++            <div class="tile-placeholder">Image 5</div>
++            <div class="tile-wiiu-label">Memory Gallery</div>
+           </div>
+ 
+           <div class="grid-tile tile-wiiu-small app-trigger"
+@@ -328,7 +317,7 @@
+                data-preview=""
+                data-page="0" tabindex="0">
+             <img class="tile-bg-img" src="public/assets/icons/app/gba.webp" alt="">
+-            <div class="tile-placeholder">Image 7</div>
++            <div class="tile-placeholder">Image 6</div>
+             <div class="tile-wiiu-label">GBA Emulator</div>
+           </div>
+ 
+@@ -339,7 +328,7 @@
+                data-preview=""
+                data-page="0" tabindex="0">
+             <img class="tile-bg-img" src="public/assets/icons/app/nds.webp" alt="">
+-            <div class="tile-placeholder">Image 8</div>
++            <div class="tile-placeholder">Image 7</div>
+             <div class="tile-wiiu-label">DS Emulator</div>
+           </div>
+ 
+@@ -350,7 +339,7 @@
+                data-preview=""
+                data-page="0" tabindex="0">
+             <img class="tile-bg-img" src="public\assets\icons\snesx9.png" alt="">
+-            <div class="tile-placeholder">Image 9</div>
++            <div class="tile-placeholder">Image 8</div>
+             <div class="tile-wiiu-label">NES Emulator</div>
+           </div>
+ 
+@@ -361,10 +350,21 @@
+                data-preview=""
+                data-page="0" tabindex="0">
+             <img class="tile-bg-img" src="public/assets/icons/app/pj64.webp" alt="">
+-            <div class="tile-placeholder">Image 10</div>
++            <div class="tile-placeholder">Image 9</div>
+             <div class="tile-wiiu-label">N64 Emulator</div>
+           </div>
+ 
++          <div class="grid-tile tile-wiiu-small"
++               onclick="if(window.SocialSystem) SocialSystem.openOverlay('global')"
++               data-title="Global Chat"
++               data-description="Discute avec toute la communauté Hylia Plaza en direct."
++               data-preview=""
++               data-page="0" tabindex="0">
++            <img class="tile-bg-img" src= "public\assets\icons\socialpng.png" alt="">
++            <div class="tile-placeholder">Image 10</div>
++            <div class="tile-wiiu-label">Global Chat</div>
++          </div>
++
+           <!-- ══ PAGE 1 — 10 tiles ══ -->
+ 
+           <div class="grid-tile tile-wiiu-small app-trigger"
