@@ -18,6 +18,7 @@
   <link rel="stylesheet" href="public/css/splash.css" />
   <link rel="stylesheet" href="public/css/nowPlaying.css" />
   <link rel="stylesheet" href="public/css/auth.css" />
+  <link rel="stylesheet" href="public/css/wiiWarning.css" />
   <link rel="stylesheet" href="public/css/responsive.css" />
 
   <link rel="icon" type="image/webp" href="public/assets/icons/logov2.webp" />
@@ -32,6 +33,30 @@
   <video autoplay loop muted playsinline id="bg-video">
     <source src="public/assets/icons/video/3dsW.mp4" type="video/mp4">
   </video>
+
+  <!-- WII WARNING SCREEN (avant le login) -->
+  <div id="wii-warning-overlay">
+    <div class="wii-warning-content">
+      <div class="wii-warning-header">
+        <svg class="wii-warning-triangle" viewBox="0 0 200 180" xmlns="http://www.w3.org/2000/svg">
+          <path d="M100 8 C105 8 110 11 112.5 16.5 L192 156 C197 165 191 176 180 176 L20 176 C9 176 3 165 8 156 L87.5 16.5 C90 11 95 8 100 8 Z" fill="#ffcc00" stroke="#141414" stroke-width="6"/>
+          <rect x="90" y="58" width="20" height="62" rx="4" fill="#141414"/>
+          <circle cx="100" cy="140" r="11" fill="#141414"/>
+        </svg>
+        <h1 class="wii-warning-title">WARNING&#8211;HEALTH AND SAFETY</h1>
+      </div>
+
+      <p class="wii-warning-body">Please use the Hylia Plaza strap, as controllers do not have a flared base and can completely insert into an orifice, become lodged, and require medical intervention to remove.</p>
+
+      <div class="wii-warning-online">
+        <span>Also online at</span><br>
+        <a class="wii-warning-github" href="https://web2-rho-one.vercel.app/" target="_blank" rel="noopener noreferrer">
+          hyl1a-web.vercel.app
+        </a>
+      </div>
+    </div>
+    <div class="wii-warning-continue">Press <span class="wii-a-btn">A</span> to continue.</div>
+  </div>
 
   <!-- AUTHENTICATION OVERLAY -->
   <div id="auth-overlay"
@@ -463,6 +488,7 @@
   <script type="module" src="public/js/core/audio.js"></script>
 
   <script src="public/js/core/windowManager.js" defer></script>
+  <script src="public/js/core/wiiWarning.js" defer></script>
 
   <script>
     window.process = { env: { NODE_ENV: 'production' } };
