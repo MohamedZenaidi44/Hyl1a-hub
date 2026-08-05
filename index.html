@@ -98,15 +98,46 @@
   <!-- CHANGELOG PANEL — journal des mises à jour, tout à droite -->
   <div id="changelog-panel">
     <div id="changelog-header">
-      <span id="changelog-icon">🛠️</span>
+      <span id="changelog-icon"></span>
       <span id="changelog-title">Mises à jour</span>
     </div>
     <div id="changelog-list">
-      <!-- Chaque entrée : .changelog-entry avec .changelog-date + .changelog-item-title + .changelog-item-desc -->
+      <!-- Chaque entrée : .changelog-entry avec .changelog-item-title + .changelog-item-desc -->
       <div class="changelog-entry">
-        <div class="changelog-date">À venir</div>
-        <div class="changelog-item-title">Journal des mises à jour</div>
-        <div class="changelog-item-desc">Les prochaines mises à jour du site apparaîtront ici.</div>
+        <div class="changelog-item-title">MAJ 9 — Redesign de l'émulateur GBA</div>
+        <div class="changelog-item-desc">L'émulateur GBA a été redessiné avec l'ajout des jaquettes des jeux.</div>
+      </div>
+      <div class="changelog-entry">
+        <div class="changelog-item-title">MAJ 8 — Focus sur le GBA</div>
+        <div class="changelog-item-desc">Les autres émulateurs ont été temporairement désactivés pour se concentrer sur le GBA, en attendant un futur patch commun.</div>
+      </div>
+      <div class="changelog-entry">
+        <div class="changelog-item-title">MAJ 7 — Sauvegardes individuelles</div>
+        <div class="changelog-item-desc">Chaque utilisateur dispose désormais de ses propres sauvegardes sur l'émulateur GBA.</div>
+      </div>
+      <div class="changelog-entry">
+        <div class="changelog-item-title">MAJ 6 — Essai de Mii en 3D</div>
+        <div class="changelog-item-desc">Un essai d'intégration de vrais modèles 3D pour le Mii Maker a été tenté, sans succès pour le moment.</div>
+      </div>
+      <div class="changelog-entry">
+        <div class="changelog-item-title">MAJ 5 — Correctif synchronisation GBA</div>
+        <div class="changelog-item-desc">Travail sur les problèmes de synchronisation des sauvegardes de l'émulateur GBA.</div>
+      </div>
+      <div class="changelog-entry">
+        <div class="changelog-item-title">MAJ 4 — Patch performance GBA</div>
+        <div class="changelog-item-desc">Correction d'un bug de performance sur l'émulateur GBA.</div>
+      </div>
+      <div class="changelog-entry">
+        <div class="changelog-item-title">MAJ 3 — Nouveaux émulateurs</div>
+        <div class="changelog-item-desc">Intégration des émulateurs DS, NES et N64.</div>
+      </div>
+      <div class="changelog-entry">
+        <div class="changelog-item-title">MAJ 2 — Nouveaux jeux GBA</div>
+        <div class="changelog-item-desc">Ajout de nouveaux jeux disponibles sur l'émulateur GBA.</div>
+      </div>
+      <div class="changelog-entry">
+        <div class="changelog-item-title">MAJ 1 — Nouveau menu d'accueil</div>
+        <div class="changelog-item-desc">Le style du menu d'accueil a été simplifié.</div>
       </div>
     </div>
   </div>
@@ -415,7 +446,7 @@
       <div id="app-preview-panel">
         <div id="preview-image-wrap">
           <img id="preview-image" src="" alt="">
-          <div id="preview-image-placeholder">🎮</div>
+          <div id="preview-image-placeholder"></div>
         </div>
         <div id="preview-app-name"></div>
         <div id="preview-app-desc"></div>
