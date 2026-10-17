@@ -1,0 +1,183 @@
+/* ═══════════════════════════════════════════════════════════════════════
+   GBA UI — Thème adaptatif (sélecteur de jeux gxmb)
+   Utilise les variables CSS injectées par ThemeManager
+   Classes réelles extraites de gba.js
+   ═══════════════════════════════════════════════════════════════════════ */
+
+/* ── Fond racine ── */
+.gxmb-root {
+  background: var(--grid-bg, rgba(10, 10, 18, 0.95)) !important;
+  backdrop-filter: blur(24px) !important;
+  -webkit-backdrop-filter: blur(24px) !important;
+}
+
+.gxmb-scrim {
+  background: transparent !important;
+}
+
+/* ── Barre du haut ── */
+.gxmb-topbar {
+  background: var(--panel-bg, rgba(10, 10, 18, 0.9)) !important;
+  border-bottom: 1px solid var(--panel-border, rgba(255,255,255,0.10)) !important;
+}
+
+/* ── Bandeau défilant ── */
+.gxmb-banner-wrap {
+  background: var(--entry-bg, rgba(255,255,255,0.06)) !important;
+  border: 1px solid var(--panel-border, rgba(255,255,255,0.10)) !important;
+}
+
+.gxmb-banner-text {
+  color: var(--panel-text-muted, rgba(255,255,255,0.55)) !important;
+}
+
+/* ── Horloge ── */
+.gxmb-clock-time {
+  color: var(--panel-text, rgba(255,255,255,0.92)) !important;
+}
+
+.gxmb-clock-date {
+  color: var(--panel-text-muted, rgba(255,255,255,0.55)) !important;
+}
+
+/* ── Bouton Retour (exit) ── */
+.gxmb-exit {
+  background: var(--entry-bg, rgba(255,255,255,0.08)) !important;
+  border: 1px solid var(--panel-border, rgba(255,255,255,0.16)) !important;
+  color: var(--panel-text, rgba(255,255,255,0.85)) !important;
+}
+
+.gxmb-exit:hover {
+  background: var(--accent-glow, rgba(0,200,255,0.15)) !important;
+  border-color: var(--accent, rgba(0,200,255,0.5)) !important;
+}
+
+.gxmb-exit b {
+  background: var(--accent, #fff) !important;
+  color: var(--grid-bg, #0a0a0a) !important;
+  border-radius: 50%;
+  width: 18px; height: 18px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+}
+
+/* ── Barre de recherche ── */
+.gxmb-search {
+  background: var(--entry-bg, rgba(255,255,255,0.09)) !important;
+  border: 1px solid var(--panel-border, rgba(255,255,255,0.18)) !important;
+}
+
+.gxmb-search input {
+  color: var(--panel-text, #fff) !important;
+  background: transparent !important;
+}
+
+.gxmb-search input::placeholder {
+  color: var(--panel-text-muted, rgba(255,255,255,0.45)) !important;
+}
+
+.gxmb-search-clear {
+  color: var(--panel-text-muted, rgba(255,255,255,0.55)) !important;
+  background: var(--entry-bg, rgba(255,255,255,0.1)) !important;
+}
+
+.gxmb-count {
+  color: var(--panel-text-muted, rgba(255,255,255,0.4)) !important;
+}
+
+/* ── Cartes de jeux (items dans la pile) ── */
+.gxmb-item {
+  background: var(--tile-bg, rgba(28,32,44,0.80)) !important;
+  border: 1px solid var(--tile-border, rgba(255,255,255,0.12)) !important;
+  box-shadow: var(--tile-shadow, 0 8px 24px rgba(0,0,0,0.4)) !important;
+}
+
+.gxmb-item.active {
+  border-color: var(--accent, rgba(0,200,255,0.85)) !important;
+  box-shadow:
+    0 0 0 2px var(--accent, rgba(0,200,255,0.85)),
+    0 0 20px var(--accent-glow, rgba(0,200,255,0.3)) !important;
+}
+
+.gxmb-fallback-name {
+  color: var(--panel-text, rgba(255,255,255,0.85)) !important;
+}
+
+.gxmb-fallback-glyph {
+  color: var(--panel-text-muted, rgba(255,255,255,0.4)) !important;
+}
+
+/* ── Panneau droite (titre + description + preview) ── */
+.gxmb-panel {
+  background: transparent !important;
+}
+
+.gxmb-eyebrow {
+  color: var(--panel-text-muted, rgba(255,255,255,0.55)) !important;
+}
+
+.gxmb-title {
+  color: var(--panel-text, #fff) !important;
+}
+
+.gxmb-desc {
+  color: var(--panel-text-muted, rgba(255,255,255,0.65)) !important;
+}
+
+/* Frame preview jaquette */
+.gxmb-preview-frame {
+  border: 2px solid var(--panel-border, rgba(255,255,255,0.15)) !important;
+  background: var(--entry-bg, rgba(255,255,255,0.05)) !important;
+}
+
+.gxmb-preview-empty {
+  color: var(--panel-text-muted, rgba(255,255,255,0.35)) !important;
+}
+
+/* ── Flèches navigation (haut / bas) ── */
+.gxmb-nav {
+  color: var(--panel-text-muted, rgba(255,255,255,0.45)) !important;
+}
+
+.gxmb-nav:hover {
+  color: var(--panel-text, rgba(255,255,255,0.9)) !important;
+}
+
+/* ── Bouton Jouer (coin) ── */
+.gxmb-corner {
+  background: linear-gradient(135deg, var(--accent, #00c8ff), var(--accent-dark, #0080d8)) !important;
+  box-shadow: 0 6px 24px var(--accent-glow, rgba(0,200,255,0.45)) !important;
+  color: white !important;
+}
+
+/* ── Dots pagination ── */
+.gxmb-preview-dots span {
+  background: var(--tile-border, rgba(255,255,255,0.28)) !important;
+}
+
+.gxmb-preview-dots span.active {
+  background: var(--accent, rgba(0,200,255,0.85)) !important;
+}
+
+/* ══════════════════════════════════════════════
+   MODE BLANC — adapter pour ne pas rester noir
+   ══════════════════════════════════════════════ */
+
+body.theme-white .gxmb-root {
+  background: rgba(240, 244, 250, 0.92) !important;
+}
+
+body.theme-white .gxmb-topbar {
+  background: rgba(255, 255, 255, 0.88) !important;
+}
+
+body.theme-white .gxmb-banner-text {
+  color: rgba(60, 80, 110, 0.65) !important;
+}
+
+body.theme-white .gxmb-item {
+  background: rgba(255, 255, 255, 0.80) !important;
+  border-color: rgba(200, 215, 230, 0.60) !important;
+}

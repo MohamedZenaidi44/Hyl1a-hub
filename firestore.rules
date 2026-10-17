@@ -1,0 +1,96 @@
+rules_version = '2';
+
+// Recommandations de règles Firestore pour Hylia Plaza.
+// À déployer avec :  firebase deploy --only firestore:rules
+//
+// Tant qu'elles ne sont PAS déployées, les règles existantes de la console
+// Firebase restent en vigueur. Adaptez-les si votre modèle de données diffère.
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function isSelf(uid) {
+      return signedIn() && request.auth.uid == uid;
+    }
+
+    function isAdmin() {
+      return signedIn()
+        && exists(/databases/$(database)/documents/users/$(request.auth.uid))
+        && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+
+    // ── Profils ──────────────────────────────────────────────────────────
+    match /users/{uid} {
+      // Lecture publique aux utilisateurs connectés (annuaire d'amis).
+      allow read: if signedIn();
+      allow create: if isSelf(uid);
+      allow update: if isSelf(uid) || isAdmin();
+      allow delete: if isAdmin();
+
+      match /friend_requests/{reqId} {
+        allow read: if isSelf(uid);
+        // Un utilisateur ne peut s'envoyer lui-même une demande (reqId == son uid).
+        allow create, update, delete: if signedIn() && reqId == request.auth.uid;
+      }
+
+      match /friends/{friendId} {
+        allow read: if isSelf(uid);
+        // Écriture bilatérale nécessaire lors de l'acceptation d'une demande.
+        allow create, delete: if signedIn();
+      }
+    }
+
+    // ── Avatars / Mii ────────────────────────────────────────────────────
+    match /avatars/{uid} {
+      allow read: if signedIn();
+      allow create, update, delete: if isSelf(uid) || isAdmin();
+    }
+
+    // ── Préférences (thème…) ─────────────────────────────────────────────
+    match /settings/{uid} {
+      allow read, write: if isSelf(uid);
+    }
+
+    // ── Chat global ──────────────────────────────────────────────────────
+    match /global_messages/{msgId} {
+      allow read: if signedIn();
+      allow create: if signedIn()
+        && request.resource.data.uid == request.auth.uid
+        && request.resource.data.text is string
+        && request.resource.data.text.size() <= 500;
+      allow update, delete: if isAdmin();
+    }
+
+    // ── Messages privés ──────────────────────────────────────────────────
+    match /private_chats/{chatId} {
+      allow read, write: if signedIn() && request.auth.uid in chatId.split('_');
+
+      match /messages/{msgId} {
+        allow read: if signedIn() && request.auth.uid in chatId.split('_');
+        allow create: if signedIn()
+          && request.auth.uid in chatId.split('_')
+          && request.resource.data.senderId == request.auth.uid;
+        allow update, delete: if false;
+      }
+    }
+
+    // ── Sauvegardes (SaveManager) : saves/{uid}_{platform}_{game} ─────────
+    match /saves/{docId} {
+      allow read, write: if signedIn() && docId.split('_')[0] == request.auth.uid;
+    }
+
+    // ── Temps de jeu ─────────────────────────────────────────────────────
+    match /playtime/{docId} {
+      allow read, write: if signedIn();
+    }
+
+    // ── Refus par défaut ─────────────────────────────────────────────────
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

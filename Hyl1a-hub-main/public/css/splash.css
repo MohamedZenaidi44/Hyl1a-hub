@@ -1,0 +1,73 @@
+/* 3DS-style Splash Screen Styles */
+
+#app-splash-screen {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(255, 255, 255, 0.15); /* Almost transparent to focus on pure blur */
+    backdrop-filter: blur(20px) saturate(1.5); 
+    -webkit-backdrop-filter: blur(20px) saturate(1.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+}
+
+#app-splash-screen.splash-visible {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.splash-content {
+    text-align: center;
+}
+
+#splash-logo {
+    width: 500px; /* ENCORE PLUS GRAND */
+    height: auto;
+    filter: drop-shadow(0 30px 60px rgba(0,0,0,0.3));
+    transform: scale(0);
+}
+
+/* 3DS Animation: Faster pop in */
+.splash-visible #splash-logo {
+    animation: splash-pop-in 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+@keyframes splash-pop-in {
+    0% {
+        transform: scale(0) rotate(-15deg);
+        opacity: 0;
+    }
+    60% {
+        transform: scale(1.1) rotate(5deg);
+        opacity: 1;
+    }
+    80% {
+        transform: scale(0.95) rotate(-2deg);
+    }
+    100% {
+        transform: scale(1) rotate(0deg);
+        opacity: 1;
+    }
+}
+
+.splash-exit #splash-logo {
+    animation: splash-pop-out 0.4s cubic-bezier(0.36, 0, 0.66, -0.56) forwards;
+}
+
+@keyframes splash-pop-out {
+    0% {
+        transform: scale(1);
+        opacity: 1;
+    }
+    100% {
+        transform: scale(1.5);
+        opacity: 0;
+    }
+}

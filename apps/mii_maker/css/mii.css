@@ -1,0 +1,776 @@
+/* mii.css — Mii Maker & Mii Plaza, aligné sur l'identité iiSU / Wii du hub */
+
+:root {
+  --mii-radius: clamp(14px, 1.1vw, 22px);
+}
+
+.mii-fullscreen-container {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100vw; height: 100vh;
+  z-index: 99999;
+  background: transparent;
+  display: flex;
+  flex-direction: column;
+  font-family: 'Inter', 'Nunito', 'Segoe UI', sans-serif;
+  overflow: hidden;
+  color: var(--panel-text, #10201a);
+  animation: miiFadeIn 0.3s ease-out;
+}
+@keyframes miiFadeIn {
+  from { opacity: 0; transform: scale(1.02); }
+  to   { opacity: 1; transform: scale(1); }
+}
+@keyframes miiFadeOut {
+  from { opacity: 1; }
+  to   { opacity: 0; }
+}
+.mii-fullscreen-container.closing {
+  animation: miiFadeOut 0.25s ease-in forwards;
+}
+
+/* ===== SCÃˆNE ===== */
+.mii-screen {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+
+/* Jetons locaux → variables de thème du hub (iiSU) */
+  --mii-hi: rgba(255, 255, 255, 1);
+  --mii-hi-soft: rgba(255, 255, 255, 0.85);
+  --mii-hi-glow: rgba(255, 255, 255, 0.55);
+  --mii-shadow: rgba(20, 45, 25, 0.22);
+  --mii-text-halo: 0 1px 6px rgba(255, 255, 255, 0.95), 0 0 16px rgba(255, 255, 255, 0.75);
+  /* accent = vert Wii U Mii Maker (plus de bleu) */
+  --mii-accent: #3cb85a;
+  --mii-accent-dark: #2a9142;
+  --mii-accent-glow: rgba(60, 184, 90, 0.42);
+/* surfaces "verre dépoli" laissant transparaître le fond animé */
+  --mii-glass: rgba(255, 255, 255, 0.14);
+  --mii-glass-border: rgba(255, 255, 255, 0.5);
+  --mii-tile: rgba(255, 255, 255, 0.26);
+  --mii-tile-border: rgba(255, 255, 255, 0.5);
+  --mii-tile-shadow: 0 6px 20px rgba(20, 45, 25, 0.16), inset 0 1px 0 rgba(255, 255, 255, 0.6);
+  --mii-gloss: linear-gradient(to bottom, rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0));
+  --mii-text: rgba(16, 40, 22, 0.92);
+  --mii-text-muted: rgba(28, 62, 38, 0.7);
+  --mii-entry: rgba(255, 255, 255, 0.18);
+  --mii-field-border: rgba(255, 255, 255, 0.55);
+}
+body.theme-black .mii-screen {
+  --mii-hi: rgba(0, 0, 0, 1);
+  --mii-hi-soft: rgba(0, 0, 0, 0.85);
+  --mii-hi-glow: rgba(0, 0, 0, 0.6);
+  --mii-shadow: rgba(0, 0, 0, 0.5);
+  --mii-text-halo: 0 1px 6px rgba(0, 0, 0, 0.9), 0 0 16px rgba(0, 0, 0, 0.75);
+  --mii-accent: #46cc67;
+  --mii-accent-dark: #2f9f4c;
+  --mii-accent-glow: rgba(70, 204, 103, 0.45);
+  --mii-glass: rgba(255, 255, 255, 0.08);
+  --mii-glass-border: rgba(255, 255, 255, 0.16);
+  --mii-tile: rgba(255, 255, 255, 0.12);
+  --mii-tile-border: rgba(255, 255, 255, 0.18);
+  --mii-tile-shadow: 0 6px 20px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.14);
+  --mii-text: rgba(235, 255, 240, 0.92);
+  --mii-text-muted: rgba(196, 226, 206, 0.7);
+  --mii-entry: rgba(255, 255, 255, 0.08);
+  --mii-field-border: rgba(255, 255, 255, 0.22);
+}
+/* iisu-theme force `body.theme-black button { color: var(--panel-text) } !important`
+   sur TOUS les boutons : on recale ici --panel-text sur la couleur de l'écran Mii
+   (clair sur verre sombre / blanc sur les boutons accent vert). */
+body.theme-black .mii-screen {
+  --panel-text: rgba(235, 255, 240, 0.92);
+}
+
+/* ===== FOND DE SCÈNE — dégradé vert animé façon Mii Maker Wii U ===== */
+.mii-bg-left {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  background:
+    radial-gradient(140% 95% at 50% 0%, rgba(255, 255, 255, 0.34), transparent 62%),
+    linear-gradient(180deg,
+      #6ada82 0%,
+      #6edd84 34%,
+      #7fe398 54%,
+      #b7efc6 74%,
+      #e7f7ec 88%,
+      #ffffff 100%);
+}
+body.theme-black .mii-bg-left {
+  background:
+    radial-gradient(140% 95% at 50% 0%, rgba(160, 255, 205, 0.18), transparent 62%),
+    linear-gradient(180deg,
+      #2fae67 0%,
+      #27995a 36%,
+      #155e36 66%,
+      #08200f 86%,
+      #050d08 100%);
+}
+
+/* ===== BARRE D'ONGLETS (haut) ===== */
+.mii-topbar {
+  position: relative;
+  z-index: 2;
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: safe center;
+  padding: clamp(10px, 1.7vh, 22px) clamp(10px, 2vw, 28px);
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: none;
+}
+.mii-topbar::-webkit-scrollbar { display: none; }
+.mii-cat-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: safe center;
+  gap: clamp(6px, 0.7vw, 12px);
+  min-width: min-content;
+}
+.mii-cat-tab {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  width: clamp(42px, 5.2vh, 60px);
+  height: clamp(42px, 5.2vh, 60px);
+  padding: 0;
+  border-radius: clamp(12px, 1vw, 16px);
+  border: 1px solid var(--mii-tile-border);
+  background: var(--mii-tile);
+  color: var(--mii-text-muted);
+  cursor: pointer;
+  box-shadow: var(--mii-tile-shadow);
+  transition: transform 0.16s, background 0.16s, color 0.16s, border-color 0.16s, box-shadow 0.16s;
+}
+.mii-cat-tab:hover {
+  transform: translateY(-2px);
+  color: var(--mii-text);
+  border-color: var(--mii-hi);
+}
+.mii-cat-tab.active {
+  color: #fff;
+  border-color: transparent;
+  background: linear-gradient(160deg, var(--mii-accent), var(--mii-accent-dark));
+  box-shadow: 0 8px 22px var(--mii-accent-glow), inset 0 1px 0 rgba(255, 255, 255, 0.4);
+}
+.mii-cat-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+.mii-cat-icon svg {
+  display: block;
+  width: 58%;
+  height: 58%;
+}
+
+/* ===== ZONE PRINCIPALE ===== */
+.mii-main {
+  position: relative;
+  z-index: 1;
+  flex: 1 1 auto;
+  min-height: 0;
+  min-width: 0;
+  display: flex;
+  gap: clamp(10px, 1.1vw, 18px);
+  padding: 0 clamp(10px, 1.6vw, 26px) clamp(10px, 1.6vh, 22px);
+}
+
+/* ----- Aperçu (gauche) : laisse voir le fond de scène (net) ----- */
+.mii-preview {
+  position: relative;
+  flex: 0 0 clamp(260px, 34%, 620px);
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+  border-radius: var(--mii-radius);
+  border: 1px solid rgba(255, 255, 255, 0.55);
+  background: rgba(255, 255, 255, 0.05);
+  box-shadow: var(--mii-tile-shadow);
+}
+body.theme-black .mii-preview {
+  border-color: rgba(255, 255, 255, 0.16);
+}
+
+/* lumières qui dérivent lentement */
+.mii-bg-left::before {
+  content: '';
+  position: absolute;
+  inset: -32% -24%;
+  z-index: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(34% 26% at 24% 20%, rgba(255, 255, 255, 0.5), transparent 70%),
+    radial-gradient(30% 22% at 76% 26%, rgba(255, 255, 255, 0.4), transparent 72%),
+    radial-gradient(40% 30% at 62% 84%, rgba(255, 255, 255, 0.34), transparent 74%),
+    radial-gradient(26% 20% at 32% 74%, rgba(174, 255, 208, 0.45), transparent 72%);
+  animation:
+    miiBGFlow 34s ease-in-out infinite alternate,
+    miiShimmer 5.3s ease-in-out infinite;
+}
+body.theme-black .mii-bg-left::before {
+  background:
+    radial-gradient(34% 26% at 24% 20%, rgba(190, 255, 220, 0.16), transparent 70%),
+    radial-gradient(30% 22% at 76% 26%, rgba(255, 255, 255, 0.1), transparent 72%),
+    radial-gradient(40% 30% at 62% 84%, rgba(160, 255, 205, 0.11), transparent 74%),
+    radial-gradient(26% 20% at 32% 74%, rgba(120, 255, 190, 0.13), transparent 72%);
+}
+
+/* étincelles (rythme décalé des lumières) */
+.mii-bg-left::after {
+  content: '';
+  position: absolute;
+  inset: -6%;
+  z-index: 0;
+  pointer-events: none;
+  background-image:
+    radial-gradient(4px 4px at 11% 18%, rgba(255, 255, 255, 0.95), transparent 62%),
+    radial-gradient(3.5px 3.5px at 27% 44%, rgba(255, 255, 255, 0.9), transparent 62%),
+    radial-gradient(5px 5px at 44% 13%, rgba(255, 255, 255, 0.95), transparent 62%),
+    radial-gradient(3.5px 3.5px at 58% 62%, rgba(255, 255, 255, 0.85), transparent 62%),
+    radial-gradient(4px 4px at 72% 31%, rgba(255, 255, 255, 0.9), transparent 62%),
+    radial-gradient(3.5px 3.5px at 88% 55%, rgba(255, 255, 255, 0.9), transparent 62%),
+    radial-gradient(5px 5px at 19% 77%, rgba(255, 255, 255, 0.9), transparent 62%),
+    radial-gradient(4px 4px at 66% 86%, rgba(255, 255, 255, 0.85), transparent 62%),
+    radial-gradient(3.5px 3.5px at 82% 12%, rgba(255, 255, 255, 0.9), transparent 62%),
+    radial-gradient(4px 4px at 38% 68%, rgba(255, 255, 255, 0.85), transparent 62%),
+    radial-gradient(3.5px 3.5px at 93% 84%, rgba(255, 255, 255, 0.85), transparent 62%),
+    radial-gradient(4px 4px at 6% 56%, rgba(255, 255, 255, 0.85), transparent 62%);
+  animation:
+    miiSparkleDrift 46s ease-in-out infinite alternate,
+    miiShimmer 7.1s ease-in-out infinite;
+}
+body.theme-black .mii-bg-left::after {
+  background-image:
+    radial-gradient(4px 4px at 11% 18%, rgba(226, 255, 238, 0.8), transparent 62%),
+    radial-gradient(3.5px 3.5px at 27% 44%, rgba(226, 255, 238, 0.75), transparent 62%),
+    radial-gradient(5px 5px at 44% 13%, rgba(255, 255, 255, 0.85), transparent 62%),
+    radial-gradient(3.5px 3.5px at 58% 62%, rgba(226, 255, 238, 0.7), transparent 62%),
+    radial-gradient(4px 4px at 72% 31%, rgba(226, 255, 238, 0.75), transparent 62%),
+    radial-gradient(3.5px 3.5px at 88% 55%, rgba(255, 255, 255, 0.8), transparent 62%),
+    radial-gradient(5px 5px at 19% 77%, rgba(226, 255, 238, 0.75), transparent 62%),
+    radial-gradient(4px 4px at 66% 86%, rgba(226, 255, 238, 0.7), transparent 62%),
+    radial-gradient(3.5px 3.5px at 82% 12%, rgba(255, 255, 255, 0.8), transparent 62%),
+    radial-gradient(4px 4px at 38% 68%, rgba(226, 255, 238, 0.7), transparent 62%),
+    radial-gradient(3.5px 3.5px at 93% 84%, rgba(226, 255, 238, 0.7), transparent 62%),
+    radial-gradient(4px 4px at 6% 56%, rgba(226, 255, 238, 0.7), transparent 62%);
+}
+
+@keyframes miiBGFlow {
+  0%   { transform: translate3d(-2.5%, -2%, 0) scale(1); }
+  50%  { transform: translate3d(3%, 2.5%, 0) scale(1.07); }
+  100% { transform: translate3d(-1.5%, 3%, 0) scale(1.03); }
+}
+@keyframes miiSparkleDrift {
+  0%   { transform: translate3d(-1.5%, -1%, 0); }
+  50%  { transform: translate3d(2%, 1.5%, 0); }
+  100% { transform: translate3d(-1.5%, -1%, 0); }
+}
+@keyframes miiShimmer {
+  0%, 100% { opacity: 0.45; }
+  50%      { opacity: 1; }
+}
+.mii-preview-3d {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+}
+.mii-preview-3d canvas { display: block; width: 100%; height: 100%; }
+#mii-preview {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  padding: clamp(12px, 2vh, 24px);
+  box-sizing: border-box;
+  display: none;
+  z-index: 1;
+}
+#mii-loading-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: color-mix(in srgb, var(--mii-tile) 80%, transparent);
+  font-weight: 700;
+  font-size: 15px;
+  letter-spacing: 0.04em;
+  color: var(--mii-text-muted);
+  z-index: 10;
+  pointer-events: none;
+}
+
+.mii-preview-tools {
+  position: absolute;
+  top: clamp(10px, 1.4vh, 18px);
+  right: clamp(10px, 1.4vw, 18px);
+  z-index: 6;
+  display: flex;
+  gap: 8px;
+}
+.mii-cat-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: clamp(34px, 4vh, 44px);
+  height: clamp(34px, 4vh, 44px);
+  border-radius: clamp(10px, 1vw, 13px);
+  border: 1px solid var(--mii-glass-border);
+  background: var(--mii-glass);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  color: var(--mii-text);
+  cursor: pointer;
+  font-size: 16px;
+  transition: transform 0.15s, background 0.15s, color 0.15s, border-color 0.15s;
+  flex-shrink: 0;
+  box-shadow: 0 4px 12px var(--mii-shadow);
+}
+.mii-cat-btn:hover {
+  background: var(--mii-accent);
+  border-color: transparent;
+  color: #fff;
+  transform: translateY(-2px);
+}
+.mii-cat-btn.active {
+  background: var(--mii-accent);
+  border-color: transparent;
+  color: #fff;
+}
+
+.mii-quit {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  bottom: clamp(12px, 2vh, 22px);
+  z-index: 6;
+  padding: clamp(10px, 1.3vh, 14px) clamp(24px, 2.2vw, 36px);
+  border-radius: 999px;
+  border: 1px solid var(--mii-glass-border);
+  background: var(--mii-glass);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  color: var(--mii-text);
+  font-size: clamp(14px, 1.3vw, 17px);
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  box-shadow: 0 8px 20px var(--mii-shadow);
+  transition: transform 0.14s, border-color 0.14s, background 0.14s;
+}
+.mii-quit:hover {
+  border-color: var(--mii-hi);
+  transform: translateX(-50%) translateY(-2px);
+}
+.mii-quit:active { transform: translateX(-50%); }
+
+/* ----- Panneau d'options (droite) ----- */
+.mii-options {
+  position: relative;
+  flex: 1 1 auto;
+  min-width: 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  border-radius: var(--mii-radius);
+  overflow: hidden;
+  /* même vert que le fond, mais voilé/flouté (pas de fenêtre blanche) */
+  background:
+    linear-gradient(180deg,
+      rgba(174, 238, 194, 0.40) 0%,
+      rgba(226, 248, 234, 0.30) 55%,
+      rgba(255, 255, 255, 0.24) 100%);
+  border: 1px solid var(--mii-glass-border);
+  box-shadow: 0 18px 50px var(--mii-shadow), inset 0 1px 0 var(--mii-hi-soft);
+  backdrop-filter: blur(26px) saturate(1.15);
+  -webkit-backdrop-filter: blur(26px) saturate(1.15);
+}
+body.theme-black .mii-options {
+  background:
+    linear-gradient(180deg,
+      rgba(56, 158, 100, 0.34) 0%,
+      rgba(10, 40, 22, 0.30) 60%,
+      rgba(5, 20, 11, 0.28) 100%);
+}
+
+.mii-subtabs {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: clamp(10px, 1.4vh, 16px) clamp(12px, 1.4vw, 20px);
+  border-bottom: 1px solid var(--mii-glass-border);
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.mii-subtabs::-webkit-scrollbar { display: none; }
+.mii-subtab {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: clamp(7px, 0.9vh, 10px) clamp(12px, 1.2vw, 18px);
+  border-radius: 999px;
+  border: 1px solid var(--mii-tile-border);
+  background: var(--mii-tile);
+  color: var(--mii-text-muted);
+  font-size: clamp(12px, 1.05vw, 14px);
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: transform 0.15s, background 0.15s, color 0.15s, border-color 0.15s;
+}
+.mii-subtab .mii-cat-icon svg { width: 16px; height: 16px; }
+.mii-subtab:hover { color: var(--mii-text); border-color: var(--mii-hi); transform: translateY(-1px); }
+.mii-subtab.active {
+  color: #fff;
+  border-color: transparent;
+  background: linear-gradient(160deg, var(--mii-accent), var(--mii-accent-dark));
+  box-shadow: 0 6px 18px var(--mii-accent-glow);
+}
+
+.mii-options-body {
+  flex: 1 1 auto;
+  display: flex;
+  min-height: 0;
+  min-width: 0;
+}
+.mii-list-area {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow-y: auto;
+  padding: clamp(12px, 1.4vw, 22px);
+}
+.mii-color-panel {
+  flex: 0 0 clamp(190px, 26%, 360px);
+  min-width: 0;
+  overflow-y: auto;
+  padding: clamp(12px, 1.4vw, 22px);
+  border-left: 1px solid var(--mii-glass-border);
+  background: color-mix(in srgb, var(--mii-entry) 55%, transparent);
+}
+.mii-list-area::-webkit-scrollbar,
+.mii-color-panel::-webkit-scrollbar { width: 10px; }
+.mii-list-area::-webkit-scrollbar-thumb,
+.mii-color-panel::-webkit-scrollbar-thumb {
+  background: var(--mii-text-muted);
+  border-radius: 999px;
+  border: 3px solid transparent;
+  background-clip: content-box;
+}
+
+/* ===== VIGNETTES (liste de formes, adaptation à la largeur) ===== */
+.mii-thumb-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(clamp(66px, 6.5vw, 116px), 1fr));
+  gap: clamp(8px, 0.9vw, 14px);
+  margin-bottom: 16px;
+}
+.mii-thumb {
+  position: relative;
+  aspect-ratio: 82 / 60;
+  padding: 6%;
+  border-radius: clamp(10px, 1vw, 16px);
+  border: 1.5px solid var(--mii-tile-border);
+  background: radial-gradient(circle at 50% 36%, var(--mii-hi-soft) 0%, transparent 78%), var(--mii-tile);
+  cursor: pointer;
+  box-sizing: border-box;
+  transition: transform 0.12s, border-color 0.12s, box-shadow 0.12s;
+}
+.mii-thumb:hover {
+  transform: translateY(-3px);
+  border-color: var(--mii-hi);
+  box-shadow: 0 10px 22px var(--mii-shadow);
+  z-index: 20;
+}
+.mii-thumb.active {
+  border-color: var(--mii-accent);
+  box-shadow: 0 0 0 2px var(--mii-accent), 0 8px 18px var(--mii-accent-glow);
+}
+.mii-thumb-img {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: contain;
+  opacity: 0;
+  transition: opacity 0.25s ease;
+  pointer-events: none;
+  -webkit-user-drag: none;
+  user-select: none;
+}
+.mii-thumb-img.is-loaded { opacity: 1; }
+
+/* ===== PALETTE / RÃ‰GLAGES ===== */
+.mii-palette-label {
+  display: block;
+  font-size: 12px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--mii-text-muted);
+  margin: 4px 0 10px;
+}
+.mii-color-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(clamp(34px, 3.2vw, 52px), 1fr));
+  gap: clamp(8px, 0.8vw, 12px);
+  margin-bottom: 18px;
+}
+.mii-color-swatch {
+  aspect-ratio: 1;
+  border-radius: 50%;
+  border: 3px solid transparent;
+  cursor: pointer;
+  box-sizing: border-box;
+  transition: transform 0.12s, box-shadow 0.12s;
+  box-shadow: inset 0 -3px 6px rgba(0, 0, 0, 0.28), 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+.mii-color-swatch:hover {
+  transform: scale(1.12);
+  box-shadow: 0 0 12px var(--mii-hi-glow);
+  z-index: 2;
+}
+.mii-color-swatch.active {
+  border-color: var(--mii-hi);
+  transform: scale(1.1);
+  box-shadow: 0 0 0 2px var(--mii-accent), 0 0 10px var(--mii-accent-glow);
+}
+
+.mii-section-label {
+  display: block;
+  font-size: 12px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--mii-text-muted);
+  margin: 14px 0 10px;
+}
+.mii-section-label:first-child { margin-top: 0; }
+
+.mii-slider-group {
+  background: var(--mii-entry);
+  border: 1px solid var(--mii-glass-border);
+  border-radius: 12px;
+  padding: 10px 12px;
+  margin-bottom: 12px;
+}
+.mii-slider-label {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--mii-text);
+  margin-bottom: 8px;
+}
+.mii-slider-label .val { color: var(--mii-accent); }
+.mii-stepper {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.mii-step-btn {
+  width: 34px; height: 34px;
+  border-radius: 10px;
+  border: 1px solid var(--mii-tile-border);
+  background: var(--mii-tile);
+  color: var(--mii-text);
+  font-size: 18px;
+  font-weight: 800;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+.mii-step-btn:hover { background: var(--mii-accent); color: #fff; border-color: transparent; }
+.mii-input {
+  flex: 1;
+  min-width: 0;
+  padding: 8px 10px;
+  border: 1px solid var(--mii-field-border);
+  border-radius: 9px;
+  font-size: 14px;
+  font-family: inherit;
+  background: var(--mii-tile);
+  color: var(--mii-text);
+  box-sizing: border-box;
+  text-align: center;
+}
+.mii-input:focus,
+.mii-textarea:focus {
+  outline: none;
+  border-color: var(--mii-accent);
+  box-shadow: 0 0 0 3px var(--mii-accent-glow);
+}
+.mii-textarea {
+  width: 100%;
+  padding: 12px 14px;
+  border: 1px solid var(--mii-field-border);
+  border-radius: 10px;
+  font-size: 14px;
+  font-family: inherit;
+  background: var(--mii-tile);
+  color: var(--mii-text);
+  box-sizing: border-box;
+  resize: vertical;
+  min-height: 80px;
+  margin-bottom: 8px;
+}
+.mii-name-input { text-align: left; margin-bottom: 8px; }
+
+.mii-toggle-btn {
+  display: block;
+  width: 100%;
+  padding: 12px;
+  margin-bottom: 10px;
+  border-radius: 12px;
+  border: 1px solid var(--mii-tile-border);
+  background: var(--mii-tile);
+  color: var(--mii-text);
+  font-size: 14px;
+  font-weight: 800;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s, border-color 0.15s, box-shadow 0.15s;
+}
+.mii-toggle-btn:hover { border-color: var(--mii-hi); }
+.mii-toggle-btn.active {
+  background: linear-gradient(160deg, var(--mii-accent), var(--mii-accent-dark));
+  color: #fff;
+  border-color: transparent;
+  box-shadow: 0 6px 16px var(--mii-accent-glow);
+}
+.mii-gender { display: flex; gap: 10px; }
+.mii-gender .mii-toggle-btn { flex: 1; }
+
+.mii-hint {
+  font-size: 12px;
+  color: var(--mii-text-muted);
+  line-height: 1.5;
+  background: var(--mii-entry);
+  border-radius: 10px;
+  padding: 10px 12px;
+}
+
+/* ===== BOUTON SAUVEGARDER ===== */
+.mii-save-btn {
+  flex: 0 0 auto;
+  margin: clamp(10px, 1.2vw, 16px);
+  padding: clamp(12px, 1.4vh, 16px);
+  background: linear-gradient(160deg, var(--mii-accent), var(--mii-accent-dark));
+  color: #fff;
+  font-size: clamp(14px, 1.2vw, 17px);
+  font-weight: 800;
+  border: 1px solid transparent;
+  border-radius: 14px;
+  cursor: pointer;
+  box-shadow: 0 10px 26px var(--mii-accent-glow);
+  transition: transform 0.14s, filter 0.14s;
+  letter-spacing: 0.04em;
+}
+.mii-save-btn:hover { filter: brightness(1.08); transform: translateY(-2px); }
+.mii-save-btn:disabled { opacity: 0.6; cursor: default; transform: none; }
+
+/* ===== Ã‰TOILES D'ACTIVATION ===== */
+.mii-star-layer {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 30;
+  overflow: visible;
+}
+.mii-star {
+  position: absolute;
+  left: 50%; top: 50%;
+  pointer-events: none;
+  color: #ffe24d;
+  text-shadow: 0 0 6px rgba(255, 220, 80, 0.95);
+  transform: translate(-50%, -50%);
+  animation: miiStarBurst 0.66s ease-out forwards;
+  z-index: 40;
+  will-change: transform, opacity;
+}
+@keyframes miiStarBurst {
+  0%   { opacity: 0; transform: translate(-50%, -50%) scale(0.3) rotate(0deg); }
+  18%  { opacity: 1; }
+  100% { opacity: 0;
+         transform: translate(calc(-50% + var(--dx, 0px)), calc(-50% + var(--dy, 0px))) scale(1.15) rotate(140deg); }
+}
+
+/* ===== PLAZA ===== */
+.mii-canvas-area {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+.mii-canvas-area canvas { display: block; width: 100%; height: 100%; }
+#plaza-loading {
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 24px;
+  font-weight: bold;
+  color: #5db0f2;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  animation: pulse 1.5s infinite;
+}
+@keyframes pulse {
+  0%   { opacity: 0.5; }
+  50%  { opacity: 1; }
+  100% { opacity: 0.5; }
+}
+
+/* ===== RESPONSIVE ===== */
+@media screen and (max-width: 900px) {
+  .mii-main { flex-direction: column; }
+  .mii-preview {
+    flex: 0 0 auto;
+    height: clamp(190px, 30vh, 300px);
+  }
+}
+
+@media screen and (max-width: 620px) {
+  .mii-main { padding: 0 12px 12px; }
+  .mii-options-body { flex-direction: column; }
+  .mii-list-area { flex: 1 1 auto; }
+  .mii-color-panel {
+    flex: 0 0 auto;
+    max-height: 44%;
+    border-left: none;
+    border-top: 1px solid var(--mii-glass-border);
+  }
+  .mii-cat-tab {
+    width: 44px;
+    height: 44px;
+  }
+  .mii-quit { bottom: 10px; }
+}
+
+/* mode éco (vieux PC) : fond animé figé */
+body.eco-mode .mii-bg-left::before,
+body.eco-mode .mii-bg-left::after {
+  animation: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mii-screen *,
+  .mii-screen *::before,
+  .mii-screen *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+

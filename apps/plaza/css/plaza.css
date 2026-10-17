@@ -1,0 +1,154 @@
+/* plaza.css — App PLAZA (place virtuelle de Mii)
+ * Ambiance « sélecteur de Mii Wii » pour la 3D, HUD en verre sombre aligné sur
+ * le hub (iiSU). Les variables de l'app sont préfixées --plaza-*.
+ */
+
+.plaza-root {
+  --plaza-glass: rgba(18, 24, 34, 0.55);
+  --plaza-glass-strong: rgba(14, 19, 28, 0.72);
+  --plaza-border: rgba(255, 255, 255, 0.14);
+  --plaza-text: rgba(240, 246, 255, 0.94);
+  --plaza-text-dim: rgba(220, 232, 248, 0.62);
+  --plaza-accent: #2cc49a;
+
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  background: #cfe3f2;
+  color: var(--plaza-text);
+  font-family: 'Nunito', 'Poppins', 'Segoe UI', system-ui, -apple-system, sans-serif;
+  -webkit-user-select: none;
+  user-select: none;
+  z-index: 0;
+}
+
+.plaza-canvas-area {
+  position: absolute;
+  inset: 0;
+  cursor: grab;
+}
+.plaza-canvas-area:active { cursor: grabbing; }
+.plaza-canvas-area canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+/* Vignette douce façon « diorama » */
+.plaza-vignette {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(132% 102% at 50% 45%, rgba(0, 0, 0, 0) 66%, rgba(22, 32, 46, 0.15) 100%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.05), rgba(0, 0, 0, 0.02));
+}
+
+/* ── HUD ── */
+.plaza-hud {
+  position: absolute;
+  left: 0;
+  right: 0;
+  display: flex;
+  align-items: center;
+  gap: clamp(8px, 1.2vw, 16px);
+  padding: clamp(10px, 1.4vw, 18px) clamp(12px, 1.8vw, 24px);
+  pointer-events: none;
+  z-index: 5;
+}
+.plaza-hud-top { top: 0; }
+.plaza-hud > * { pointer-events: auto; }
+
+.plaza-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 16px;
+  border-radius: 999px;
+  border: 1px solid var(--plaza-border);
+  background: var(--plaza-glass-strong);
+  -webkit-backdrop-filter: blur(14px) saturate(1.2);
+  backdrop-filter: blur(14px) saturate(1.2);
+  color: var(--plaza-text);
+  font: inherit;
+  font-weight: 700;
+  font-size: clamp(13px, 1.05vw, 15px);
+  cursor: pointer;
+  transition: transform 0.15s ease, background 0.2s ease, border-color 0.2s ease;
+}
+.plaza-back:hover { transform: translateY(-1px); background: rgba(24, 32, 44, 0.82); }
+.plaza-back:active { transform: translateY(0); }
+.plaza-back-icon { color: var(--plaza-accent); font-size: 0.9em; }
+
+.plaza-title {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.05;
+  padding: 6px 14px;
+  border-radius: 14px;
+  background: var(--plaza-glass);
+  -webkit-backdrop-filter: blur(12px) saturate(1.15);
+  backdrop-filter: blur(12px) saturate(1.15);
+  border: 1px solid var(--plaza-border);
+}
+.plaza-title-name { font-weight: 800; font-size: clamp(15px, 1.3vw, 19px); letter-spacing: 0.02em; }
+.plaza-title-sub { font-size: clamp(11px, 0.85vw, 12.5px); color: var(--plaza-text-dim); font-weight: 600; }
+
+.plaza-hud-right {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.plaza-chip {
+  padding: 7px 13px;
+  border-radius: 999px;
+  background: var(--plaza-glass);
+  border: 1px solid var(--plaza-border);
+  -webkit-backdrop-filter: blur(12px) saturate(1.15);
+  backdrop-filter: blur(12px) saturate(1.15);
+  font-size: clamp(12px, 0.95vw, 14px);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+.plaza-chip-dim { color: var(--plaza-text-dim); }
+
+/* ── Écran de chargement ── */
+.plaza-loading {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  background: linear-gradient(180deg, #d8ebf8, #eef6fb);
+  color: #3a4c60;
+  font-weight: 700;
+  z-index: 10;
+  transition: opacity 0.45s ease, visibility 0.45s ease;
+}
+.plaza-loading-hidden { opacity: 0; visibility: hidden; }
+
+.plaza-spinner {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: 4px solid rgba(60, 120, 170, 0.25);
+  border-top-color: var(--plaza-accent);
+  animation: plaza-spin 0.9s linear infinite;
+}
+@keyframes plaza-spin { to { transform: rotate(360deg); } }
+
+/* ── Mode éco : pas de flou coûteux ── */
+body.eco-mode .plaza-back,
+body.eco-mode .plaza-title,
+body.eco-mode .plaza-chip {
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+  background: rgba(18, 24, 34, 0.9);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .plaza-spinner { animation-duration: 1.8s; }
+}

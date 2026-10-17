@@ -1,0 +1,30 @@
+# Fichiers/dossiers exclus du déploiement Vercel
+# (artefacts de dev, sauvegarde obsolète, outillage)
+
+# Snapshot obsolète du projet (doublon)
+Hyl1a-hub-main/
+Hyl1a-hub-main
+
+# Outillage de développement (conversion d'assets, audio, Mii 3D…)
+tools/
+tests/
+
+# Docs
+*.md
+
+# Patchs / diffs
+*.patch
+*.diff
+diff.txt
+
+# Node
+node_modules/
+package-lock.json
+
+# Config dev/worker (déployé séparément via wrangler)
+wrangler.toml
+worker.js
+.firebase/
+firestore.rules
+storage.rules
+firebase.json

@@ -1,0 +1,6 @@
+*.exe
+*.log
+node_modules/
+.wrangler/
+diff.txt
+*.patch

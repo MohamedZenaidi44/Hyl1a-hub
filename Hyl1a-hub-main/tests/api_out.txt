@@ -1,0 +1,41 @@
+﻿[face_wiiu_all] 77164b | 5 meshes: OpaFaceline, OpaNose, OpaHair, XluMask, XluNoseLine
+[all_body_wiiu_all] 77164b | 5 meshes: OpaFaceline, OpaNose, OpaHair, XluMask, XluNoseLine
+[all_body_sugar_wiiu_all] 77164b | 5 meshes: OpaFaceline, OpaNose, OpaHair, XluMask, XluNoseLine
+[face_switch_all] 77164b | 5 meshes: OpaFaceline, OpaNose, OpaHair, XluMask, XluNoseLine
+[all_body_switch_all] 77164b | 5 meshes: OpaFaceline, OpaNose, OpaHair, XluMask, XluNoseLine
+[all_body_sugar_switch_all] 77164b | 5 meshes: OpaFaceline, OpaNose, OpaHair, XluMask, XluNoseLine
+[face_3ds_all] 77164b | 5 meshes: OpaFaceline, OpaNose, OpaHair, XluMask, XluNoseLine
+[all_body_3ds_all] 77164b | 5 meshes: OpaFaceline, OpaNose, OpaHair, XluMask, XluNoseLine
+[all_body_sugar_3ds_all] 77164b | 5 meshes: OpaFaceline, OpaNose, OpaHair, XluMask, XluNoseLine
+[face_ffliconwithbody_all] 77164b | 5 meshes: OpaFaceline, OpaNose, OpaHair, XluMask, XluNoseLine
+[all_body_ffliconwithbody_all] 77164b | 5 meshes: OpaFaceline, OpaNose, OpaHair, XluMask, XluNoseLine
+[all_body_sugar_ffliconwithbody_all] 77164b | 5 meshes: OpaFaceline, OpaNose, OpaHair, XluMask, XluNoseLine
+[face_wiiu_body_only] 1320b | 0 meshes: 
+[all_body_wiiu_body_only] 1320b | 0 meshes: 
+[all_body_sugar_wiiu_body_only] 1320b | 0 meshes: 
+[face_switch_body_only] 1320b | 0 meshes: 
+[all_body_switch_body_only] 1320b | 0 meshes: 
+[all_body_sugar_switch_body_only] 1320b | 0 meshes: 
+[face_3ds_body_only] 1320b | 0 meshes: 
+[all_body_3ds_body_only] 1320b | 0 meshes: 
+[all_body_sugar_3ds_body_only] 1320b | 0 meshes: 
+[face_ffliconwithbody_body_only] 1320b | 0 meshes: 
+[all_body_ffliconwithbody_body_only] 1320b | 0 meshes: 
+[all_body_sugar_ffliconwithbody_body_only] 1320b | 0 meshes: 
+[face_wiiu_body_inv_depth_mask] 1320b | 0 meshes: 
+[all_body_wiiu_body_inv_depth_mask] 1320b | 0 meshes: 
+[all_body_sugar_wiiu_body_inv_depth_mask] 1320b | 0 meshes: 
+[face_switch_body_inv_depth_mask] 1320b | 0 meshes: 
+[all_body_switch_body_inv_depth_mask] 1320b | 0 meshes: 
+[all_body_sugar_switch_body_inv_depth_mask] 1320b | 0 meshes: 
+[face_3ds_body_inv_depth_mask] 1320b | 0 meshes: 
+[all_body_3ds_body_inv_depth_mask] 1320b | 0 meshes: 
+[all_body_sugar_3ds_body_inv_depth_mask] 1320b | 0 meshes: 
+[face_ffliconwithbody_body_inv_depth_mask] 1320b | 0 meshes: 
+[all_body_ffliconwithbody_body_inv_depth_mask] 1320b | 0 meshes: 
+[all_body_sugar_ffliconwithbody_body_inv_depth_mask] 1320b | 0 meshes: 
+[allbody_wiiu_all_noshader] 77164b | 5 meshes: OpaFaceline, OpaNose, OpaHair, XluMask, XluNoseLine
+[allbody_ffliconwithbody_all] 77164b | 5 meshes: OpaFaceline, OpaNose, OpaHair, XluMask, XluNoseLine
+[all_body_with_clothes] 77164b | 5 meshes: OpaFaceline, OpaNose, OpaHair, XluMask, XluNoseLine
+
+DONE

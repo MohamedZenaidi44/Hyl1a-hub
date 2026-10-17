@@ -1,0 +1,17 @@
+{
+  "name": "hylia-plaza",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Hylia Plaza — hub personnel façon console (Wii / Wii U / 3DS) avec émulateurs et sauvegardes cloud.",
+  "scripts": {
+    "dev": "npx --yes serve -s . -l 5500",
+    "start": "npx --yes serve -s . -l 5500",
+    "worker:dev": "wrangler dev",
+    "worker:deploy": "wrangler publish"
+  },
+  "dependencies": {
+    "@ffmpeg-installer/ffmpeg": "^1.1.0",
+    "firebase": "^12.10.0",
+    "sharp": "^0.35.5"
+  }
+}

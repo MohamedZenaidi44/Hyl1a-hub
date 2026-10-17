@@ -1,0 +1,321 @@
+<!doctype html>
+<html lang="fr">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Hylia Plaza</title>
+
+  <!-- Import map ESM : Three.js r180 isolé, requis par FFL.js (Mii Maker 3D).
+       N'affecte pas window.THREE (r128) chargé en lazy par miiBuilder.js. -->
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "https://esm.sh/three@0.180.0",
+      "three/": "https://esm.sh/three@0.180.0/"
+    }
+  }
+  </script>
+
+  <!-- Polices arrondies « Mii » (Mii Maker) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@700;800;900&family=Nunito:wght@700;800;900&display=swap" />
+
+  <!-- CSS -->
+  <link rel="stylesheet" href="public/css/main.css" />
+  <link rel="stylesheet" href="public/css/animations.css" />
+  <link rel="stylesheet" href="public/css/hub.css" />
+  <link rel="stylesheet" href="public/css/wiiMenu.css" />
+  <link rel="stylesheet" href="public/css/sidebar.css" />
+  <link rel="stylesheet" href="public/css/social.css" />
+  <link rel="stylesheet" href="public/css/window.css" />
+  <link rel="stylesheet" href="apps/mii_maker/css/mii.css" />
+  <link rel="stylesheet" href="public/css/visualizer.css" />
+  <link rel="stylesheet" href="public/css/splash.css" />
+  <link rel="stylesheet" href="public/css/nowPlaying.css" />
+  <link rel="stylesheet" href="public/css/auth.css" />
+  <link rel="stylesheet" href="public/css/wiiWarning.css" />
+  <link rel="stylesheet" href="public/css/iisu-theme.css" />
+  <link rel="stylesheet" href="public/css/gba-theme.css" />
+  <!-- responsive.css en dernier : il peut surcharger les thèmes -->
+  <link rel="stylesheet" href="public/css/responsive.css" />
+
+  <link rel="icon" type="image/webp" href="public/assets/icons/logov2.webp" />
+
+  <!-- Three.js and OrbitControls -->
+  <!-- Three.js chargé en lazy load par miiBuilder.js au lancement du Mii Maker -->
+  <style>@keyframes spin { to { transform: rotate(360deg); } }</style>
+</head>
+
+<body>
+  <!-- BACKGROUND VIDEO -->
+  <video autoplay loop muted playsinline id="bg-video" preload="metadata">
+    <source src="public/assets/icons/video/3dsW.mp4" type="video/mp4">
+  </video>
+
+  <!-- AUTHENTICATION OVERLAY (affiché en premier, avant le menu Wii) -->
+  <div id="auth-overlay"
+    style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 15, 15, 0.85); display: flex; align-items: center; justify-content: center; z-index: 10000; flex-direction: column; backdrop-filter: blur(10px); overflow: hidden;">
+    <div id="auth-bg" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: -1;"></div>
+    <img src="public/assets/icons/logov2.webp" alt="Hylia Plaza Logo" class="auth-logo" style="width: 320px; margin-bottom: 20px;">
+    <div class="auth-panel" style="position: relative; z-index: 10; background: rgba(0, 0, 0, 0.4); border: 1px solid rgba(255,255,255,0.2); border-radius: 24px; padding: 40px; text-align: center; color: white; width: 420px; max-width: 92vw; box-sizing: border-box; box-shadow: 0 20px 50px rgba(0,0,0,0.6), inset 0 0 20px rgba(255,255,255,0.05); backdrop-filter: blur(25px); animation: fadeIn 0.8s ease-out; overflow: hidden;">
+      <div id="auth-error" style="color: #ff6b6b; font-size: 13px; margin-bottom: 20px; display: none; background: rgba(255,107,107,0.1); padding: 12px; border-radius: 8px; border: 1px solid rgba(255,107,107,0.3);"></div>
+      <div id="login-panel" style="display: block; transition: all 0.3s;">
+        <h2 style="margin: 0 0 10px 0; font-size: 24px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px;">Connexion</h2>
+        <p style="margin-bottom: 30px; font-size: 14px; color: rgba(255,255,255,0.6);">Entrez vos identifiants pour continuer.</p>
+        <div style="margin-bottom: 20px;"><input type="text" id="auth-login-username" placeholder="Nom d'utilisateur" class="auth-input"></div>
+        <div style="margin-bottom: 30px;"><input type="password" id="auth-login-password" placeholder="Mot de passe" class="auth-input"></div>
+        <button id="btn-login-submit" class="auth-btn highlight">Se Connecter</button>
+        <p style="margin-top: 20px; font-size: 13px; color: rgba(255,255,255,0.5);">Pas encore de compte ? <span id="toggle-to-register" style="color: #7ec4ff; cursor: pointer; font-weight: bold; text-decoration: underline;">S'inscrire</span></p>
+      </div>
+      <div id="register-panel" style="display: none; transition: all 0.3s;">
+        <h2 style="margin: 0 0 10px 0; font-size: 24px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px;">Inscription</h2>
+        <p style="margin-bottom: 30px; font-size: 14px; color: rgba(255,255,255,0.6);">Créez un compte pour sauvegarder vos données.</p>
+        <div style="margin-bottom: 20px;"><input type="text" id="auth-reg-username" placeholder="Choisissez un pseudo" class="auth-input"></div>
+        <div style="margin-bottom: 30px;"><input type="password" id="auth-reg-password" placeholder="Créez un mot de passe" class="auth-input"></div>
+        <button id="btn-register-submit" class="auth-btn highlight">Créer mon compte</button>
+        <p style="margin-top: 20px; font-size: 13px; color: rgba(255,255,255,0.5);">Déjà un compte ? <span id="toggle-to-login" style="color: #7ec4ff; cursor: pointer; font-weight: bold; text-decoration: underline;">Se connecter</span></p>
+      </div>
+    </div>
+    <style>
+  .auth-input { width: 100%; padding: 14px 18px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.15); background: rgba(255,255,255,0.05); color: white; outline: none; box-sizing: border-box; transition: all 0.3s; font-size: 15px; }
+  .auth-input:focus { background: rgba(255,255,255,0.1); border-color: #7ec4ff; box-shadow: 0 0 15px rgba(126,196,255,0.3); }
+  .auth-btn { width: 100%; padding: 14px; border-radius: 12px; border: none; font-weight: bold; font-size: 16px; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s, background 0.2s; }
+  .auth-btn.highlight { background: linear-gradient(135deg, #7ec4ff, #4a9fff); color: white; box-shadow: 0 4px 15px rgba(74, 159, 255, 0.4); }
+  .auth-btn.highlight:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(74, 159, 255, 0.6); }
+  .auth-btn.highlight:active { transform: scale(0.98); }
+  </style>
+  </div>
+
+  <!-- WII WARNING SCREEN (affiché après le login, une fois qu'on a une interaction utilisateur pour le son) -->
+  <div id="wii-warning-overlay">
+    <div class="wii-warning-content">
+      <div class="wii-warning-header">
+        <svg class="wii-warning-triangle" viewBox="0 0 200 180" xmlns="http://www.w3.org/2000/svg">
+          <path d="M100 8 C105 8 110 11 112.5 16.5 L192 156 C197 165 191 176 180 176 L20 176 C9 176 3 165 8 156 L87.5 16.5 C90 11 95 8 100 8 Z" fill="#ffcc00" stroke="#141414" stroke-width="6"/>
+          <rect x="90" y="58" width="20" height="62" rx="4" fill="#141414"/>
+          <circle cx="100" cy="140" r="11" fill="#141414"/>
+        </svg>
+        <h1 class="wii-warning-title">WARNING&#8211;HEALTH AND SAFETY</h1>
+      </div>
+
+      <p class="wii-warning-body">Please use the Hylia Plaza strap, as controllers do not have a flared base and can completely insert into an orifice, become lodged, and require medical intervention to remove.</p>
+
+      <div class="wii-warning-online">
+        <span>Also online at</span><br>
+        <a class="wii-warning-github" href="https://hyl1a-web.vercel.app/" target="_blank" rel="noopener noreferrer">
+          hyl1a-web.vercel.app
+        </a>
+      </div>
+    </div>
+    <div class="wii-warning-continue">Press <span class="wii-a-btn">A</span> to continue.</div>
+  </div>
+
+  <!-- MII PLAZA LAYER -->
+  <div id="mii-plaza-layer"></div>
+
+  <!-- CHANGELOG PANEL — journal des mises à jour, tout à droite -->
+  <div id="changelog-panel">
+    <div id="changelog-header">
+      <span id="changelog-title">Mises à jour</span>
+    </div>
+    <div id="changelog-list">
+      <!-- Chaque entrée : .changelog-entry avec .changelog-item-title + .changelog-item-desc -->
+      <div class="changelog-entry">
+        <div class="changelog-item-title">MAJ 11 — Mii Maker en 3D</div>
+        <div class="changelog-item-desc">Ton Mii s'affiche maintenant en vraie 3D : modèle complet (corps, squelette, animations) que tu peux faire tourner. Change visage, cheveux, yeux, nez, bouche, barbe, lunettes… et vois le résultat en direct.</div>
+      </div>
+      <div class="changelog-entry">
+        <div class="changelog-item-title">MAJ 10 — Mii Maker fonctionnel</div>
+        <div class="changelog-item-desc">Crée enfin ton vrai Mii : visage, cheveux, yeux, bouche, lunettes, barbe… avec un aperçu en direct. Ton Mii est sauvegardé sur ton compte et s'affiche partout dans Hylia Plaza.</div>
+      </div>
+      <div class="changelog-entry">
+        <div class="changelog-item-title">MAJ 9 — Redesign de l'émulateur GBA</div>
+        <div class="changelog-item-desc">L'émulateur GBA a été redessiné avec l'ajout des jaquettes des jeux.</div>
+      </div>
+      <div class="changelog-entry">
+        <div class="changelog-item-title">MAJ 8 — Focus sur le GBA</div>
+        <div class="changelog-item-desc">Les autres émulateurs ont été temporairement désactivés pour se concentrer sur le GBA, en attendant un futur patch commun.</div>
+      </div>
+      <div class="changelog-entry">
+        <div class="changelog-item-title">MAJ 7 — Sauvegardes individuelles</div>
+        <div class="changelog-item-desc">Chaque utilisateur dispose désormais de ses propres sauvegardes sur l'émulateur GBA.</div>
+      </div>
+      <div class="changelog-entry">
+        <div class="changelog-item-title">MAJ 6 — Essai de Mii en 3D</div>
+        <div class="changelog-item-desc">Un essai d'intégration de vrais modèles 3D pour le Mii Maker a été tenté, sans succès pour le moment.</div>
+      </div>
+      <div class="changelog-entry">
+        <div class="changelog-item-title">MAJ 5 — Correctif synchronisation GBA</div>
+        <div class="changelog-item-desc">Travail sur les problèmes de synchronisation des sauvegardes de l'émulateur GBA.</div>
+      </div>
+      <div class="changelog-entry">
+        <div class="changelog-item-title">MAJ 4 — Patch performance GBA</div>
+        <div class="changelog-item-desc">Correction d'un bug de performance sur l'émulateur GBA.</div>
+      </div>
+      <div class="changelog-entry">
+        <div class="changelog-item-title">MAJ 3 — Nouveaux émulateurs</div>
+        <div class="changelog-item-desc">Intégration des émulateurs DS, NES et N64.</div>
+      </div>
+      <div class="changelog-entry">
+        <div class="changelog-item-title">MAJ 2 — Nouveaux jeux GBA</div>
+        <div class="changelog-item-desc">Ajout de nouveaux jeux disponibles sur l'émulateur GBA.</div>
+      </div>
+      <div class="changelog-entry">
+        <div class="changelog-item-title">MAJ 1 — Nouveau menu d'accueil</div>
+        <div class="changelog-item-desc">Le style du menu d'accueil a été simplifié.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SOCIAL OVERLAY -->
+  <div id="social-overlay" class="hidden">
+    <div class="social-backdrop" onclick="SocialSystem.closeOverlay()"></div>
+    <div class="social-window mii-glass-panel">
+      <div class="social-close" onclick="SocialSystem.closeOverlay()" role="button" tabindex="0" aria-label="Fermer" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();SocialSystem.closeOverlay();}"><svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></div>
+      <div class="social-content">
+        <!-- LEFTMOST SIDEBAR -->
+        <div id="main-sidebar">
+
+          <div class="sidebar-nav">
+            <div class="sidebar-btn" id="btn-my-profile" onclick="SocialSystem.openOverlay('profile')">
+              <div class="sidebar-icon"><img src="public/assets/icons/profil.webp" alt="Profile"></div>
+              <div class="sidebar-label">Mon Profil</div>
+            </div>
+            <div class="sidebar-btn" id="btn-friends" onclick="SocialSystem.openOverlay('friends')">
+              <div class="sidebar-icon"><img src="public/assets/icons/ami.webp" alt="Amis"></div>
+              <div class="sidebar-label">Amis</div>
+            </div>
+            <div class="sidebar-btn" id="btn-global" onclick="SocialSystem.openOverlay('global')">
+              <div class="sidebar-icon"><img src="public/assets/icons/miiplaza.webp" alt="Global"></div>
+              <div class="sidebar-label">Global</div>
+            </div>
+            <div class="sidebar-btn" id="btn-messages" onclick="SocialSystem.openOverlay('messages')">
+              <div class="sidebar-icon"><img src="public/assets/icons/message.webp" alt="Messages"></div>
+              <div class="sidebar-label">Messages</div>
+            </div>
+          </div>
+        </div>
+        <!-- MIDDLE COLUMN: LIST -->
+        <div id="social-left-col" class="social-col">
+          <div id="social-header" class="social-header">Amis</div>
+          <div id="social-list" class="social-list-scroll"></div>
+        </div>
+        <!-- RIGHT COLUMN: FOCUS ZONE -->
+        <div id="social-right-col" class="social-col">
+          <div id="social-focus-speech" class="speech-bubble mii-glass-panel" style="display: none;">
+            <span id="stat-bio"></span>
+          </div>
+          <div id="social-focus-mii-container">
+            <img id="social-focus-mii" src="public/assets/icons/mii.webp" alt="Mii" style="opacity: 0;">
+          </div>
+          <div id="social-focus-stats" class="stats-panel mii-glass-panel">
+            <div class="stat-wrapper"><div class="stat-label">Tag</div><div class="stat-header" id="stat-display-name"><span style="opacity:0.75;">#0000</span></div></div>
+            <div class="stat-wrapper"><div class="stat-label">Sexe</div><div class="stat-value" id="stat-gender">--</div></div>
+            <div class="stat-wrapper"><div class="stat-label">Début</div><div class="stat-value" id="stat-creation">--</div></div>
+            <div class="stat-wrapper"><div class="stat-label">Jeu préféré</div><div class="stat-value" id="stat-favapp">--</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TOP NAVIGATION & CLOCK -->
+  <!-- ═══════════════════════════════════════════════════════
+       BARRE PROFIL + MINI BOUTONS (haut gauche)
+       Heure supprimée volontairement
+  ═══════════════════════════════════════════════════════ -->
+  <div id="user-panel">
+
+    <!-- Avatar + nom -->
+    <div id="user-avatar-wrap" onclick="if(window.SocialSystem) SocialSystem.openOverlay('profile')" style="cursor:pointer;">
+      <div id="top-avatar-container"></div>
+      <div class="online-dot avatar-dot"></div>
+    </div>
+    <div id="user-info-text" onclick="if(window.SocialSystem) SocialSystem.openOverlay('profile')" style="cursor:pointer;">
+      <div id="top-username" class="top-name">Guest</div>
+      <div class="top-subname">username <div class="online-dot text-dot"></div></div>
+    </div>
+
+    <!-- Séparateur + bouton déco -->
+    <div style="width:1px;height:32px;background:var(--panel-border,rgba(255,255,255,0.2));margin:0 10px;flex-shrink:0;"></div>
+    <button id="btn-home-logout" onclick="if(window.Auth) Auth.logout()" title="Déconnexion" aria-label="Déconnexion"
+            style="background:rgba(255,107,107,0.15);border:1px solid rgba(255,107,107,0.3);color:#ff8e8e;width:30px;height:30px;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.2s;font-size:14px;flex-shrink:0;"><svg width="1.15em" height="1.15em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2v10"/><path d="M18.36 6.64a9 9 0 1 1-12.73 0"/></svg></button>
+
+  </div>
+
+  <!-- huge-profile-btn masqué -->
+  <div id="huge-profile-btn" style="display:none!important"></div>
+
+  <!-- Bouton toggle changelog (Mises à jour) — icône Lucide en masque -->
+  <button id="btn-changelog-toggle" title="Mises à jour" aria-label="Mises à jour" aria-expanded="false" aria-controls="changelog-panel">
+    <span class="changelog-toggle-icon"></span>
+  </button>
+
+  <!-- Horloge en haut à droite -->
+  <div id="clock-panel">
+    <div id="top-time">12:00 <span class="am-pm">PM</span></div>
+    <div id="top-date">Monday, Jan 01</div>
+  </div>
+
+  <!-- MENU D'ACCUEIL façon Wii (grille de chaînes) — construit dynamiquement par public/js/core/wiiMenu.js -->
+  <div id="main-container"></div>
+
+  <!-- VISUALIZER -->
+  <div id="modern-visualizer-container">
+    <canvas id="visualizer-canvas"></canvas>
+  </div>
+
+  <!-- MARQUEE / MUSIC / COMPANION -->
+  <div id="marquee-bar">
+    <div class="welcome-marquee">
+      <span class="marquee-text">Bienvenue à Hylia Plaza ! Explorez vos applications, personnalisez votre profil et profitez de l'ambiance • Welcome to Hylia Plaza! Explore your apps, customize your profile, and enjoy the vibe •</span>
+      <span class="marquee-text">Bienvenue à Hylia Plaza ! Explorez vos applications, personnalisez votre profil et profitez de l'ambiance • Welcome to Hylia Plaza! Explore your apps, customize your profile, and enjoy the vibe •</span>
+    </div>
+  </div>
+  <div id="music-bar-container">
+    <button id="vis-prev" class="bottom-music-btn" aria-label="Piste précédente">⏮</button>
+    <button id="vis-play" class="bottom-music-btn play-btn" aria-label="Lecture">▶</button>
+    <button id="vis-next" class="bottom-music-btn" aria-label="Piste suivante">⏭</button>
+    <div class="music-info"><span id="vis-track-title">Chargement...</span></div>
+    <div class="music-time"><span id="vis-time-current">00:00</span> / <span id="vis-time-total">00:00</span></div>
+  </div>
+
+  <!-- DYNAMIC OS WINDOWS -->
+  <div id="window-layer"></div>
+
+  <!-- SPLASH SCREEN -->
+  <div id="app-splash-screen">
+    <div class="splash-content">
+      <img src="public/assets/icons/logov2.webp" alt="App Logo" id="splash-logo">
+    </div>
+  </div>
+
+  <!-- APP CONTAINERS -->
+  <div id="app-containers" style="display: none;"></div>
+
+  <!-- JS IMPORTS (bloc unique) -->
+  <!-- Firebase : un seul module d'init (public/js/core/firebase.js) -->
+  <script type="module" src="public/js/core/firebase.js"></script>
+  <script type="module" src="public/js/core/auth.js"></script>
+  <script type="module" src="public/js/core/audio.js"></script>
+
+  <script src="public/js/core/windowManager.js" defer></script>
+  <script src="public/js/core/wiiWarning.js" defer></script>
+
+  <script>
+    window.process = { env: { NODE_ENV: 'production' } };
+    window.global = window;
+  </script>
+
+  <script src="public/js/core/visualizer.js" defer></script>
+  <script src="public/js/core/wiiMenu.js" defer></script>
+  <script src="public/js/core/mii3d.js" defer></script>
+  <script src="public/js/core/social.js" defer></script>
+  <script src="public/js/core/cloudSave.js" defer></script>
+  <script src="public/js/core/themeManager.js" defer></script>
+  <script src="public/js/core/perfManager.js" defer></script>
+  <script src="public/js/core/app.js" defer></script>
+</body>
+</html>

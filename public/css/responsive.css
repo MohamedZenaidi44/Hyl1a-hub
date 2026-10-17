@@ -1,0 +1,834 @@
+/* 
+  Responsive Overrides for different screen resolutions
+  Covers: Home menu, tiles, user panel, clock, music bar, marquee, companion
+*/
+
+/* ====================================================
+   MEDIUM SCREENS (1366x768, 1280x720 laptops)
+   ==================================================== */
+@media screen and (max-width: 1400px) {
+  /* User panel */
+  #user-panel {
+    top: 24px;
+    left: 20px;
+    padding: 14px 52px 14px 14px;
+    gap: 16px;
+  }
+
+  #top-avatar-container {
+    width: 104px;
+    height: 104px;
+    border-width: 3px;
+  }
+
+  #user-panel .top-name {
+    font-size: 19px !important;
+  }
+
+  #user-panel .top-subname {
+    font-size: 11px !important;
+  }
+
+  /* Clock */
+  #clock-panel {
+    top: 18px;
+    right: 20px;
+  }
+
+  #top-time {
+    font-size: 64px;
+  }
+
+  #top-time .am-pm {
+    font-size: 24px;
+  }
+
+  #top-date {
+    font-size: 20px;
+  }
+
+  /* Marquee */
+  #marquee-bar {
+    width: calc(100% - 420px);
+    min-width: 300px;
+    height: 42px;
+  }
+
+  .marquee-text {
+    font-size: 13px;
+  }
+
+  /* Music bar */
+  #music-bar-container {
+    width: calc(100% - 120px);
+    max-width: 700px;
+    height: 46px;
+  }
+
+  /* Tiles */
+  .grid-tile {
+    width: 140px !important;
+    height: 140px !important;
+  }
+
+  .tile-icon {
+    width: 68px;
+    height: 68px;
+    margin-bottom: 20px;
+  }
+
+  .tile-label {
+    font-size: 13px;
+    bottom: 10px;
+  }
+
+  /* Floating pill */
+  #floating-title-pill {
+    font-size: 17px;
+    padding: 6px 24px;
+    top: calc(50% - 145px);
+  }
+
+  /* Description box */
+  #app-description-box {
+    width: 400px;
+    font-size: 13px;
+    padding: 10px 20px;
+    top: calc(50% + 120px);
+  }
+
+  /* Nav arrows */
+  .carousel-nav-btn {
+    width: 44px;
+    height: 44px;
+    font-size: 22px;
+  }
+
+  #carousel-nav-prev { left: 20px; }
+  #carousel-nav-next { right: 20px; }
+
+  /* Companion */
+  #companion-widget {
+    transform: scale(0.85);
+  }
+
+  /* Huge profile btn */
+  #huge-profile-btn {
+    transform: scale(0.85);
+  }
+}
+
+/* ====================================================
+   SMALLER SCREENS (1024x768, old laptops)
+   ==================================================== */
+@media screen and (max-width: 1100px) {
+  /* User panel — shrink more */
+  #user-panel {
+    top: 16px;
+    left: 14px;
+    padding: 12px 38px 12px 12px;
+    gap: 14px;
+    border-radius: 50px;
+  }
+
+  #top-avatar-container {
+    width: 78px;
+    height: 78px;
+    border-width: 2px;
+  }
+
+  #user-panel .top-name {
+    font-size: 17px !important;
+  }
+
+  #user-panel .top-subname {
+    font-size: 11px !important;
+  }
+
+  #btn-home-logout {
+    width: 30px !important;
+    height: 30px !important;
+    font-size: 13px !important;
+  }
+
+  /* Clock */
+  #clock-panel {
+    top: 14px;
+    right: 14px;
+  }
+
+  #top-time {
+    font-size: 48px;
+  }
+
+  #top-time .am-pm {
+    font-size: 18px;
+  }
+
+  #top-date {
+    font-size: 16px;
+  }
+
+  /* Marquee */
+  #marquee-bar {
+    width: calc(100% - 340px);
+    min-width: 220px;
+    max-width: 500px;
+    height: 38px;
+    border-radius: 20px;
+  }
+
+  .marquee-text {
+    font-size: 12px;
+  }
+
+  /* Music bar */
+  #music-bar-container {
+    width: calc(100% - 80px);
+    max-width: 600px;
+    height: 42px;
+    bottom: 16px;
+  }
+
+  /* Tiles */
+  .grid-tile {
+    width: 120px !important;
+    height: 120px !important;
+    border-radius: 20px;
+  }
+
+  .tile-icon {
+    width: 52px;
+    height: 52px;
+    margin-bottom: 16px;
+  }
+
+  .tile-label {
+    font-size: 11px;
+    bottom: 8px;
+  }
+
+  .tile-sublabel {
+    font-size: 10px;
+  }
+
+  /* Floating pill */
+  #floating-title-pill {
+    font-size: 15px;
+    padding: 5px 20px;
+    top: calc(50% - 125px);
+    border-radius: 16px;
+  }
+
+  /* Description box */
+  #app-description-box {
+    width: 340px;
+    font-size: 12px;
+    padding: 8px 16px;
+    top: calc(50% + 105px);
+    border-radius: 14px;
+  }
+
+  /* Nav arrows */
+  .carousel-nav-btn {
+    width: 38px;
+    height: 38px;
+    font-size: 20px;
+    bottom: 160px;
+  }
+
+  #carousel-nav-prev { left: 12px; }
+  #carousel-nav-next { right: 12px; }
+
+  /* Companion smaller */
+  #companion-widget {
+    transform: scale(0.7);
+    transform-origin: bottom right;
+  }
+
+  #huge-profile-btn {
+    transform: scale(0.75);
+  }
+}
+
+/* ====================================================
+   VERY SMALL / TABLETS (< 850px)
+   ==================================================== */
+@media screen and (max-width: 850px) {
+  #user-panel {
+    top: 10px;
+    left: 10px;
+    padding: 6px 20px 6px 6px;
+    gap: 8px;
+  }
+
+  #top-avatar-container {
+    width: 44px;
+    height: 44px;
+  }
+
+  #user-panel .top-name {
+    font-size: 15px !important;
+  }
+
+  #user-panel .top-subname {
+    font-size: 10px !important;
+  }
+
+  #top-logout-container {
+    display: none !important;
+  }
+
+  #clock-panel {
+    top: 10px;
+    right: 10px;
+  }
+
+  #top-time {
+    font-size: 36px;
+  }
+
+  #top-time .am-pm {
+    font-size: 14px;
+  }
+
+  #top-date {
+    font-size: 13px;
+  }
+
+  #marquee-bar {
+    display: none;
+  }
+
+  #music-bar-container {
+    width: calc(100% - 40px);
+    height: 40px;
+    bottom: 10px;
+  }
+
+  .grid-tile {
+    width: 100px !important;
+    height: 100px !important;
+    border-radius: 18px;
+  }
+
+  .tile-icon {
+    width: 42px;
+    height: 42px;
+    margin-bottom: 12px;
+  }
+
+  .tile-label {
+    font-size: 10px;
+    bottom: 6px;
+  }
+
+  #floating-title-pill {
+    font-size: 13px;
+    padding: 4px 16px;
+    top: calc(50% - 108px);
+  }
+
+  #app-description-box {
+    width: 280px;
+    font-size: 11px;
+    top: calc(50% + 90px);
+  }
+
+  .carousel-nav-btn {
+    width: 34px;
+    height: 34px;
+    font-size: 18px;
+    bottom: 130px;
+  }
+
+  #carousel-nav-prev { left: 8px; }
+  #carousel-nav-next { right: 8px; }
+
+  #companion-widget {
+    transform: scale(0.6);
+    transform-origin: bottom right;
+  }
+
+  #huge-profile-btn {
+    transform: scale(0.65);
+  }
+}
+
+/* ====================================================
+   MOBILE (< 600px)
+   ==================================================== */
+@media screen and (max-width: 600px) {
+  .auth-logo {
+    width: 200px !important;
+  }
+
+  .auth-panel {
+    width: 92% !important;
+    padding: 25px 16px !important;
+    border-radius: 20px !important;
+  }
+
+  .auth-logo {
+    margin-bottom: 12px !important;
+  }
+
+  #user-panel {
+    top: 6px;
+    left: 6px;
+    padding: 4px 12px 4px 4px;
+  }
+
+  #top-avatar-container {
+    width: 36px;
+    height: 36px;
+  }
+
+  #user-panel .top-name {
+    font-size: 14px !important;
+  }
+
+  .top-subname {
+    display: none;
+  }
+
+  #clock-panel {
+    top: 6px;
+    right: 6px;
+  }
+
+  #top-time {
+    font-size: 28px;
+  }
+
+  #top-time .am-pm {
+    font-size: 12px;
+  }
+
+  #top-date {
+    font-size: 11px;
+  }
+
+  .grid-tile {
+    width: 85px !important;
+    height: 85px !important;
+    border-radius: 16px;
+  }
+
+  .tile-icon {
+    width: 36px;
+    height: 36px;
+    margin-bottom: 10px;
+  }
+
+  .tile-label {
+    font-size: 9px;
+    bottom: 5px;
+  }
+
+  #floating-title-pill {
+    font-size: 12px;
+    padding: 4px 14px;
+    top: calc(50% - 95px);
+  }
+
+  #app-description-box {
+    width: 220px;
+    font-size: 10px;
+    top: calc(50% + 78px);
+  }
+
+  .carousel-nav-btn {
+    width: 30px;
+    height: 30px;
+    font-size: 16px;
+  }
+
+  #companion-widget {
+    display: none;
+  }
+
+  #huge-profile-btn {
+    display: none;
+  }
+
+  .os-window {
+    width: 95% !important;
+    height: 80vh !important;
+    max-width: none !important;
+    max-height: none !important;
+  }
+}
+
+/* ====================================================
+   HEIGHT-CONSTRAINED (768px tall screens)
+   ==================================================== */
+@media screen and (max-height: 750px) {
+  #user-panel {
+    top: 12px;
+  }
+
+  #top-avatar-container {
+    width: 60px;
+    height: 60px;
+  }
+
+  #user-panel .top-name {
+    font-size: 18px !important;
+  }
+
+  #clock-panel {
+    top: 12px;
+  }
+
+  #top-time {
+    font-size: 52px;
+  }
+
+  #top-date {
+    font-size: 18px;
+  }
+
+  .grid-tile {
+    width: 130px !important;
+    height: 130px !important;
+  }
+
+  .tile-icon {
+    width: 56px;
+    height: 56px;
+  }
+
+  #floating-title-pill {
+    top: calc(50% - 135px);
+  }
+
+  #app-description-box {
+    top: calc(50% + 115px);
+  }
+
+  #music-bar-container {
+    bottom: 12px;
+    height: 44px;
+  }
+
+  #companion-widget {
+    transform: scale(0.75);
+    transform-origin: bottom right;
+  }
+}
+
+/* ====================================================
+   GRANDS ÉCRANS / TV (≥ 1800px) — agrandir l'interface
+   ==================================================== */
+@media screen and (min-width: 1800px) {
+  /* Le panneau profil n'est PAS agrandi ici : 1920x1080 est un écran normal,
+     pas une TV. Il garde la taille de base (avatar 112px, nom 34px) pour ne
+     pas déborder sur le marquee centré. L'agrandissement TV est à ≥2400px. */
+
+  #clock-panel {
+    top: 28px;
+    right: 40px;
+  }
+
+  #top-time {
+    font-size: 100px;
+  }
+
+  #top-time .am-pm {
+    font-size: 38px;
+  }
+
+  #top-date {
+    font-size: 28px;
+  }
+
+  #marquee-bar {
+    height: 58px;
+    /* Réduit pour que la bordure gauche (centrée) reste à droite du panneau profil
+       (~476px) à 1920x1080, et à gauche de l'horloge (~1546px). */
+    max-width: 880px;
+  }
+
+  /* borne la largeur du panneau profil (sinon un nom long le élargit
+     et le marquee centré viendrait le chevaucher) */
+  #user-panel .top-name {
+    max-width: 180px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  /* L'horloge agrandie (100px) déborde sur le panneau changelog : on descend
+     le panneau sous l'horloge */
+  #changelog-panel {
+    top: 200px;
+  }
+
+  /* Bouton du tiroir calé sur le haut du panneau */
+  #btn-changelog-toggle {
+    top: 212px;
+  }
+
+  .marquee-text {
+    font-size: 17px;
+  }
+
+  #music-bar-container {
+    height: 60px;
+    /* aligné sur la largeur du marquee (880px) pour un ensemble centré cohérent */
+    max-width: 880px;
+  }
+
+  .bottom-music-btn {
+    width: 44px;
+    height: 44px;
+    font-size: 17px;
+  }
+
+  .bottom-music-btn.play-btn {
+    width: 50px;
+    height: 50px;
+    font-size: 19px;
+  }
+
+  .music-info {
+    font-size: 17px;
+  }
+
+  #app-preview-panel {
+    max-width: 760px;
+  }
+
+  #preview-image-wrap {
+    max-width: 680px;
+  }
+
+  #preview-app-name {
+    font-size: 46px;
+  }
+
+  #preview-app-desc {
+    font-size: 18px;
+  }
+
+  #preview-open-btn {
+    font-size: 18px;
+    padding: 16px 56px;
+  }
+
+  .carousel-nav-btn {
+    width: 40px;
+    height: 100px;
+    font-size: 24px;
+  }
+}
+
+@media screen and (min-width: 2400px) {
+  #top-avatar-container {
+    width: 156px !important;
+    height: 156px !important;
+  }
+
+  .top-name {
+    font-size: 28px !important;
+  }
+
+  #top-time {
+    font-size: 120px;
+  }
+
+  #top-date {
+    font-size: 34px;
+  }
+
+  /* À 2560 il y a la place : marquee pleine largeur (bordure gauche ~780px
+     reste à droite du panneau profil ~547px, et à gauche de l'horloge ~2129px) */
+  #marquee-bar {
+    max-width: 1000px;
+  }
+
+  /* Horloge encore plus haute (120px) : le panneau changelog descend d'autant */
+  #changelog-panel {
+    top: 220px;
+  }
+
+  #btn-changelog-toggle {
+    top: 232px;
+  }
+
+  /* À 2560 la place est là : player pleine largeur, aligné sur le marquee */
+  #music-bar-container {
+    max-width: 1000px;
+  }
+
+  #app-preview-panel {
+    max-width: 900px;
+  }
+
+  #preview-image-wrap {
+    max-width: 800px;
+  }
+
+  #preview-app-name {
+    font-size: 54px;
+  }
+
+  #preview-app-desc {
+    font-size: 21px;
+  }
+}
+
+/* ====================================================
+   HUB — écrans moyens (≤ 1220px) : la grille prend toute la place
+   ==================================================== */
+@media screen and (max-width: 1220px) {
+  #hub-layout {
+    justify-content: center !important;
+    padding: 0 4vw !important;
+  }
+
+  #app-preview-panel {
+    display: none !important;
+  }
+
+  #main-container {
+    padding-left: 0 !important;
+  }
+
+  /* Barre d'actions rapides recentrée sous la barre du haut */
+  #quick-bar {
+    top: 76px;
+    left: 50%;
+    transform: translateX(-50%);
+    gap: 6px;
+  }
+
+  /* Bouton de réorganisation ramené en bas à gauche */
+  #reorder-toggle-btn {
+    top: auto !important;
+    bottom: 96px !important;
+    left: 14px !important;
+    transform: none !important;
+  }
+}
+
+/* Visualiseur audio : trop large pour les petits écrans */
+@media screen and (max-width: 900px) {
+  #modern-visualizer-container {
+    display: none !important;
+  }
+}
+
+/* ====================================================
+   MOBILE (≤ 600px) — ajustements fins
+   ==================================================== */
+@media screen and (max-width: 600px) {
+  /* Le sélecteur #user-panel .top-name (spécificité 1,1,0) de hub.css l'emporte
+     sur .top-name : on aligne la spécificité pour que la réduction s'applique. */
+  #user-panel {
+    padding: 4px 14px 4px 4px !important;
+    gap: 6px !important;
+    max-width: calc(100vw - 12px);
+  }
+
+  #user-panel .top-name {
+    font-size: 14px !important;
+    max-width: 38vw;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  #user-panel .top-subname {
+    font-size: 10px !important;
+  }
+
+  #top-avatar-container {
+    width: 40px !important;
+    height: 40px !important;
+    flex-shrink: 0;
+  }
+
+  #quick-bar {
+    top: 58px;
+    gap: 2px;
+  }
+
+  #quick-bar .top-mini-btn {
+    width: 46px;
+    height: 38px;
+  }
+
+  #quick-bar .top-mini-btn img {
+    width: 42px !important;
+    height: 42px !important;
+  }
+
+  #music-bar-container {
+    height: 44px;
+    bottom: 8px;
+  }
+
+  .music-info {
+    font-size: 12px;
+  }
+
+  .music-time {
+    font-size: 11px;
+  }
+
+  #floating-title-pill {
+    max-width: 86vw;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .carousel-nav-btn {
+    width: 26px;
+    height: 54px;
+    font-size: 15px;
+  }
+
+  #reorder-toggle-btn {
+    bottom: 84px !important;
+    left: 10px !important;
+  }
+}
+
+/* ====================================================
+   TRÈS PETITS ÉCRANS (≤ 380px)
+   ==================================================== */
+@media screen and (max-width: 380px) {
+  #user-panel {
+    padding: 3px 10px 3px 3px !important;
+    gap: 5px !important;
+  }
+
+  #user-panel .top-name {
+    font-size: 13px !important;
+  }
+
+  #user-panel .top-subname {
+    display: none !important;
+  }
+
+  #top-avatar-container {
+    width: 34px !important;
+    height: 34px !important;
+  }
+
+  #quick-bar {
+    top: 50px;
+  }
+
+  #quick-bar .top-mini-btn {
+    width: 40px;
+    height: 34px;
+  }
+
+  #quick-bar .top-mini-btn img {
+    width: 36px !important;
+    height: 36px !important;
+  }
+}

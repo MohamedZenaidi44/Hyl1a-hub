@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8" />
+<title>retarget — bake</title>
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://esm.sh/three@0.180.0",
+    "three/": "https://esm.sh/three@0.180.0/"
+  }
+}
+</script>
+</head>
+<body>
+<script type="module">
+import * as THREE from 'three';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+
+const SOURCE_URL = '/apps/mii_maker/assets/mii/Mii_Maker_for_4.0_v2.glb';
+const TARGET_URL = '/apps/mii_maker/assets/ffl/body/male.glb';
+const FPS = 30;
+
+const MAP = [
+  ['hip', 'hip'],
+  ['spine002', 'chest'],
+  ['spine002', 'chest_2'],
+  ['head', 'head'],
+  ['collarL', 'shoulder_l'],
+  ['bicepL', 'arm_l1'],
+  ['forearmL', 'arm_l2'],
+  ['forearmL', 'elbow_l'],
+  ['handL', 'wrist_l'],
+  ['collarR', 'shoulder_r'],
+  ['bicepR', 'arm_r1'],
+  ['forearmR', 'arm_r2'],
+  ['forearmR', 'elbow_r'],
+  ['handR', 'wrist_r'],
+  ['thighL', 'foot_l1'],
+  ['calfL', 'foot_l2'],
+  ['calfL', 'knee_l'],
+  ['footL', 'ankle_l'],
+  ['thighR', 'foot_r1'],
+  ['calfR', 'foot_r2'],
+  ['calfR', 'knee_r'],
+  ['footR', 'ankle_r']
+];
+
+const CLIP_ID = {
+  'Idle': 'idle',
+  'look around': 'lookaround',
+  'wave': 'wave',
+  'wave transition': 'wavetransition',
+  'baked mii animation': 'baked'
+};
+
+// ─── paramètres de marche (degrés) ───
+const A_THIGH = 38, B_KNEE = 44, A_ANKLE = 16, A_ARM = 22;
+const WALK_PERIOD = 1.0;   // s pour un cycle complet (2 pas)
+
+const loader = new GLTFLoader();
+function load(url) { return new Promise((res, rej) => loader.load(url, res, undefined, rej)); }
+
+function bonesByName(root) { const m = {}; root.traverse(o => { if (o.isBone) m[o.name] = o; }); return m; }
+function restWorldQuats(root) {
+  root.updateMatrixWorld(true);
+  const q = {};
+  root.traverse(o => { const wq = new THREE.Quaternion(); o.matrixWorld.decompose(new THREE.Vector3(), wq, new THREE.Vector3()); q[o.name] = wq; });
+  return q;
+}
+const DEG = Math.PI / 180;
+function qx(angle) { return new THREE.Quaternion(Math.sin(angle / 2), 0, 0, Math.cos(angle / 2)); }
+
+(async () => {
+  try {
+    const [src, tgt] = await Promise.all([load(SOURCE_URL), load(TARGET_URL)]);
+    const srcScene = new THREE.Scene(); srcScene.add(src.scene);
+    const tgtScene = new THREE.Scene(); tgtScene.add(tgt.scene);
+
+    const srcBones = bonesByName(srcScene);
+    const tgtBones = bonesByName(tgtScene);
+    const srcRest = restWorldQuats(srcScene);
+    const tgtRest = restWorldQuats(tgtScene);
+
+    const tgtOrder = []; tgtScene.traverse(o => { if (o.isBone) tgtOrder.push(o.name); });
+    const tgtRestLocal = {}; tgtScene.traverse(o => { if (o.isBone) tgtRestLocal[o.name] = o.quaternion.clone(); });
+    const tgtSources = {}; for (const [s, t] of MAP) { (tgtSources[t] = tgtSources[t] || []).push(s); }
+
+    const missing = { src: [], tgt: [] };
+    for (const [s, t] of MAP) { if (!srcBones[s]) missing.src.push(s); if (!tgtBones[t]) missing.tgt.push(t); }
+
+    const mixer = new THREE.AnimationMixer(srcScene);
+    const clipsOut = {};
+    const checks = {};
+
+    const srcDeltas = {};           // Δ par os source pour la frame courante
+    const desiredWorld = {};        // quat monde désirée par os cible
+
+    // Construit les quats locaux cible à partir des Δ source (par os cible = composition).
+    function solveFrame(frameIndex, tracks) {
+      for (const sName of new Set(MAP.map(m => m[0]))) {
+        const b = srcBones[sName];
+        const wq = new THREE.Quaternion(); b.getWorldQuaternion(wq);
+        srcDeltas[sName] = wq.multiply(srcRest[sName].clone().invert());
+      }
+      writeTargets(frameIndex, tracks, 'retarget');
+    }
+
+    // Écrit les quats locaux cible (top-down) dans `tracks`, en utilisant srcDeltas si un os
+    // est mappé ; sinon l'os garde sa pose de repos (pour les clips retargetés).
+    function writeTargets(frameIndex, tracks, mode) {
+      for (const name of tgtOrder) {
+        const bone = tgtBones[name];
+        const parent = bone.parent;
+        const parentWorld = parent
+          ? ((parent.isBone ? (desiredWorld[parent.name] || tgtRest[parent.name]) : tgtRest[parent.name]) || tgtRest[name])
+          : tgtRest[name];
+
+        let local;
+        if (mode === 'retarget' && tgtSources[name]) {
+          const qW = tgtRest[name].clone();
+          for (const sName of tgtSources[name]) qW.premultiply(srcDeltas[sName]);
+          desiredWorld[name] = qW;
+          local = parentWorld.clone().invert().multiply(qW);
+        } else if (mode === 'generic' && bone._walkWorld) {
+          const qW = bone._walkWorld;
+          desiredWorld[name] = qW;
+          local = parentWorld.clone().invert().multiply(qW);
+        } else {
+          local = tgtRestLocal[name].clone();
+          desiredWorld[name] = parentWorld.clone().multiply(local);
+        }
+        const arr = tracks[name] || (tracks[name] = []);
+        const v = tgtRestLocal[name] ? local : local;
+        arr.push(+v.x.toFixed(5), +v.y.toFixed(5), +v.z.toFixed(5), +v.w.toFixed(5));
+      }
+    }
+
+    // ─── 1) clips retargetés ───
+    for (const clip of src.animations) {
+      const id = CLIP_ID[clip.name] || clip.name;
+      const action = mixer.clipAction(clip);
+      action.reset(); action.play();
+      const dur = clip.duration;
+      const nFrames = Math.max(1, Math.round(dur * FPS));
+      const times = []; const tracks = {};
+      let nan = false;
+      let wristRmaxY = -Infinity, wristLmaxY = -Infinity, headMaxY = -Infinity;
+
+      for (let f = 0; f <= nFrames; f++) {
+        const t = Math.min(dur, f / FPS); times.push(+t.toFixed(4));
+        mixer.setTime(t); srcScene.updateMatrixWorld(true);
+        solveFrame(f, tracks);
+        if (tracks.wrist_l && tracks.wrist_l.some(x => !Number.isFinite(x))) nan = true;
+
+        // vérif FK
+        for (const name of tgtOrder) {
+          const tr = tracks[name]; if (!tr) continue;
+          const o = f * 4; tgtBones[name].quaternion.set(tr[o], tr[o + 1], tr[o + 2], tr[o + 3]);
+        }
+        tgtScene.updateMatrixWorld(true);
+        const wp = new THREE.Vector3();
+        if (tgtBones.wrist_r) { tgtBones.wrist_r.getWorldPosition(wp); wristRmaxY = Math.max(wristRmaxY, wp.y); }
+        if (tgtBones.wrist_l) { tgtBones.wrist_l.getWorldPosition(wp); wristLmaxY = Math.max(wristLmaxY, wp.y); }
+        if (tgtBones.head) { tgtBones.head.getWorldPosition(wp); headMaxY = Math.max(headMaxY, wp.y); }
+      }
+      action.stop();
+      clipsOut[id] = { duration: +dur.toFixed(4), fps: FPS, times, tracks };
+      checks[id] = { frames: nFrames + 1, nan, wristRmaxY: +wristRmaxY.toFixed(4), wristLmaxY: +wristLmaxY.toFixed(4), headMaxY: +headMaxY.toFixed(4), wristR_above_head: +(wristRmaxY - headMaxY).toFixed(4), wristL_above_head: +(wristLmaxY - headMaxY).toFixed(4) };
+    }
+
+    // ─── 2) pose de base = idle frame 0 (pour semer la marche) ───
+    const idleClip = src.animations.find(a => a.name === 'Idle') || src.animations[0];
+    const idleAction = mixer.clipAction(idleClip); idleAction.reset(); idleAction.play();
+    mixer.setTime(0); srcScene.updateMatrixWorld(true);
+    // remplit desiredWorld pour la frame 0 d'idle
+    for (const sName of new Set(MAP.map(m => m[0]))) {
+      const b = srcBones[sName]; const wq = new THREE.Quaternion(); b.getWorldQuaternion(wq);
+      srcDeltas[sName] = wq.multiply(srcRest[sName].clone().invert());
+    }
+    writeTargets(0, {}, 'retarget');
+    const idleWorld = {}; for (const name of tgtOrder) if (desiredWorld[name]) idleWorld[name] = desiredWorld[name].clone();
+    idleAction.stop();
+
+    // ─── 3) clips procéduraux (marche, course, danse, parle, triste, assis…) ───
+    function qAxis(x, y, z, a) {
+      const q = new THREE.Quaternion();
+      q.setFromAxisAngle(new THREE.Vector3(x, y, z).normalize(), a);
+      return q;
+    }
+    function qmul(...qs) { const r = new THREE.Quaternion(); for (const q of qs) r.multiply(q); return r; }
+
+    // locomotion paramétrée (marche/course) — jambes/bras en opposition de phase
+    function locomotion(aThigh, bKnee, aAnkle, aArm, aForearm) {
+      return (name, p) => {
+        const pl = p, pr = p + Math.PI;
+        const armSide = name.endsWith('_l') ? pr : pl;      // bras opposé à la jambe du même côté
+        const legSide = name.endsWith('_l') ? pl : pr;
+        switch (name) {
+          case 'foot_l1': return qAxis(1, 0, 0, aThigh * DEG * Math.sin(pl));
+          case 'foot_r1': return qAxis(1, 0, 0, aThigh * DEG * Math.sin(pr));
+          case 'foot_l2': case 'knee_l': return qAxis(1, 0, 0, -bKnee * DEG * (0.5 - 0.5 * Math.cos(pl)));
+          case 'foot_r2': case 'knee_r': return qAxis(1, 0, 0, -bKnee * DEG * (0.5 - 0.5 * Math.cos(pr)));
+          case 'ankle_l': return qAxis(1, 0, 0, aAnkle * DEG * Math.sin(pl));
+          case 'ankle_r': return qAxis(1, 0, 0, aAnkle * DEG * Math.sin(pr));
+          case 'shoulder_l': case 'shoulder_r': return qAxis(1, 0, 0, 0.3 * aArm * DEG * Math.sin(armSide));
+          case 'arm_l1': case 'arm_r1': return qAxis(1, 0, 0, aArm * DEG * Math.sin(armSide));
+          case 'arm_l2': case 'arm_r2': case 'elbow_l': case 'elbow_r':
+            return qAxis(1, 0, 0, 0.5 * aArm * DEG * Math.sin(armSide) - aForearm * DEG);
+          case 'wrist_l': case 'wrist_r': return qAxis(1, 0, 0, 0.3 * aArm * DEG * Math.sin(armSide));
+          default: return null;
+        }
+      };
+    }
+
+    function talkFn(name, p) {
+      switch (name) {
+        case 'arm_r1': return qAxis(1, 0, 0, -0.18);
+        case 'arm_r2': case 'elbow_r': return qAxis(1, 0, 0, -0.45 - 0.35 * Math.sin(p));
+        case 'wrist_r': return qAxis(1, 0, 0, -0.2 * Math.sin(p));
+        case 'head': return qAxis(1, 0, 0, 0.04 * Math.sin(2 * p));
+        default: return null;
+      }
+    }
+
+    const ARM_L = new Set(['shoulder_l', 'arm_l1', 'arm_l2', 'elbow_l', 'wrist_l']);
+    const ARM_R = new Set(['shoulder_r', 'arm_r1', 'arm_r2', 'elbow_r', 'wrist_r']);
+
+    function cheerFn(name, p) {
+      // rotation −X : les bras montent vers l'AVANT (le +X les envoyait derrière le dos)
+      const up = -(Math.PI * 0.82 + 0.12 * Math.sin(p));
+      if (ARM_L.has(name) || ARM_R.has(name)) return qAxis(1, 0, 0, up);
+      if (name === 'head') return qAxis(1, 0, 0, -0.1 * Math.sin(p));
+      return null;
+    }
+
+    function danceFn(name, p) {
+      const sway = 0.18 * Math.sin(p);
+      if (name === 'hip' || name === 'chest' || name === 'chest_2') return qAxis(0, 0, 1, sway);
+      if (name === 'head') return qmul(qAxis(0, 0, 1, 0.1 * Math.sin(p + 0.6)), qAxis(1, 0, 0, -0.08));
+      if (ARM_L.has(name)) return qmul(qAxis(0, 0, 1, 0.35 * Math.sin(p)), qAxis(1, 0, 0, -0.3));
+      if (ARM_R.has(name)) return qmul(qAxis(0, 0, 1, -0.35 * Math.sin(p)), qAxis(1, 0, 0, -0.3));
+      if (name === 'foot_l2' || name === 'knee_l') return qAxis(1, 0, 0, -0.25 * (0.5 - 0.5 * Math.cos(p)));
+      if (name === 'foot_r2' || name === 'knee_r') return qAxis(1, 0, 0, -0.25 * (0.5 - 0.5 * Math.cos(p + Math.PI)));
+      return null;
+    }
+
+    function sitFn(name, p) {
+      if (name === 'foot_l1' || name === 'foot_r1') return qAxis(1, 0, 0, -Math.PI / 2);
+      if (name === 'chest' || name === 'chest_2') return qAxis(1, 0, 0, 0.08 + 0.01 * Math.sin(p));
+      return null;
+    }
+
+    function sadFn(name, p) {
+      if (name === 'head') return qmul(qAxis(1, 0, 0, 0.28), qAxis(0, 0, 1, 0.05 * Math.sin(p)));
+      if (name === 'chest' || name === 'chest_2') return qAxis(1, 0, 0, 0.14);
+      if (name === 'hip') return qAxis(0, 0, 1, 0.05 * Math.sin(p));
+      if (ARM_L.has(name) || ARM_R.has(name)) return qmul(qAxis(1, 0, 0, -0.12), qAxis(0, 0, 1, 0.04 * Math.sin(p)));
+      return null;
+    }
+
+    function buildProc(id, dur, fn, { stride = false } = {}) {
+      const nFrames = Math.max(1, Math.round(dur * FPS));
+      const times = []; const tracks = {};
+      let nan = false;
+      for (let f = 0; f <= nFrames; f++) {
+        const t = f / FPS; times.push(+t.toFixed(4));
+        const p = 2 * Math.PI * (t / dur);
+        for (const name of tgtOrder) {
+          const base = idleWorld[name] || tgtRest[name];
+          const q = fn(name, p, t);
+          tgtBones[name]._walkWorld = q ? q.clone().multiply(base) : base.clone();
+        }
+        writeTargets(f, tracks, 'generic');
+        for (const name of tgtOrder) { const tr = tracks[name]; if (tr.some(v => !Number.isFinite(v))) nan = true; }
+        for (const name of tgtOrder) tgtBones[name]._walkWorld = null;
+      }
+      // vérif FK — positions monde des articulations, + détection d'anomalies
+      const names = ['wrist_l', 'wrist_r', 'elbow_l', 'elbow_r', 'ankle_l', 'ankle_r', 'knee_l', 'knee_r', 'hip', 'head'];
+      const m = {}; names.forEach(nm => { m[nm] = { x: [Infinity, -Infinity], y: [Infinity, -Infinity], z: [Infinity, -Infinity] }; });
+      for (let f = 0; f <= nFrames; f++) {
+        for (const name of tgtOrder) { const tr = tracks[name]; const o = f * 4; tgtBones[name].quaternion.set(tr[o], tr[o + 1], tr[o + 2], tr[o + 3]); }
+        tgtScene.updateMatrixWorld(true);
+        const wp = new THREE.Vector3();
+        for (const nm of names) {
+          tgtBones[nm].getWorldPosition(wp); const s = m[nm];
+          s.x = [Math.min(s.x[0], wp.x), Math.max(s.x[1], wp.x)];
+          s.y = [Math.min(s.y[0], wp.y), Math.max(s.y[1], wp.y)];
+          s.z = [Math.min(s.z[0], wp.z), Math.max(s.z[1], wp.z)];
+        }
+      }
+      const fmt = {}; for (const nm of names) fmt[nm] = { X: [+m[nm].x[0].toFixed(2), +m[nm].x[1].toFixed(2)], Y: [+m[nm].y[0].toFixed(2), +m[nm].y[1].toFixed(2)], Z: [+m[nm].z[0].toFixed(2), +m[nm].z[1].toFixed(2)] };
+      // anomalies : membre sous le sol, poignet derrière le dos, bras traversant le torse
+      const flags = [];
+      for (const nm of ['ankle_l', 'ankle_r', 'knee_l', 'knee_r']) if (m[nm].y[0] < 0.05) flags.push(nm + '_through_floor');
+      for (const nm of ['wrist_l', 'wrist_r']) {
+        if (m[nm].z[1] < -0.8) flags.push(nm + '_behind_back(Z' + m[nm].z[1].toFixed(1) + ')');
+        if (Math.abs(m[nm].x[0]) < 1.2 && m[nm].y[0] < 7 && m[nm].y[1] > 4 && Math.abs(m[nm].x[1] - m[nm].x[0]) < 0.5) flags.push(nm + '_torso_crossing');
+      }
+      const out = { duration: +dur.toFixed(4), fps: FPS, times, tracks };
+      if (stride) { out.strideNative = +(m.ankle_l.z[1] - m.ankle_l.z[0]).toFixed(4); out.liftNative = +(m.ankle_l.y[1] - 1).toFixed(4); }
+      clipsOut[id] = out;
+      checks[id] = { frames: nFrames + 1, nan, flags, ...fmt };
+    }
+
+    buildProc('walk', 1.0, locomotion(38, 44, 16, 22, 8), { stride: true });
+    buildProc('run', 0.5, locomotion(52, 62, 20, 44, 40), { stride: true });
+    buildProc('talk', 1.8, talkFn);
+    buildProc('cheer', 0.9, cheerFn);
+    buildProc('dance', 1.2, danceFn);
+    buildProc('sit', 3.0, sitFn);
+    buildProc('sad', 4.0, sadFn);
+
+
+    window.__BAKE = JSON.stringify({
+      source: 'Mii_Maker_for_4.0_v2', target: 'ffl/body/male', fps: FPS, map: MAP,
+      restTarget: Object.fromEntries(Object.entries(tgtRest).map(([k, v]) => [k, [+v.x.toFixed(5), +v.y.toFixed(5), +v.z.toFixed(5), +v.w.toFixed(5)]])),
+      clips: clipsOut
+    });
+    window.__CHECK = JSON.stringify({ missing, clips: checks });
+    window.__DONE = true;
+  } catch (e) {
+    window.__ERROR = (e && e.stack) ? e.stack : String(e);
+    window.__DONE = true;
+  }
+})();
+</script>
+</body>
+</html>

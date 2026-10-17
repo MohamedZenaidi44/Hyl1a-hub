@@ -1,0 +1,395 @@
+/* mii.css - Styles for Mii Maker (inspired by datkat21/mii-creator) and Mii Plaza */
+
+/* ===== FULLSCREEN CONTAINER ===== */
+.mii-fullscreen-container {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100vw; height: 100vh;
+  z-index: 99999;
+  background: transparent; /* Completely transparent to see the video perfectly */
+  display: flex;
+  flex-direction: column;
+  font-family: 'Inter', 'Segoe UI', sans-serif;
+  overflow: hidden;
+  animation: miiFadeIn 0.3s ease-out;
+  color: #e0e0e0;
+}
+@keyframes miiFadeIn {
+  from { opacity: 0; transform: scale(1.02); }
+  to   { opacity: 1; transform: scale(1); }
+}
+@keyframes miiFadeOut {
+  from { opacity: 1; }
+  to   { opacity: 0; }
+}
+.mii-fullscreen-container.closing {
+  animation: miiFadeOut 0.25s ease-in forwards;
+}
+
+/* ===== TOP BAR WITH CATEGORY ICONS ===== */
+.mii-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: center; /* Center everything in the flow */
+  background: rgba(180, 255, 220, 0.25);
+  backdrop-filter: blur(20px) saturate(160%);
+  -webkit-backdrop-filter: blur(20px) saturate(160%);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+  padding: 0 120px; /* Reserve space for absolute title/controls */
+  height: 70px;
+  flex-shrink: 0;
+  gap: 6px;
+  position: relative; /* Base for absolute children */
+  overflow-x: auto;
+}
+.mii-topbar-title {
+  font-size: 18px;
+  font-weight: 800;
+  color: #008a35;
+  text-shadow: 0 0 15px rgba(255,255,255,0.5);
+  margin-right: 30px; /* Keep title to the left side of the center-ish group */
+  white-space: nowrap;
+  letter-spacing: -0.5px;
+  position: absolute;
+  left: 20px;
+}
+.mii-cat-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px; height: 48px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  background: rgba(255, 255, 255, 0.15);
+  color: #005a22;
+  cursor: pointer;
+  font-size: 20px;
+  transition: all 0.15s;
+  flex-shrink: 0;
+}
+.mii-cat-btn:hover {
+  background: rgba(0, 189, 72, 0.3); /* Mint green hover */
+  border-color: rgba(255, 255, 255, 0.5);
+  color: #fff;
+}
+.mii-cat-btn img, .mii-cat-btn span {
+  transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+.mii-cat-btn:hover img, .mii-cat-btn:hover span {
+  transform: scale(1.25);
+}
+.mii-cat-btn.active {
+  background: rgba(0, 189, 72, 0.4);
+  border-color: #53ee8f;
+  box-shadow: 0 0 12px rgba(0, 189, 72, 0.4);
+}
+.mii-cat-btn.active img, .mii-cat-btn.active span {
+  transform: scale(1.1);
+}
+.mii-cat-btn.active:hover img, .mii-cat-btn.active:hover span {
+  transform: scale(1.3);
+}
+.mii-topbar-spacer {
+  display: none; /* Removed to allow centering */
+}
+.mii-topbar-controls {
+  position: absolute;
+  right: 20px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.mii-close-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px; height: 40px;
+  border-radius: 10px;
+  border: none;
+  background: #ff4455;
+  color: white;
+  font-size: 18px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.mii-close-btn:hover {
+  background: #ff6677;
+  transform: scale(1.1);
+}
+
+/* ===== MAIN BODY (3D + CONTROLS) ===== */
+.mii-body {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+}
+
+/* ===== 3D CANVAS AREA (LEFT) ===== */
+.mii-canvas-area {
+  flex: 1.5;
+  position: relative;
+  background: transparent !important;
+  min-width: 55%;
+  overflow: hidden; /* Prevent 105% wide Mii image from overlapping controls */
+}
+.mii-canvas-area canvas {
+  display: block;
+  width: 100%; height: 100%;
+}
+#mii-loading-overlay {
+  position: absolute;
+  inset: 0;
+  display: none; /* Hidden by default; shown via JS until first render */
+  justify-content: center;
+  align-items: center;
+  background: rgba(22,22,42,0.85);
+  font-weight: bold;
+  font-size: 16px;
+  color: #7eb8ff;
+  z-index: 10;
+  pointer-events: none;
+}
+
+/* ===== CONTROLS PANEL (RIGHT) ===== */
+.mii-controls-area {
+  width: 380px;
+  background: rgba(180, 255, 220, 0.2);
+  backdrop-filter: blur(25px) brightness(1.1);
+  -webkit-backdrop-filter: blur(25px) brightness(1.1);
+  border-left: 1px solid rgba(255, 255, 255, 0.2);
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  overflow: hidden;
+  position: relative;
+  z-index: 10; /* Ensure controls are on top of any overlapping preview/particles */
+}
+
+/* Sub-tabs: Type / Color / Position */
+.mii-subtabs {
+  display: flex;
+  border-bottom: 1px solid #2a2a4a;
+  flex-shrink: 0;
+}
+.mii-subtab {
+  flex: 1;
+  text-align: center;
+  padding: 12px 0;
+  font-size: 13px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: #888;
+  cursor: pointer;
+  transition: all 0.15s;
+  border-bottom: 3px solid transparent;
+  transition: all 0.2s cubic-bezier(0.18, 0.89, 0.32, 1.28);
+}
+.mii-subtab:hover { 
+  color: #bbb; 
+  transform: scale(1.1);
+}
+.mii-subtab.active {
+  color: #008a35;
+  border-bottom-color: #00bd48;
+}
+
+/* Panel scrollable content */
+.mii-panel-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px;
+}
+.mii-panel-content::-webkit-scrollbar { width: 6px; }
+.mii-panel-content::-webkit-scrollbar-track { background: transparent; }
+.mii-panel-content::-webkit-scrollbar-thumb { background: #3a3a5a; border-radius: 3px; }
+
+/* Section labels */
+.mii-section-label {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  color: #666;
+  margin-bottom: 10px;
+  font-weight: 700;
+}
+
+/* ===== STYLE / TYPE GRID ===== */
+.mii-style-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr); /* Back to 3 columns for smaller buttons */
+  gap: 15px; /* More spacing */
+  margin-bottom: 20px;
+}
+.mii-style-btn {
+  aspect-ratio: 1;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  background: rgba(255, 255, 255, 0.2);
+  color: #005a22;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s cubic-bezier(0.18, 0.89, 0.32, 1.28);
+  text-align: center;
+  line-height: 1.2;
+  padding: 8px;
+  overflow: hidden; /* Prevent Mii from overflowing the square */
+}
+.mii-style-btn:hover {
+  background: rgba(0, 189, 72, 0.3);
+  border-color: #53ee8f;
+  transform: scale(1.4); /* Balanced hover zoom */
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+  z-index: 1000;
+}
+.mii-style-btn img {
+  transition: transform 0.2s cubic-bezier(0.18, 0.89, 0.32, 1.28);
+}
+.mii-style-btn:hover img {
+  transform: scale(1.25); /* Reduced scale to keep Mii within the square */
+}
+.mii-style-btn.active {
+  background: #00bd48;
+  border-color: #53ee8f;
+  color: #fff;
+  box-shadow: 0 8px 20px rgba(0, 189, 72, 0.3);
+}
+
+/* ===== COLOR GRID ===== */
+.mii-color-grid {
+  display: grid;
+  grid-template-columns: repeat(8, 1fr);
+  gap: 6px;
+  margin-bottom: 20px;
+}
+.mii-color-swatch {
+  aspect-ratio: 1;
+  border-radius: 50%;
+  border: 3px solid transparent;
+  cursor: pointer;
+  transition: all 0.12s;
+  box-shadow: inset 0 -2px 4px rgba(0,0,0,0.3);
+}
+.mii-color-swatch:hover {
+  transform: scale(1.25);
+  box-shadow: 0 0 12px rgba(255,255,255,0.4);
+  z-index: 2;
+}
+.mii-color-swatch.active {
+  border-color: #fff;
+  transform: scale(1.15);
+  box-shadow: 0 0 12px rgba(255,255,255,0.3);
+}
+
+/* ===== SLIDERS (Position tab) ===== */
+.mii-slider-group {
+  margin-bottom: 16px;
+}
+.mii-slider-label {
+  font-size: 12px;
+  color: #999;
+  margin-bottom: 6px;
+  display: flex;
+  justify-content: space-between;
+  font-weight: 600;
+}
+.mii-slider {
+  width: 100%;
+  -webkit-appearance: none;
+  appearance: none;
+  height: 6px;
+  border-radius: 3px;
+  background: #2a2a4a;
+  outline: none;
+}
+.mii-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 18px; height: 18px;
+  border-radius: 50%;
+  background: #3366cc;
+  cursor: pointer;
+  border: 2px solid #5588ee;
+  box-shadow: 0 0 6px rgba(51,102,204,0.4);
+}
+
+/* ===== PROFILE INPUTS ===== */
+.mii-input, .mii-textarea {
+  width: 100%;
+  padding: 12px 14px;
+  border: 1px solid rgba(0,0,0,0.1);
+  border-radius: 10px;
+  font-size: 14px;
+  box-sizing: border-box;
+  background: rgba(255,255,255,0.4);
+  color: #111;
+  font-family: inherit;
+  transition: border-color 0.2s;
+}
+.mii-textarea {
+  resize: vertical;
+  min-height: 70px;
+}
+.mii-input:focus, .mii-textarea:focus {
+  outline: none;
+  border-color: #3366cc;
+  box-shadow: 0 0 0 3px rgba(51,102,204,0.15);
+}
+.mii-control-group {
+  margin-bottom: 14px;
+}
+.mii-control-group label {
+  display: block;
+  font-size: 12px;
+  color: #888;
+  margin-bottom: 6px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* ===== SAVE BUTTON ===== */
+.mii-save-btn {
+  margin: 16px 20px 20px;
+  padding: 14px;
+  background: linear-gradient(135deg, #00bd48, #008a35);
+  color: white;
+  font-size: 16px;
+  font-weight: 800;
+  border: none;
+  border-radius: 16px;
+  cursor: pointer;
+  box-shadow: 0 8px 20px rgba(0, 189, 72, 0.3);
+  transition: all 0.2s cubic-bezier(0.18, 0.89, 0.32, 1.28);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  flex-shrink: 0;
+}
+.mii-save-btn:hover {
+  background: linear-gradient(135deg, #4477dd, #3366cc);
+  transform: translateY(-4px) scale(1.03);
+  box-shadow: 0 8px 24px rgba(51,102,204,0.55);
+}
+
+/* ===== PLAZA STYLES ===== */
+#plaza-loading {
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 24px;
+  font-weight: bold;
+  color: #5db0f2;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  animation: pulse 1.5s infinite;
+}
+@keyframes pulse {
+  0%   { opacity: 0.5; }
+  50%  { opacity: 1; }
+  100% { opacity: 0.5; }
+}

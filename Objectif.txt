@@ -1,0 +1,181 @@
+# PROMPT : Créer l'app "PLAZA" pour Hyl1a Hub
+
+## 1. Contexte
+Je développe **Hyl1a Hub**, un hub web inspiré de la Wii, de la Wii U et de la 3DS, en HTML / CSS / JavaScript, avec Firebase (auth, Firestore) et Cloudflare R2 (stockage).
+Le hub a déjà : un système de comptes, un Mii Maker 3D fonctionnel, un menu d'accueil sombre style iiSU (verre sombre, bords arrondis, flou), une horloge, un lecteur de musique, et des tuiles d'applications.
+
+**Mission** : créer une nouvelle app **PLAZA**, une place virtuelle où des Mii vivent, marchent, se parlent et interagissent entre eux, avec une vue de dessus inspirée du **sélecteur de Mii de la Wii** (Mii Channel) et des interactions inspirées de **Tomodachi Life** et du **Mii Plaza 3DS**. La souris permet d'interagir avec eux.
+
+## 2. Objectifs
+- Une scène vivante, même sans action de l'utilisateur.
+- Les Mii ont une personnalité, des besoins, des relations entre eux.
+- Interactions souris riches : attraper, caresser, parler, offrir.
+- Rendu fluide à 60 FPS en 1920×1080 et 2560×1440.
+- Intégration à mon hub : tuile "Plaza" dans la catégorie Jeux, retour au menu, même charte visuelle.
+
+## 3. Stack technique
+- **Moteur de rendu** : Three.js (ES modules, version épinglée), caméra perspective inclinée (voir §4).
+- **Alternative légère** (si les Mii 3D sont trop lourds) : sprites 2D (rendus du Mii Studio, voir §10) sur canvas 2D avec PixiJS.
+- **Architecture** : modules ES séparés :
+  - `plaza/main.js` (boucle, init)
+  - `plaza/world.js` (scène, caméra, décor)
+  - `plaza/mii.js` (entité Mii, modèle, animations)
+  - `plaza/ai.js` (machine à états, décisions)
+  - `plaza/social.js` (relations, dialogues)
+  - `plaza/input.js` (souris, drag, clic)
+  - `plaza/ui.js` (bulles, HUD, panneau Mii)
+  - `plaza/audio.js` (sons, voix)
+  - `plaza/storage.js` (Firebase, cache local)
+- **Boucle** : `requestAnimationFrame` avec delta time, update logique à pas fixe (30 Hz) et rendu libre.
+- **Responsive** : `clamp()`, `vw`, `rem` pour l'UI, canvas plein écran avec `devicePixelRatio` plafonné à 2.
+
+## 4. Caméra et ambiance visuelle (style sélecteur Mii Wii)
+- **Vue de dessus inclinée** : caméra à environ 55 à 65° d'inclinaison, légèrement en perspective, centrée sur la place. Léger tilt-shift / vignette douce pour l'effet "diorama".
+- **Sol** : grande place circulaire ou carrée, fond blanc cassé / bleu très clair façon Mii Channel, avec un motif de dalles discret. Option de thèmes (jour, soir, nuit, thème sombre assorti à mon hub).
+- **Décor** : fontaine centrale, bancs, arbres en low poly, buissons, lampadaires, petit kiosque. Objets avec lesquels les Mii interagissent (s'asseoir, boire, jouer).
+- **Éclairage** : lumière hémisphérique + directionnelle douce, ombres douces uniquement sous les Mii (blob shadow ou shadow map 1024), pour garder les performances.
+- **Cycle jour/nuit** optionnel lié à l'heure réelle.
+- **Zoom molette** limité, léger parallaxe selon la souris, pas de rotation libre.
+
+## 5. Les Mii
+- **Chargement** : récupérer les Mii des utilisateurs depuis Firestore (données du Mii Maker existant) et afficher 8 à 20 Mii dans la place (le mien + amis + Mii "PNJ" générés aléatoirement).
+- **Modèle** : réutiliser mon rendu 3D du Mii Maker. Si ce n'est pas possible, utiliser la bibliothèque FFL (voir §10) ou des sprites issus du Mii Studio.
+- **Taille** : corps proportionné chibi, tête grosse (style Mii).
+- **Animations** nécessaires :
+  - idle (respiration, clignement des yeux)
+  - walk (marche) et run
+  - wave (salut)
+  - talk (bouche + gestes de mains)
+  - happy / sad / angry / surprised / sleepy
+  - sit (banc, sol)
+  - dance
+  - eat / drink
+  - hug / high-five (duo)
+  - dragged (suspendu par le haut du corps, jambes qui battent)
+  - fall / land (rebond à l'atterrissage)
+- **Expressions du visage** : changer yeux, sourcils, bouche selon l'humeur.
+- **Nom** au-dessus de la tête (petite étiquette arrondie, apparaît au survol ou en permanence selon l'option).
+
+## 6. IA et comportements autonomes
+Machine à états finis par Mii, mise à jour toutes les 0,5 s :
+`IDLE → WANDER → GO_TO_TARGET → INTERACT → TALK → SIT → SLEEP → DANCE → EAT`
+
+- **Navigation** : points d'intérêt (bancs, fontaine, arbres, centre) + évitement simple entre Mii (steering : separation + arrival). Pas besoin d'A*, un graphe de waypoints suffit.
+- **Besoins** (style Tomodachi Life), valeurs de 0 à 100 qui évoluent lentement :
+  - faim, énergie, joie, sociabilité
+  - Le Mii choisit son action selon son besoin le plus bas (manger, dormir, chercher quelqu'un à qui parler, danser).
+- **Personnalité** (tirée aléatoirement ou liée au Mii) : extraverti/timide, gentil/farceur, calme/énergique. Influence la vitesse, la fréquence des conversations et le type de dialogues.
+- **Humeur** visible via une icône au-dessus de la tête (cœur, éclair, note de musique, "zZz", goutte).
+
+## 7. Interactions sociales entre Mii
+- **Conversations** : deux Mii s'approchent, se font face, et s'échangent des bulles de texte à tour de rôle (2 à 6 répliques).
+  - Bulles style Wii/3DS : arrondies, fond blanc, petit bec, apparition en pop, texte lettre par lettre avec petit son "blip".
+- **Banque de dialogues** : fichier `dialogues.json` avec catégories (salutations, météo, nourriture, blagues, compliments, disputes, confessions, rumeurs). Dialogues selon la personnalité, l'humeur et le niveau d'amitié. Au moins 150 répliques en français, structure prête pour l'anglais.
+- **Relations** : matrice d'affinité entre chaque paire (de -100 à +100) avec niveaux : inconnu → connaissance → ami → meilleur ami → amoureux (optionnel) / rival.
+  - Les conversations positives augmentent l'affinité, les disputes la baissent.
+  - Icônes de relation : cœur, étoile, éclair.
+- **Événements spéciaux** (Tomodachi Life) :
+  - Dispute puis réconciliation
+  - Déclaration (cœurs, rougissement)
+  - Danse de groupe
+  - Pique-nique
+  - Jeu de chifoumi ou course entre deux Mii
+  - Cadeau offert d'un Mii à un autre
+- **Journal** : petit panneau "Actualités de la Plaza" listant les événements récents ("Léa et Tom sont devenus amis !").
+
+## 8. Interactions avec la souris
+- **Survol** : le Mii tourne la tête vers le curseur, contour lumineux, nom affiché.
+- **Clic simple** : le Mii réagit (salut, surprise), petite bulle de dialogue personnalisée. Clics répétés rapides : il s'agace ou rigole.
+- **Clic maintenu et glisser** : on **attrape** le Mii par le haut du corps, il est soulevé, ses jambes battent, ombre au sol qui s'éloigne. Au lâcher : chute, rebond, petit nuage de poussière. Si on le dépose près d'un autre Mii, ils interagissent.
+- **Caresser** : mouvement circulaire du curseur sur la tête, cœurs, joie qui augmente, son mignon.
+- **Double-clic** : ouvre le **panneau Mii** (nom, humeur, besoins en jauges, amis, personnalité, bouton "suivre" qui centre la caméra sur lui).
+- **Clic droit** : menu radial avec actions : offrir un cadeau, faire parler, faire danser, faire manger, présenter à un autre Mii.
+- **Clic sur le sol** : dépose un objet ou une friandise sélectionnée dans la barre d'outils, les Mii proches viennent le chercher.
+- **Barre d'outils** (bas de l'écran) : nourriture, cadeau, musique, confettis, changer la météo, changer le décor.
+- Curseur **main blanche** façon Wii (ouverte, qui attrape, qui caresse).
+
+## 9. Interface (UI)
+- Même style que mon hub : verre sombre, bords arrondis, flou, police propre et arrondie (type Nunito ou Poppins).
+- **HUD** : bouton retour au menu, nombre de Mii présents, heure, bouton paramètres (volume, voix, vitesse, qualité, langue).
+- **Panneau latéral** : liste des Mii avec miniatures, clic pour centrer la caméra.
+- **Notifications** discrètes style 3DS (en haut, glissent et disparaissent).
+- Mode **capture d'écran** (masque l'UI, flash, enregistre une image).
+
+## 10. Audio
+- Musique d'ambiance douce façon Mii Channel, volume lié à mon lecteur existant (couper ou baisser la musique du hub à l'ouverture de Plaza, la reprendre à la sortie).
+- Effets : pas, pop de bulle, saut, rire, bisou, applaudissements, ding de notification.
+- **Voix des Mii** : sons courts "blip" à hauteur variable selon le Mii (à la Animal Crossing), générés avec Web Audio API (oscillateur + enveloppe), pas de fichier lourd.
+- Pas de son avant le premier clic de l'utilisateur (politique autoplay).
+
+## 11. Sauvegarde et multijoueur (Firebase)
+- **Local d'abord** : état de la plaza (relations, besoins, positions de départ) dans `localStorage` / IndexedDB.
+- **Cloud** : sauvegarde des relations et événements dans Firestore (`plaza/{uid}`), avec sauvegarde différée toutes les 30 s et à la fermeture.
+- **Visites (phase 2)** : les Mii des amis apparaissent dans la plaza (StreetPass-like) via Firestore, avec règles de sécurité strictes (lecture seule des Mii des autres, écriture uniquement dans son propre document).
+- Cloudflare R2 : stocker les assets lourds (modèles, textures, sons) avec cache navigateur long et noms versionnés.
+
+## 12. Performance
+- Cible : 60 FPS avec 20 Mii.
+- Instancier les géométries partagées, atlas de textures, pas plus de 1 lumière avec ombres.
+- Désactiver la logique des Mii hors écran, LOD simple, `pixelRatio` plafonné.
+- Pause automatique quand l'onglet est caché (`visibilitychange`).
+- Option "Qualité : basse / moyenne / haute".
+
+## 13. Plan de développement (dans cet ordre)
+1. Scène Three.js : sol, caméra inclinée, éclairage, boucle de rendu.
+2. Chargement d'un Mii (le mien) + animations idle et walk.
+3. Déplacement autonome et évitement entre plusieurs Mii.
+4. Machine à états + besoins.
+5. Bulles de dialogue + conversations entre deux Mii.
+6. Interactions souris (survol, clic, attraper, caresser).
+7. Relations, événements spéciaux, journal.
+8. UI complète, panneau Mii, barre d'outils.
+9. Audio.
+10. Sauvegarde Firebase, intégration au hub (tuile, transitions).
+11. Optimisation et tests sur 1920×1080 et 2560×1440.
+
+À chaque étape : fournis le code complet des fichiers modifiés, explique comment tester, et ne passe à l'étape suivante qu'après validation.
+
+## 14. Livrables attendus
+Structure de dossiers, code complet commenté en français, `dialogues.json`, instructions d'intégration dans mon menu d'accueil, et liste des assets à télécharger avec leur emplacement exact.
+
+## 15. Ressources et assets
+
+**Moteur et outils**
+- Three.js : https://threejs.org (docs : https://threejs.org/docs/)
+- PixiJS (option 2D) : https://pixijs.com
+- GSAP (animations UI) : https://gsap.com
+
+**Mii (rendu, données)**
+- Mii Studio (rendu d'images de Mii depuis les données) : https://studio.mii.nintendo.com
+- mii-js (lecture/écriture des données Mii, Pretendo) : https://github.com/PretendoNetwork/mii-js
+- FFL (rendu 3D fidèle des Mii, ports WebGL à chercher sur GitHub, par exemple les dépôts d'ariankordi) : https://github.com/ariankordi
+- Pour mon projet, privilégier mon propre rendu du Mii Maker 3D déjà fonctionnel.
+
+**Modèles 3D, décor, animations**
+- Kenney (assets libres CC0, nature, mobilier, personnages) : https://kenney.nl/assets
+- Quaternius (modèles low poly gratuits CC0) : https://quaternius.com
+- Poly Pizza (modèles low poly) : https://poly.pizza
+- Mixamo (animations de marche, danse, etc., à retargeter) : https://www.mixamo.com
+- Poly Haven (textures, HDRI libres) : https://polyhaven.com
+
+**Sons et musique**
+- Freesound (vérifier la licence de chaque son) : https://freesound.org
+- OpenGameArt : https://opengameart.org
+- Pixabay Sound Effects : https://pixabay.com/sound-effects/
+- Kenney Audio (CC0) : https://kenney.nl/assets?q=audio
+
+**Icônes et polices**
+- Lucide : https://lucide.dev
+- Google Fonts (Nunito, Poppins) : https://fonts.google.com
+
+**Backend**
+- Firebase Firestore : https://firebase.google.com/docs/firestore
+- Cloudflare R2 : https://developers.cloudflare.com/r2/
+
+**Licences** : n'utilise que des assets CC0 / libres ou créés par moi. Les modèles, sons et musiques officiels Nintendo (ripped) ne doivent pas être intégrés si le hub est public.
+
+## 16. Contraintes
+- Pas de dépendance lourde inutile, versions de bibliothèques épinglées.
+- Code propre, modulaire, commenté en français.
+- Tout texte visible en français avec structure i18n prête pour l'anglais.
+- Gérer proprement les erreurs (Mii introuvable, Firebase hors ligne, audio bloqué).

@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8" />
+<title>pod-bake — Mii Miitomo → FFL</title>
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://esm.sh/three@0.180.0",
+    "three/": "https://esm.sh/three@0.180.0/"
+  }
+}
+</script>
+</head>
+<body>
+<script type="module">
+import * as THREE from 'three';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+
+const TARGET_URL = '/apps/mii_maker/assets/ffl/body/male.glb';
+const FPS = 30;
+
+const CLIPS = [
+  ['animWalkHandDown', 'podwalk', true],
+  ['animRunGirl', 'podrun', true],
+  ['animWaitMale', 'podwait', false],
+  ['animWaitFemale', 'podwaitf', false],
+  ['animNodClone', 'podnod', false],
+  ['animHandWaveL', 'podwave', false],
+  ['animTalkHandFlap', 'podtalk', false],
+  ['animActionDanceTravolta', 'poddance', false],
+  ['animActionDanceRockabilly', 'poddance2', false],
+  ['animJumpHandUp', 'podjump', false],
+  ['animCryHandDown', 'podsad', false],
+  ['animSitChair', 'podsit', false],
+  ['animActionLookAroundRestlessly', 'podlook', false],
+  ['animActionThinkDeeply', 'podthink', false],
+  ['animLaughHandOnStomach', 'podlaugh', false],
+  ['animTrembleHandDown', 'podangry', false],
+  ['animWaitDL_ZZZ', 'podsleep', false],
+  ['animYawnHandOnMouthR', 'podyawn', false],
+  ['animHandOnHipsSlouch', 'podpout', false]
+];
+
+const MAP = [
+  ['Waist', 'hip'],
+  ['Spine_1', 'chest'],
+  ['Spine_2', 'chest_2'],
+  ['Head', 'head'],
+  ['Arm_1_L', 'arm_l1'],
+  ['Arm_2_L', 'arm_l2'],
+  ['Arm_2_L', 'elbow_l'],
+  ['Wrist_L', 'wrist_l'],
+  ['Arm_1_R', 'arm_r1'],
+  ['Arm_2_R', 'arm_r2'],
+  ['Arm_2_R', 'elbow_r'],
+  ['Wrist_R', 'wrist_r'],
+  ['Leg_1_L', 'foot_l1'],
+  ['Leg_2_L', 'foot_l2'],
+  ['Leg_2_L', 'knee_l'],
+  ['Ankle_L', 'ankle_l'],
+  ['Leg_1_R', 'foot_r1'],
+  ['Leg_2_R', 'foot_r2'],
+  ['Leg_2_R', 'knee_r'],
+  ['Ankle_R', 'ankle_r']
+];
+
+const loader = new GLTFLoader();
+function load(url) { return new Promise((res, rej) => loader.load(url, res, undefined, rej)); }
+function bonesByName(root) { const m = {}; root.traverse(o => { if (o.isBone) m[o.name] = o; }); return m; }
+function restWorldQuats(root) {
+  root.updateMatrixWorld(true);
+  const q = {};
+  root.traverse(o => { const wq = new THREE.Quaternion(); o.matrixWorld.decompose(new THREE.Vector3(), wq, new THREE.Vector3()); q[o.name] = wq; });
+  return q;
+}
+
+(async () => {
+  try {
+    const tgt = await load(TARGET_URL);
+    const tgtScene = new THREE.Scene(); tgtScene.add(tgt.scene);
+    const tgtBones = bonesByName(tgtScene);
+    const tgtRest = restWorldQuats(tgtScene);
+    const tgtOrder = []; tgtScene.traverse(o => { if (o.isBone) tgtOrder.push(o.name); });
+    const tgtRestLocal = {}; tgtScene.traverse(o => { if (o.isBone) tgtRestLocal[o.name] = o.quaternion.clone(); });
+    const tgtSources = {}; for (const [s, t] of MAP) { (tgtSources[t] = tgtSources[t] || []).push(s); }
+
+    const missing = { tgt: [] };
+    for (const [s, t] of MAP) { if (!tgtBones[t]) missing.tgt.push(t); }
+
+    const clipsOut = {};
+    const checks = {};
+    const srcDeltas = {};
+    const desiredWorld = {};
+
+    function writeTargets(frameIndex, tracks) {
+      for (const name of tgtOrder) {
+        const bone = tgtBones[name];
+        const parent = bone.parent;
+        const parentWorld = parent
+          ? ((parent.isBone ? (desiredWorld[parent.name] || tgtRest[parent.name]) : tgtRest[parent.name]) || tgtRest[name])
+          : tgtRest[name];
+        let local;
+        if (tgtSources[name]) {
+          const qW = tgtRest[name].clone();
+          for (const sName of tgtSources[name]) qW.premultiply(srcDeltas[sName]);
+          desiredWorld[name] = qW;
+          local = parentWorld.clone().invert().multiply(qW);
+        } else {
+          local = tgtRestLocal[name].clone();
+          desiredWorld[name] = parentWorld.clone().multiply(local);
+        }
+        const arr = tracks[name] || (tracks[name] = []);
+        arr.push(+local.x.toFixed(5), +local.y.toFixed(5), +local.z.toFixed(5), +local.w.toFixed(5));
+      }
+    }
+
+    const jointNames = ['wrist_l', 'wrist_r', 'elbow_l', 'elbow_r', 'ankle_l', 'ankle_r', 'knee_l', 'knee_r', 'hip', 'head'];
+
+    for (const [file, id, isStride] of CLIPS) {
+      const data = await fetch('/tests/pod-anims/' + file + '.json').then(r => r.json());
+      const nativeFrames = data.frames;
+      const duration = +(((nativeFrames - 1) / data.fps).toFixed(4));
+      const M = Math.max(1, Math.round(duration * FPS));
+      const times = []; const tracks = {};
+      let nan = false;
+
+      const srcRest = {};
+      for (const [s] of MAP) { const r = data.rest[s]; srcRest[s] = new THREE.Quaternion(r[0], r[1], r[2], r[3]); }
+
+      for (let i = 0; i <= M; i++) {
+        const nativeFrame = Math.round(i * (nativeFrames - 1) / M);
+        const t = i / FPS; times.push(+t.toFixed(4));
+        for (const sName of new Set(MAP.map(m => m[0]))) {
+          const r = data.rot[sName][nativeFrame];
+          const wq = new THREE.Quaternion(r[0], r[1], r[2], r[3]);
+          srcDeltas[sName] = wq.multiply(srcRest[sName].clone().invert());
+        }
+        writeTargets(i, tracks);
+        if (tracks.wrist_l && tracks.wrist_l.some(x => !Number.isFinite(x))) nan = true;
+      }
+
+      // FK checks
+      const m = {}; jointNames.forEach(nm => { m[nm] = { x: [Infinity, -Infinity], y: [Infinity, -Infinity], z: [Infinity, -Infinity] }; });
+      for (let f = 0; f <= M; f++) {
+        for (const name of tgtOrder) { const tr = tracks[name]; const o = f * 4; tgtBones[name].quaternion.set(tr[o], tr[o + 1], tr[o + 2], tr[o + 3]); }
+        tgtScene.updateMatrixWorld(true);
+        const wp = new THREE.Vector3();
+        for (const nm of jointNames) {
+          tgtBones[nm].getWorldPosition(wp); const s = m[nm];
+          s.x = [Math.min(s.x[0], wp.x), Math.max(s.x[1], wp.x)];
+          s.y = [Math.min(s.y[0], wp.y), Math.max(s.y[1], wp.y)];
+          s.z = [Math.min(s.z[0], wp.z), Math.max(s.z[1], wp.z)];
+        }
+      }
+      const fmt = {}; for (const nm of jointNames) fmt[nm] = { X: [+m[nm].x[0].toFixed(2), +m[nm].x[1].toFixed(2)], Y: [+m[nm].y[0].toFixed(2), +m[nm].y[1].toFixed(2)], Z: [+m[nm].z[0].toFixed(2), +m[nm].z[1].toFixed(2)] };
+      const flags = [];
+      for (const nm of ['ankle_l', 'ankle_r', 'knee_l', 'knee_r']) if (m[nm].y[0] < 0.05) flags.push(nm + '_through_floor');
+      for (const nm of ['wrist_l', 'wrist_r']) {
+        if (m[nm].z[1] < -0.8) flags.push(nm + '_behind_back(Z' + m[nm].z[1].toFixed(1) + ')');
+        if (Math.abs(m[nm].x[0]) < 1.2 && m[nm].y[0] < 7 && m[nm].y[1] > 4 && Math.abs(m[nm].x[1] - m[nm].x[0]) < 0.5) flags.push(nm + '_torso_crossing');
+      }
+      const out = { duration, fps: FPS, times, tracks };
+      if (isStride) {
+        out.strideNative = +(m.ankle_l.z[1] - m.ankle_l.z[0]).toFixed(4);
+        out.liftNative = +(m.ankle_l.y[1] - 1).toFixed(4);
+      }
+      clipsOut[id] = out;
+      checks[id] = { src: file, nativeFrames, frames: M + 1, nan, flags, ...fmt };
+    }
+
+    window.__BAKE = JSON.stringify({
+      source: 'Miitomo pods', target: 'ffl/body/male', fps: FPS, map: MAP,
+      restTarget: Object.fromEntries(Object.entries(tgtRest).map(([k, v]) => [k, [+v.x.toFixed(5), +v.y.toFixed(5), +v.z.toFixed(5), +v.w.toFixed(5)]])),
+      clips: clipsOut
+    });
+    window.__CHECK = JSON.stringify({ missing, clips: checks });
+    window.__DONE = true;
+  } catch (e) {
+    window.__ERROR = (e && e.stack) ? e.stack : String(e);
+    window.__DONE = true;
+  }
+})();
+</script>
+</body>
+</html>

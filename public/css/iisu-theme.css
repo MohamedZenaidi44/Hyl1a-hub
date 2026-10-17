@@ -1,0 +1,498 @@
+/* ═══════════════════════════════════════════════════════════════════════
+   THÈME iiSU — WiiSU Mode pour Hylia Plaza
+   VERSION 2 : Système de variables CSS — cohérent avec le thème global
+   
+   Variables injectées par ThemeManager.apply() :
+     --tile-bg            : fond des tiles
+     --tile-border        : bordure tiles
+     --tile-label-color   : couleur texte label
+     --tile-shadow        : ombre tiles
+     --tile-hover-ring    : ring au survol
+     --panel-bg           : fond des panneaux (changelog, social, etc.)
+     --panel-border       : bordure panneaux
+     --panel-text         : texte principal panneaux
+     --panel-text-muted   : texte secondaire panneaux
+     --accent             : couleur d'accentuation principale
+     --accent-glow        : glow de l'accentuation
+     --grid-bg            : fond de la grille app
+     --grid-border        : bordure grille
+   ═══════════════════════════════════════════════════════════════════════ */
+
+/* ──────────────────────────────────────────────────────────────────────
+   1. GRILLE — utilise les variables de thème
+   ────────────────────────────────────────────────────────────────────── */
+#app-grid {
+  grid-template-columns: repeat(5, 148px) !important;
+  grid-template-rows: repeat(2, 148px) !important;
+  gap: 14px !important;
+  padding: 22px 24px !important;
+  background: var(--grid-bg) !important;
+  backdrop-filter: blur(18px) !important;
+  -webkit-backdrop-filter: blur(18px) !important;
+  border-radius: 28px !important;
+  border: 1.5px solid var(--grid-border) !important;
+  box-shadow:
+    0 32px 80px rgba(0, 0, 0, 0.35),
+    inset 0 1px 0 var(--grid-inner-highlight) !important;
+}
+
+/* ──────────────────────────────────────────────────────────────────────
+   2. TILES — fond, bordure et ombre depuis les variables de thème
+   ────────────────────────────────────────────────────────────────────── */
+.grid-tile {
+  width: 148px !important;
+  height: 148px !important;
+  border-radius: 22px !important;
+  overflow: hidden !important;
+  background: var(--tile-bg) !important;
+  border: 1.5px solid var(--tile-border) !important;
+  box-shadow: var(--tile-shadow) !important;
+  transition:
+    transform 200ms cubic-bezier(0.34, 1.56, 0.64, 1),
+    box-shadow 200ms ease,
+    border-color 200ms ease !important;
+  animation: iisu-tile-enter 0.32s cubic-bezier(0.34, 1.2, 0.64, 1) both !important;
+}
+
+@keyframes iisu-tile-enter {
+  from { opacity: 0; transform: scale(0.75) translateY(16px); }
+  to   { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+.grid-tile:nth-child(1)  { animation-delay: 0ms !important; }
+.grid-tile:nth-child(2)  { animation-delay: 40ms !important; }
+.grid-tile:nth-child(3)  { animation-delay: 80ms !important; }
+.grid-tile:nth-child(4)  { animation-delay: 120ms !important; }
+.grid-tile:nth-child(5)  { animation-delay: 160ms !important; }
+.grid-tile:nth-child(6)  { animation-delay: 200ms !important; }
+.grid-tile:nth-child(7)  { animation-delay: 240ms !important; }
+.grid-tile:nth-child(8)  { animation-delay: 280ms !important; }
+.grid-tile:nth-child(9)  { animation-delay: 320ms !important; }
+.grid-tile:nth-child(10) { animation-delay: 360ms !important; }
+
+/* ──────────────────────────────────────────────────────────────────────
+   3. ICÔNE — centrée avec padding
+   ────────────────────────────────────────────────────────────────────── */
+.tile-bg-img {
+  position: absolute !important;
+  inset: 14px !important;
+  width: calc(100% - 28px) !important;
+  height: calc(100% - 44px) !important;
+  object-fit: contain !important;
+  border-radius: 10px !important;
+  filter: var(--tile-icon-filter) !important;
+  transition: transform 200ms ease !important;
+}
+
+/* ──────────────────────────────────────────────────────────────────────
+   4. SHIMMER / GLOSS — adapté au thème (plus visible en mode dark)
+   ────────────────────────────────────────────────────────────────────── */
+.grid-tile::before {
+  content: '' !important;
+  position: absolute !important;
+  top: 0; left: 0; right: 0 !important;
+  height: 50% !important;
+  background: var(--tile-gloss) !important;
+  border-radius: 22px 22px 0 0 !important;
+  pointer-events: none !important;
+  z-index: 4 !important;
+}
+
+/* ──────────────────────────────────────────────────────────────────────
+   5. LABEL — couleur et fond depuis le thème
+   ────────────────────────────────────────────────────────────────────── */
+.tile-wiiu-label {
+  font-size: 11px !important;
+  font-weight: 800 !important;
+  color: var(--tile-label-color) !important;
+  text-shadow: var(--tile-label-shadow) !important;
+  padding: 8px 6px 6px !important;
+  background: var(--tile-label-bg) !important;
+  border-radius: 0 0 20px 20px !important;
+  letter-spacing: 0.01em !important;
+}
+
+/* Placeholder tuiles vides */
+.tile-placeholder {
+  color: var(--tile-placeholder-color) !important;
+  font-size: 9px !important;
+  letter-spacing: 0.12em !important;
+}
+
+/* Tuiles vides — discret */
+.grid-tile[data-title="Slot libre"] {
+  background: var(--tile-empty-bg) !important;
+  border: 1.5px dashed var(--tile-empty-border) !important;
+  box-shadow: none !important;
+  pointer-events: none !important;
+}
+
+/* ──────────────────────────────────────────────────────────────────────
+   6. HOVER — élévation + ring depuis la couleur d'accent
+   ────────────────────────────────────────────────────────────────────── */
+.grid-tile:hover {
+  transform: scale(1.10) translateY(-4px) !important;
+  box-shadow:
+    0 20px 48px rgba(0, 0, 0, 0.4),
+    0 0 0 2px var(--tile-hover-ring),
+    inset 0 1px 0 var(--tile-inner-highlight) !important;
+  border-color: var(--tile-hover-border) !important;
+  z-index: 10 !important;
+}
+
+.grid-tile:hover .tile-bg-img {
+  transform: scale(1.05) !important;
+}
+
+/* ──────────────────────────────────────────────────────────────────────
+   7. TILE ACTIVE (focus/survol sélectionné) — ring accent iiSU
+   ────────────────────────────────────────────────────────────────────── */
+.grid-tile.active-carousel-tile {
+  transform: scale(1.12) translateY(-5px) !important;
+  box-shadow:
+    0 24px 56px rgba(0, 0, 0, 0.5),
+    0 0 0 3px var(--accent),
+    0 0 20px var(--accent-glow),
+    inset 0 1px 0 var(--tile-inner-highlight) !important;
+  border-color: var(--accent) !important;
+  z-index: 100 !important;
+}
+
+/* Tailles */
+.grid-tile.tile-wiiu-large,
+.grid-tile.tile-wiiu-small {
+  width: 148px !important;
+  height: 148px !important;
+}
+
+/* ──────────────────────────────────────────────────────────────────────
+   8. PANNEAU PREVIEW — cohérent avec le thème
+   ────────────────────────────────────────────────────────────────────── */
+#app-preview-panel {
+  margin-left: 4vw !important;
+  margin-top: 0 !important;
+  max-width: 500px !important;
+}
+
+#preview-image-wrap {
+  border-radius: 24px !important;
+  border: 1.5px solid var(--panel-border) !important;
+  box-shadow:
+    0 32px 80px rgba(0, 0, 0, 0.45),
+    inset 0 1px 0 var(--grid-inner-highlight) !important;
+  background: var(--panel-bg) !important;
+}
+
+#preview-image {
+  border-radius: 22px !important;
+}
+
+#preview-app-name {
+  font-size: 30px !important;
+  font-weight: 900 !important;
+  letter-spacing: -0.5px !important;
+  color: var(--panel-text) !important;
+  text-shadow: 0 2px 12px rgba(0,0,0,0.25) !important;
+}
+
+#preview-app-desc {
+  font-size: 14px !important;
+  color: var(--panel-text-muted) !important;
+  line-height: 1.7 !important;
+}
+
+#preview-open-btn {
+  background: linear-gradient(135deg, var(--accent) 0%, var(--accent-dark) 100%) !important;
+  border: none !important;
+  border-radius: 14px !important;
+  padding: 14px 48px !important;
+  font-size: 15px !important;
+  font-weight: 800 !important;
+  letter-spacing: 0.05em !important;
+  text-transform: uppercase !important;
+  color: white !important;
+  box-shadow: 0 6px 24px var(--accent-glow) !important;
+  transition: transform 0.18s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.18s !important;
+}
+
+#preview-open-btn:hover {
+  transform: scale(1.06) translateY(-2px) !important;
+  box-shadow: 0 12px 36px var(--accent-glow) !important;
+}
+
+/* ──────────────────────────────────────────────────────────────────────
+   9. CHANGELOG PANEL — cohérent avec le thème
+   ────────────────────────────────────────────────────────────────────── */
+#changelog-panel {
+  background: var(--panel-bg) !important;
+  border: 1.5px solid var(--panel-border) !important;
+  box-shadow:
+    0 18px 45px rgba(0, 0, 0, 0.30),
+    inset 0 1px 0 var(--grid-inner-highlight) !important;
+}
+
+#changelog-title {
+  color: var(--panel-text) !important;
+}
+
+.changelog-entry {
+  background: var(--entry-bg) !important;
+  border: 1px solid var(--panel-border) !important;
+}
+
+.changelog-item-title {
+  color: var(--panel-text) !important;
+}
+
+.changelog-item-desc {
+  color: var(--panel-text-muted) !important;
+}
+
+/* ──────────────────────────────────────────────────────────────────────
+   10. USER PANEL — cohérent avec le thème
+   On NE ré-aplatit PAS le fond : le dégradé hud-tint + panel-bg de hub.css
+   (le « verre iiSU ») reste tel quel, seules la bordure et l'arête interne
+   sont thématisées, comme .social-window / #changelog-panel.
+   ────────────────────────────────────────────────────────────────────── */
+#user-panel {
+  border-color: var(--panel-border) !important;
+  box-shadow:
+    0 12px 32px rgba(0, 0, 0, 0.28),
+    inset 0 1px 0 var(--grid-inner-highlight) !important;
+}
+
+/* Anneau de l'avatar : thématique au lieu du blanc hardcodé */
+#top-avatar-container {
+  background: var(--entry-bg) !important;
+  border-color: var(--panel-border) !important;
+  box-shadow:
+    0 4px 15px rgba(0, 0, 0, 0.18),
+    inset 0 1px 0 var(--grid-inner-highlight) !important;
+}
+
+/* ──────────────────────────────────────────────────────────────────────
+   11. BARRES BOTTOM ET TOP — cohérentes avec le thème
+   ────────────────────────────────────────────────────────────────────── */
+#marquee-bar,
+#music-bar-container {
+  background: var(--panel-bg) !important;
+  backdrop-filter: blur(18px) !important;
+  -webkit-backdrop-filter: blur(18px) !important;
+  border: 1px solid var(--panel-border) !important;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.22) !important;
+}
+
+/* ──────────────────────────────────────────────────────────────────────
+   12. FLÈCHES NAVIGATION
+   ────────────────────────────────────────────────────────────────────── */
+.carousel-nav-btn {
+  width: 36px !important;
+  height: 80px !important;
+  background: var(--panel-bg) !important;
+  backdrop-filter: blur(12px) !important;
+  -webkit-backdrop-filter: blur(12px) !important;
+  border: 1px solid var(--panel-border) !important;
+  color: var(--panel-text-muted) !important;
+  font-size: 20px !important;
+  border-radius: 10px !important;
+  transition: background 0.18s, color 0.18s, transform 0.18s !important;
+}
+
+.carousel-nav-btn:hover {
+  background: var(--accent-glow) !important;
+  border-color: var(--accent) !important;
+  color: var(--panel-text) !important;
+}
+
+/* ──────────────────────────────────────────────────────────────────────
+   13. DOTS PAGINATION — pill animée couleur accent
+   ────────────────────────────────────────────────────────────────────── */
+#grid-pagination {
+  margin-top: 12px !important;
+}
+
+#grid-pagination .page-dot {
+  width: 6px !important;
+  height: 6px !important;
+  border-radius: 3px !important;
+  background: var(--tile-border) !important;
+  transition: width 0.25s cubic-bezier(0.34, 1.56, 0.64, 1), background 0.25s ease !important;
+}
+
+#grid-pagination .page-dot.active {
+  width: 22px !important;
+  height: 6px !important;
+  border-radius: 3px !important;
+  background: var(--accent) !important;
+  box-shadow: 0 0 8px var(--accent-glow) !important;
+  transform: none !important;
+}
+
+/* ──────────────────────────────────────────────────────────────────────
+   14. FOCUS GLOW AMBIANT
+   ────────────────────────────────────────────────────────────────────── */
+#focus-glow {
+  width: 320px !important;
+  height: 320px !important;
+  filter: blur(80px) !important;
+  background: radial-gradient(circle, var(--accent-glow) 0%, transparent 70%) !important;
+}
+
+/* ──────────────────────────────────────────────────────────────────────
+   15. ANIMATIONS DE LANCEMENT iiSU
+   ────────────────────────────────────────────────────────────────────── */
+.grid-tile.launching {
+  animation: iisu-tile-launch 0.28s cubic-bezier(0.4, 0, 0.6, 1) forwards !important;
+}
+
+@keyframes iisu-tile-launch {
+  0%   { transform: scale(1.12); opacity: 1; }
+  30%  { transform: scale(1.25); opacity: 1; filter: brightness(1.5); }
+  100% { transform: scale(0.7);  opacity: 0; filter: brightness(2); }
+}
+
+.grid-tile.launching::after {
+  content: '';
+  position: absolute;
+  inset: -4px;
+  border-radius: 26px;
+  border: 3px solid var(--accent);
+  animation: iisu-launch-ring 0.28s ease-out forwards;
+  pointer-events: none;
+  z-index: 200;
+}
+
+@keyframes iisu-launch-ring {
+  0%   { opacity: 1; transform: scale(1); }
+  100% { opacity: 0; transform: scale(1.45); }
+}
+
+/* ──────────────────────────────────────────────────────────────────────
+   16. RESPONSIVE
+   ────────────────────────────────────────────────────────────────────── */
+@media (max-width: 1200px) {
+  #app-grid {
+    grid-template-columns: repeat(5, 128px) !important;
+    grid-template-rows: repeat(2, 128px) !important;
+    gap: 10px !important;
+  }
+  .grid-tile,
+  .grid-tile.tile-wiiu-large,
+  .grid-tile.tile-wiiu-small {
+    width: 128px !important;
+    height: 128px !important;
+  }
+}
+
+@media (max-width: 900px) {
+  #app-grid {
+    grid-template-columns: repeat(4, 110px) !important;
+    grid-template-rows: repeat(3, 110px) !important;
+    gap: 8px !important;
+    padding: 14px 16px !important;
+  }
+  .grid-tile,
+  .grid-tile.tile-wiiu-large,
+  .grid-tile.tile-wiiu-small {
+    width: 110px !important;
+    height: 110px !important;
+    border-radius: 16px !important;
+  }
+}
+
+/* ══════════════════════════════════════════════════════════════════════
+   SURCHARGE TEXTES — body.theme-black
+   Tous les textes qui avaient des couleurs foncées hardcodées
+   deviennent automatiquement clairs en mode sombre.
+   ══════════════════════════════════════════════════════════════════════ */
+
+/* Cibler les couleurs foncées hardcodées encore présentes dans hub.css / social.css */
+body.theme-black #changelog-title,
+body.theme-black .changelog-item-title,
+body.theme-black .changelog-item-desc,
+body.theme-black .changelog-version,
+body.theme-black .changelog-date,
+body.theme-black .social-header,
+body.theme-black .friend-name,
+body.theme-black .friend-tag,
+body.theme-black .friend-bio-small,
+body.theme-black .friend-gender,
+body.theme-black .stat-label,
+body.theme-black .stat-value,
+body.theme-black .stat-header,
+body.theme-black .speech-bubble,
+body.theme-black .chat-header,
+body.theme-black #preview-app-name,
+body.theme-black #preview-app-desc,
+body.theme-black #top-time,
+body.theme-black #top-date,
+body.theme-black .am-pm,
+body.theme-black .user-name,
+body.theme-black .user-tag,
+body.theme-black .user-bio,
+body.theme-black .window-title,
+body.theme-black .notif-title,
+body.theme-black .notif-body,
+body.theme-black label,
+body.theme-black p,
+body.theme-black h1,
+body.theme-black h2,
+body.theme-black h3,
+body.theme-black h4 {
+  color: var(--panel-text) !important;
+}
+
+/* Textes secondaires / muted */
+body.theme-black .changelog-item-desc,
+body.theme-black .friend-tag,
+body.theme-black .friend-bio-small,
+body.theme-black .friend-gender,
+body.theme-black .stat-label,
+body.theme-black .message-info,
+body.theme-black #preview-app-desc {
+  color: var(--panel-text-muted) !important;
+}
+
+/* Inputs : fond sombre + texte clair */
+body.theme-black input:not([type="checkbox"]):not([type="radio"]):not([type="color"]),
+body.theme-black textarea,
+body.theme-black select {
+  background: var(--entry-bg) !important;
+  color: var(--panel-text) !important;
+  border-color: var(--panel-border) !important;
+}
+
+body.theme-black input::placeholder,
+body.theme-black textarea::placeholder {
+  color: var(--panel-text-muted) !important;
+}
+
+/* Boutons secondaires (non-accent) */
+body.theme-black button:not(.chat-send-btn):not(.social-close):not(#preview-open-btn):not(.carousel-nav-btn):not([class*="launch"]) {
+  color: var(--panel-text) !important;
+}
+
+/* ── Textes marquee scrolling + barre musique ── */
+body.theme-black .marquee-text,
+body.theme-black #music-track-name,
+body.theme-black .music-bar-subtitle,
+body.theme-black .music-bar-icon,
+body.theme-black .music-ctrl-btn,
+body.theme-black .now-playing-title,
+body.theme-black .now-playing-artist,
+body.theme-black #marquee-bar,
+body.theme-black #marquee-bar *,
+body.theme-black #music-bar-container .music-bar-inner *:not(button) {
+  color: var(--panel-text) !important;
+}
+
+body.theme-black .music-bar-subtitle {
+  color: var(--panel-text-muted) !important;
+}
+
+/* Boutons contrôles musique (prev/play/next) */
+body.theme-black .music-ctrl-btn {
+  background: var(--entry-bg) !important;
+  border-color: var(--panel-border) !important;
+  color: var(--panel-text) !important;
+}

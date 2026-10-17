@@ -1,0 +1,479 @@
+/* ============================================================
+   MENU D'ACCUEIL — grille de chaînes façon Wii
+   Inspiré du Wii Menu (Nintendo Wii) et du « WiiSU Mode » d'iiSU.
+
+   Structure produite par public/js/core/wiiMenu.js dans #main-container :
+
+     .wii-menu
+       nav.wii-tabs          → onglets de catégories (pages du menu)
+       .wii-channels-frame   → zone défilante de sécurité (petites hauteurs)
+         .wii-channels       → grille de chaînes
+           button.wii-channel
+             .wii-channel-face   (panneau rectangulaire + gloss)
+             .wii-channel-label  (nom sous la chaîne, comme sur la Wii)
+       .wii-info             → titre + description de la chaîne sélectionnée
+       .wii-hint             → indice des touches
+
+   Palette : monochrome par thème (--wii-hi = glow/rebords blancs ou noirs,
+   --wii-icon-color = icônes contrastées), fonds via les variables
+   du ThemeManager (--tile-*, --panel-*) pour rester cohérent.
+   ============================================================ */
+
+/* ── Montage dans la page (surchargé depuis hub.css) ── */
+#main-container {
+  position: fixed;
+  inset: 0;
+  display: block;
+  pointer-events: none;
+  z-index: 10;
+  padding: 0 !important;
+  overflow: hidden;
+}
+
+/* ============================================================
+   SCÈNE — fond clair, mise en page flexible non superposable
+   ============================================================ */
+.wii-menu {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(12px, 2.2vh, 28px);
+  /* Réserves pour le HUD : le panneau profil/horloge occupe jusqu'à ~185px
+     en haut, les barres musique/marquee ~130px en bas. */
+  padding: clamp(190px, 22vh, 270px) clamp(10px, 3vw, 52px) clamp(86px, 12vh, 132px);
+  box-sizing: border-box;
+  overflow: hidden;
+  pointer-events: none;
+
+  /* Palette monochrome du menu — plus aucun bleu :
+     · glow et rebords : blanc en thème blanc, noir en thème noir
+     · icônes        : noir en thème blanc, blanc en thème noir (rester lisibles) */
+  --wii-hi: rgba(255, 255, 255, 1);
+  --wii-hi-soft: rgba(255, 255, 255, 0.85);
+  --wii-hi-glow: rgba(255, 255, 255, 0.55);
+  --wii-icon-color: rgba(15, 20, 30, 0.95);
+  --wii-shadow: rgba(35, 50, 75, 0.16);
+  /* Voile très léger : la vidéo de fond reste bien visible */
+  --wii-scrim-top: rgba(251, 253, 255, 0.35);
+  --wii-scrim-bottom: rgba(238, 244, 250, 0.27);
+  /* Halo de lisibilité des textes posés directement sur le fond */
+  --wii-text-halo: 0 1px 6px rgba(255, 255, 255, 0.95), 0 0 16px rgba(255, 255, 255, 0.75);
+
+  /* Fond blanc / gris très clair : laisse deviner la vidéo derrière
+     pour une légère profondeur visuelle. */
+  background: linear-gradient(
+    180deg,
+    var(--wii-scrim-top) 0%,
+    var(--wii-scrim-bottom) 100%
+  );
+}
+
+body.theme-black .wii-menu {
+  --wii-hi: rgba(0, 0, 0, 1);
+  --wii-hi-soft: rgba(0, 0, 0, 0.85);
+  --wii-hi-glow: rgba(0, 0, 0, 0.6);
+  --wii-icon-color: rgba(255, 255, 255, 0.95);
+  --wii-shadow: rgba(0, 0, 0, 0.5);
+  --wii-scrim-top: rgba(12, 15, 22, 0.35);
+  --wii-scrim-bottom: rgba(8, 10, 16, 0.42);
+  --wii-text-halo: 0 1px 6px rgba(0, 0, 0, 0.9), 0 0 16px rgba(0, 0, 0, 0.75);
+}
+
+/* ============================================================
+   ONGLETS DE CATÉGORIES
+   ============================================================ */
+.wii-tabs {
+  flex: 0 0 auto;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(6px, 0.9vw, 12px);
+  width: 100%;
+  max-width: min(1100px, 96vw);
+  pointer-events: auto;
+}
+
+.wii-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: clamp(6px, 0.85vh, 10px) clamp(11px, 1.2vw, 19px);
+  border-radius: 999px;
+  border: 1px solid var(--wii-hi-soft);
+  background: var(--tile-bg, rgba(255, 255, 255, 0.92));
+  color: var(--tile-label-color, rgba(88, 104, 126, 1));
+  font-family: inherit;
+  font-size: clamp(11px, 1.15vmin, 14px);
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+  cursor: pointer;
+  box-shadow: 0 3px 10px var(--wii-shadow), inset 0 1px 0 rgba(255, 255, 255, 0.9);
+  transition: transform 0.22s ease, border-color 0.22s ease, color 0.22s ease,
+              box-shadow 0.22s ease;
+}
+
+.wii-tab:hover {
+  transform: translateY(-2px);
+  border-color: var(--wii-hi);
+  color: var(--wii-icon-color);
+}
+
+.wii-tab[aria-selected="true"] {
+  border-color: var(--wii-hi);
+  color: var(--wii-icon-color);
+  box-shadow: 0 6px 16px var(--wii-shadow),
+              0 0 0 2px var(--wii-hi),
+              0 0 18px var(--wii-hi-glow),
+              inset 0 1px 0 rgba(255, 255, 255, 0.95);
+}
+
+.wii-tab:focus-visible {
+  outline: 3px solid var(--wii-hi);
+  outline-offset: 2px;
+  box-shadow: 0 0 0 6px var(--wii-shadow);
+}
+
+.wii-tab-icon {
+  width: 15px;
+  height: 15px;
+  flex: 0 0 auto;
+  background-color: currentColor;
+  -webkit-mask: var(--wii-icon) center / contain no-repeat;
+  mask: var(--wii-icon) center / contain no-repeat;
+}
+
+/* ============================================================
+   GRILLE DE CHAÎNES
+   ============================================================ */
+.wii-channels-frame {
+  flex: 1 1 auto;
+  min-height: 0;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow-y: auto;
+  overflow-x: hidden;
+  scrollbar-width: none;
+  pointer-events: auto;
+}
+
+.wii-channels-frame::-webkit-scrollbar {
+  display: none;
+}
+
+.wii-channels {
+  /* Largeur d'une chaîne : contrainte aussi par la hauteur disponible */
+  --wii-ch-w: clamp(116px, min(13.5vw, 25vh), 268px);
+  --wii-gap-x: clamp(14px, 1.8vw, 34px);
+  --wii-gap-y: clamp(12px, 1.6vh, 26px);
+  /* Flex avec retour à la ligne : chaque ligne reste centrée, même incomplète.
+     Largeur bornée à 3 chaînes (comme les pages du Wii Menu). */
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-content: center;
+  align-content: safe center;
+  gap: var(--wii-gap-y) var(--wii-gap-x);
+  width: 100%;
+  max-width: calc(var(--wii-ch-w) * 3 + var(--wii-gap-x) * 2);
+  margin: 0 auto;
+  padding: clamp(6px, 1vh, 16px) 0;
+  box-sizing: border-box;
+}
+
+/* ── Une chaîne ── */
+.wii-channel {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: var(--wii-ch-w);
+  flex: 0 0 auto;
+  padding: 0;
+  border: none;
+  background: none;
+  font-family: inherit;
+  cursor: pointer;
+  position: relative;
+  outline: none;
+  transition: transform 0.22s ease;
+  animation: wiiChannelIn 0.42s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes wiiChannelIn {
+  from { opacity: 0; transform: translateY(14px) scale(0.96); }
+  to   { opacity: 1; transform: none; }
+}
+
+/* Apparition progressive (jusqu'à 8 chaînes par page) */
+.wii-channel:nth-child(1) { animation-delay: 20ms; }
+.wii-channel:nth-child(2) { animation-delay: 60ms; }
+.wii-channel:nth-child(3) { animation-delay: 100ms; }
+.wii-channel:nth-child(4) { animation-delay: 140ms; }
+.wii-channel:nth-child(5) { animation-delay: 180ms; }
+.wii-channel:nth-child(6) { animation-delay: 220ms; }
+.wii-channel:nth-child(7) { animation-delay: 260ms; }
+.wii-channel:nth-child(8) { animation-delay: 300ms; }
+
+/* Panneau rectangulaire de la chaîne */
+.wii-channel-face {
+  width: 100%;
+  aspect-ratio: 1.35 / 1;
+  border-radius: clamp(12px, 1.1vw, 20px);
+  background: var(--tile-bg, rgba(255, 255, 255, 0.94));
+  border: 1px solid var(--wii-hi-soft);
+  box-shadow: 0 8px 20px var(--wii-shadow), inset 0 1px 0 rgba(255, 255, 255, 0.9);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.22s ease, box-shadow 0.22s ease, border-color 0.22s ease;
+}
+
+/* Gloss discret sur la moitié haute (esprit Wii / iiSU) */
+.wii-channel-face::after {
+  content: '';
+  position: absolute;
+  inset: 0 0 50% 0;
+  background: var(--tile-gloss, linear-gradient(to bottom, rgba(255, 255, 255, 0.55), rgba(255, 255, 255, 0)));
+  pointer-events: none;
+}
+
+/* Illustration de la chaîne */
+.wii-channel-art {
+  width: 66%;
+  height: 66%;
+  object-fit: contain;
+  filter: var(--tile-icon-filter, drop-shadow(0 2px 6px rgba(30, 60, 100, 0.18)));
+  transition: transform 0.22s ease;
+  z-index: 1;
+}
+
+/* Icône SVG monochrome (masque) */
+.wii-channel-art.is-mask {
+  width: 44%;
+  height: 44%;
+  background-color: var(--wii-icon-color);
+  -webkit-mask: var(--wii-icon) center / contain no-repeat;
+  mask: var(--wii-icon) center / contain no-repeat;
+  filter: none;
+}
+
+/* Nom sous la chaîne, comme sur le Wii Menu */
+.wii-channel-label {
+  margin-top: clamp(6px, 0.9vh, 12px);
+  max-width: 100%;
+  padding: 0 4px;
+  font-size: clamp(11px, 1.15vmin, 15px);
+  font-weight: 700;
+  color: var(--tile-label-color, rgba(88, 104, 126, 1));
+  text-shadow: var(--wii-text-halo);
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  transition: color 0.2s ease;
+}
+
+/* ── États : survol ── */
+.wii-channel:hover .wii-channel-face {
+  transform: translateY(-4px);
+  border-color: var(--wii-hi);
+  box-shadow: 0 14px 30px var(--wii-shadow),
+              0 0 0 1px var(--wii-hi),
+              inset 0 1px 0 rgba(255, 255, 255, 0.95);
+}
+
+.wii-channel:hover .wii-channel-art {
+  transform: scale(1.03);
+}
+
+/* ── États : chaîne sélectionnée (clavier / survol) ── */
+.wii-channel.selected .wii-channel-face {
+  transform: translateY(-5px);
+  border-color: var(--wii-hi);
+  box-shadow: 0 16px 34px var(--wii-shadow),
+              0 0 0 2px var(--wii-hi),
+              0 0 22px var(--wii-hi-glow),
+              inset 0 1px 0 rgba(255, 255, 255, 0.95);
+}
+
+.wii-channel.selected .wii-channel-label {
+  color: var(--wii-icon-color);
+}
+
+/* ── État focus clavier visible (liseré blanc/noir + halo neutre) ── */
+.wii-channel:focus-visible .wii-channel-face {
+  outline: 3px solid var(--wii-hi);
+  outline-offset: 3px;
+  box-shadow: 0 16px 34px var(--wii-shadow), 0 0 0 6px var(--wii-shadow);
+}
+
+/* ── Lancement de la chaîne ── */
+.wii-channel.launching {
+  pointer-events: none;
+}
+
+.wii-channel.launching .wii-channel-face {
+  animation: wiiChannelLaunch 0.32s cubic-bezier(0.4, 0, 0.6, 1) forwards;
+}
+
+@keyframes wiiChannelLaunch {
+  0%   { transform: scale(1); opacity: 1; filter: brightness(1); }
+  35%  { transform: scale(1.05); opacity: 1; filter: brightness(1.12); }
+  100% { transform: scale(1.1); opacity: 0; filter: brightness(1.35); }
+}
+
+.wii-channel.launching .wii-channel-face::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  border: 3px solid var(--wii-hi);
+  animation: wiiLaunchRing 0.32s ease-out forwards;
+  z-index: 3;
+  pointer-events: none;
+}
+
+@keyframes wiiLaunchRing {
+  from { opacity: 1; transform: scale(1); }
+  to   { opacity: 0; transform: scale(1.16); }
+}
+
+/* ============================================================
+   PANNEAU D'INFORMATION (chaîne sélectionnée)
+   ============================================================ */
+.wii-info {
+  flex: 0 0 auto;
+  width: 100%;
+  max-width: min(780px, 88vw);
+  min-height: clamp(56px, 8vh, 88px);
+  text-align: center;
+  pointer-events: none;
+}
+
+.wii-info-title {
+  font-size: clamp(17px, 2.2vmin, 27px);
+  font-weight: 800;
+  letter-spacing: 0.01em;
+  color: var(--panel-text, rgba(26, 42, 66, 0.95));
+  text-shadow: var(--wii-text-halo);
+}
+
+.wii-info-desc {
+  margin-top: 4px;
+  font-size: clamp(12px, 1.3vmin, 16px);
+  font-weight: 600;
+  line-height: 1.55;
+  color: var(--panel-text-muted, rgba(78, 98, 124, 0.85));
+  text-shadow: var(--wii-text-halo);
+}
+
+.wii-info.wii-info-in {
+  animation: wiiInfoIn 0.3s ease;
+}
+
+@keyframes wiiInfoIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: none; }
+}
+
+/* ============================================================
+   INDICES CLAVIER
+   ============================================================ */
+.wii-hint {
+  position: absolute;
+  right: clamp(12px, 3vw, 40px);
+  bottom: clamp(12px, 2.4vh, 28px);
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  font-size: clamp(11px, 1vmin, 13px);
+  font-weight: 700;
+  color: var(--panel-text-muted, rgba(78, 98, 124, 0.85));
+  text-shadow: var(--wii-text-halo);
+  pointer-events: none;
+}
+
+.wii-hint .kbd {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 22px;
+  height: 22px;
+  padding: 0 6px;
+  margin-right: 4px;
+  border-radius: 6px;
+  border: 1px solid var(--wii-hi-soft);
+  background: var(--entry-bg, rgba(255, 255, 255, 0.75));
+  font-size: clamp(10px, 0.9vmin, 12px);
+}
+
+/* ============================================================
+   RESPONSIVE
+   ============================================================ */
+
+/* Écrans moyens : tuiles un peu plus compactes */
+@media screen and (max-width: 900px) {
+  .wii-channels {
+    --wii-ch-w: clamp(112px, min(19vw, 23vh), 190px);
+    --wii-gap-x: clamp(12px, 1.6vw, 24px);
+    --wii-gap-y: clamp(10px, 1.4vh, 20px);
+  }
+}
+
+/* Petits écrans : tuiles compactes, indices masqués, HUD plus court */
+@media screen and (max-width: 620px) {
+  .wii-menu {
+    padding-top: clamp(84px, 12vh, 112px);
+  }
+
+  .wii-channels {
+    --wii-ch-w: clamp(118px, min(39vw, 21vh), 180px);
+    /* 2 chaînes par ligne maximum sur mobile */
+    max-width: calc(var(--wii-ch-w) * 2 + var(--wii-gap-x));
+  }
+
+  .wii-hint {
+    display: none;
+  }
+
+  .wii-info {
+    min-height: clamp(48px, 7vh, 72px);
+  }
+
+  .wii-info-desc {
+    font-size: clamp(11px, 2.6vw, 14px);
+  }
+
+  .wii-tab {
+    padding: 6px 11px;
+    gap: 6px;
+    font-size: 11px;
+  }
+
+  .wii-tab-icon {
+    width: 13px;
+    height: 13px;
+  }
+}
+
+/* ============================================================
+   MOUVEMENT RÉDUIT
+   ============================================================ */
+@media (prefers-reduced-motion: reduce) {
+  .wii-menu *,
+  .wii-menu *::before,
+  .wii-menu *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
