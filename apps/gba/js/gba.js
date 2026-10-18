@@ -193,9 +193,9 @@ function injectGbaConsoleStyles() {
     .gba-stage { position: absolute; inset: 0; background: #000; display: flex; align-items: center; justify-content: center; }
     .gba-stage iframe { width: min(100vw, 150vh); aspect-ratio: 3 / 2; border: 0; background: #000; }
 
-    /* Barre flottante */
+    /* Barre flottante — au-dessus de l'iframe émulateur */
     .gba-bar {
-      position: absolute; top: 16px; left: 50%; transform: translateX(-50%); z-index: 30;
+      position: fixed; top: 16px; left: 50%; transform: translateX(-50%); z-index: 2147483000;
       display: flex; align-items: center; gap: 8px; padding: 7px 9px 7px 7px; border-radius: 40px;
       background: rgba(12,10,22,.72); border: 1px solid rgba(255,255,255,.14);
       backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
@@ -285,6 +285,8 @@ function launchGbaEmulator(container, game) {
     gbaBarTimer = setTimeout(() => gbaBar.classList.add('is-hidden'), 3200);
   };
   container.querySelector('#gba-play-root')?.addEventListener('pointermove', showGbaBar);
+  window.addEventListener('pointermove', showGbaBar, { passive: true });
+  document.addEventListener('pointermove', showGbaBar, { capture: true, passive: true });
   showGbaBar();
 
   /* La barre doit aussi réagir quand la souris est au-dessus de l'iframe (jeu plein écran) */

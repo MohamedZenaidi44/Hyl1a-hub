@@ -1,0 +1,47 @@
+- generic [active] [ref=f8e1]:
+  - generic [ref=f8e3]:
+    - img "Hylia Plaza Logo"
+    - generic [ref=f8e6]:
+      - heading "Connexion" [level=2] [ref=f8e7]
+      - paragraph [ref=f8e8]: Entrez vos identifiants pour continuer.
+      - textbox "Nom d'utilisateur" [ref=f8e10]
+      - textbox "Mot de passe" [ref=f8e12]
+      - button "Se Connecter" [ref=f8e13] [cursor=pointer]
+      - paragraph [ref=f8e14]: Pas encore de compte ? S'inscrire
+  - generic:
+    - generic:
+      - banner:
+        - generic [ref=f8e15]:
+          - generic [ref=f8e16] [cursor=pointer]
+          - generic [ref=f8e19] [cursor=pointer]: Noctharis
+          - button "Déconnexion" [ref=f8e22] [cursor=pointer]
+        - generic [ref=f8e25]:
+          - generic [ref=f8e26]: 21:23 PM
+          - generic [ref=f8e27]: Sunday, Oct 18
+      - tablist "Catégories du menu" [ref=f8e28]:
+        - tab "Utilisateur" [selected] [ref=f8e29] [cursor=pointer]
+        - tab "Jeux" [ref=f8e32] [cursor=pointer]
+        - tab "Mii" [ref=f8e35] [cursor=pointer]
+        - tab "Réseau" [ref=f8e38] [cursor=pointer]
+        - tab "Media" [ref=f8e41] [cursor=pointer]
+        - tab "Thèmes" [ref=f8e44] [cursor=pointer]
+        - tab "Paramètres" [ref=f8e47] [cursor=pointer]
+      - generic:
+        - generic:
+          - generic: Hyl1a Bio
+          - paragraph: "Hylia Plaza est mon hub de jeux dans le navigateur, inspiré d'iiSU : GBA, DS, NES et N64 jouables directement sur le web avec compte, Mii et sauvegardes. Clique sur Ouvrir pour visiter mon site bio — mes projets sont sur github.com/MohamedZenaidi44."
+          - button "Ouvrir" [ref=f8e50] [cursor=pointer]
+      - tabpanel [ref=f8e51]:
+        - generic [ref=f8e52]:
+          - button "Hyl1a Bio" [ref=f8e53] [cursor=pointer]
+          - button "Mon Profil" [ref=f8e56] [cursor=pointer]
+      - contentinfo:
+        - generic [ref=f8e60]:
+          - button "Piste précédente" [ref=f8e61] [cursor=pointer]: ⏮
+          - button "Lecture" [ref=f8e62] [cursor=pointer]: ▶
+          - button "Piste suivante" [ref=f8e63] [cursor=pointer]: ⏭
+          - generic [ref=f8e64]: Aucune musique
+          - generic [ref=f8e66]: 00:00 / 00:00
+  - generic:
+    - generic:
+      - img "App Logo"

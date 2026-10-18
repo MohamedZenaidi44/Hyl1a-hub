@@ -146,12 +146,6 @@ const ModernVisualizer = {
   
   startLoop: function() {
     const draw = () => {
-      // Arrêt si en mode "économie" sans visualiseur
-      if (window._ecoModeActive && window._ecoModeActive()) {
-        this.animationId = null;
-        this._paused = true;
-        return;
-      }
       this.animationId = requestAnimationFrame(draw);
       this.render();
     };

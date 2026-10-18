@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "playwright": {
+      "command": "C:\\Program Files\\nodejs\\node.exe",
+      "args": [
+        "node_modules/@playwright/mcp/cli.js",
+        "--browser",
+        "chromium"
+      ]
+    }
+  }
+}

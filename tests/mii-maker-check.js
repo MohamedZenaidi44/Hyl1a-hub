@@ -261,7 +261,6 @@ async function runInteractions(browser, logs) {
     (s.optionsBgImage || '').slice(0, 60) + ' | bg=' + s.optionsBg]);
 
   // Le mode éco coupe backdrop-filter : on le désactive pour vérifier le flou annoncé
-  await page.evaluate(() => document.body.classList.remove('eco-mode'));
   await new Promise(r => setTimeout(r, 150));
   const bdf = await page.evaluate(() => {
     const el = document.querySelector('.mii-options');

@@ -1,0 +1,210 @@
+- generic [ref=e1]:
+  - generic:
+    - generic: Mises à jour
+    - generic:
+      - generic:
+        - generic: MAJ 11 — Mii Maker en 3D
+        - generic: "Ton Mii s'affiche maintenant en vraie 3D : modèle complet (corps, squelette, animations) que tu peux faire tourner. Change visage, cheveux, yeux, nez, bouche, barbe, lunettes… et vois le résultat en direct."
+      - generic:
+        - generic: MAJ 10 — Mii Maker fonctionnel
+        - generic: "Crée enfin ton vrai Mii : visage, cheveux, yeux, bouche, lunettes, barbe… avec un aperçu en direct. Ton Mii est sauvegardé sur ton compte et s'affiche partout dans Hylia Plaza."
+      - generic:
+        - generic: MAJ 9 — Redesign de l'émulateur GBA
+        - generic: L'émulateur GBA a été redessiné avec l'ajout des jaquettes des jeux.
+      - generic:
+        - generic: MAJ 8 — Focus sur le GBA
+        - generic: Les autres émulateurs ont été temporairement désactivés pour se concentrer sur le GBA, en attendant un futur patch commun.
+      - generic:
+        - generic: MAJ 7 — Sauvegardes individuelles
+        - generic: Chaque utilisateur dispose désormais de ses propres sauvegardes sur l'émulateur GBA.
+      - generic:
+        - generic: MAJ 6 — Essai de Mii en 3D
+        - generic: Un essai d'intégration de vrais modèles 3D pour le Mii Maker a été tenté, sans succès pour le moment.
+      - generic:
+        - generic: MAJ 5 — Correctif synchronisation GBA
+        - generic: Travail sur les problèmes de synchronisation des sauvegardes de l'émulateur GBA.
+      - generic:
+        - generic: MAJ 4 — Patch performance GBA
+        - generic: Correction d'un bug de performance sur l'émulateur GBA.
+      - generic:
+        - generic: MAJ 3 — Nouveaux émulateurs
+        - generic: Intégration des émulateurs DS, NES et N64.
+      - generic:
+        - generic: MAJ 2 — Nouveaux jeux GBA
+        - generic: Ajout de nouveaux jeux disponibles sur l'émulateur GBA.
+      - generic:
+        - generic: MAJ 1 — Nouveau menu d'accueil
+        - generic: Le style du menu d'accueil a été simplifié.
+  - generic:
+    - generic:
+      - img "App Logo"
+  - generic [ref=e286]:
+    - generic [ref=e289]:
+      - button "Infos" [ref=e290] [cursor=pointer]
+      - button "Corps" [ref=e291] [cursor=pointer]
+      - button "Visage" [ref=e292] [cursor=pointer]
+      - button "Cheveux" [active] [ref=e293] [cursor=pointer]
+      - button "Sourcils" [ref=e294] [cursor=pointer]
+      - button "Yeux" [ref=e295] [cursor=pointer]
+      - button "Nez" [ref=e296] [cursor=pointer]
+      - button "Bouche" [ref=e297] [cursor=pointer]
+      - button "Accessoires" [ref=e298] [cursor=pointer]
+    - generic [ref=e299]:
+      - generic [ref=e300]:
+        - generic [ref=e303]:
+          - button "◀" [ref=e304] [cursor=pointer]
+          - button "▶" [ref=e305] [cursor=pointer]
+          - button "⇕" [ref=e306] [cursor=pointer]
+          - button "↻" [ref=e307] [cursor=pointer]
+        - button "Quitter" [ref=e308] [cursor=pointer]
+      - generic [ref=e309]:
+        - generic [ref=e310]:
+          - generic [ref=e311]:
+            - generic [ref=e337]: Coiffure
+            - generic [ref=e338]:
+              - button [ref=e339] [cursor=pointer]
+              - button [ref=e340] [cursor=pointer]
+              - button [ref=e341] [cursor=pointer]
+              - button [ref=e342] [cursor=pointer]
+              - button [ref=e343] [cursor=pointer]
+              - button [ref=e344] [cursor=pointer]
+              - button [ref=e345] [cursor=pointer]
+              - button [ref=e346] [cursor=pointer]
+              - button [ref=e347] [cursor=pointer]
+              - button [ref=e348] [cursor=pointer]
+              - button [ref=e349] [cursor=pointer]
+              - button [ref=e350] [cursor=pointer]
+              - button [ref=e351] [cursor=pointer]
+              - button [ref=e352] [cursor=pointer]
+              - button [ref=e353] [cursor=pointer]
+              - button [ref=e354] [cursor=pointer]
+              - button [ref=e355] [cursor=pointer]
+              - button [ref=e356] [cursor=pointer]
+              - button [ref=e357] [cursor=pointer]
+              - button [ref=e358] [cursor=pointer]
+              - button [ref=e359] [cursor=pointer]
+              - button [ref=e360] [cursor=pointer]
+              - button [ref=e361] [cursor=pointer]
+              - button [ref=e362] [cursor=pointer]
+              - button [ref=e363] [cursor=pointer]
+              - button [ref=e364] [cursor=pointer]
+              - button [ref=e365] [cursor=pointer]
+              - button [ref=e366] [cursor=pointer]
+              - button [ref=e367] [cursor=pointer]
+              - button [ref=e368] [cursor=pointer]
+              - button [ref=e369] [cursor=pointer]
+              - button [ref=e370] [cursor=pointer]
+              - button [ref=e371] [cursor=pointer]
+              - button [ref=e372] [cursor=pointer]
+              - button [ref=e373] [cursor=pointer]
+              - button [ref=e374] [cursor=pointer]
+              - button [ref=e375] [cursor=pointer]
+              - button [ref=e376] [cursor=pointer]
+              - button [ref=e377] [cursor=pointer]
+              - button [ref=e378] [cursor=pointer]
+              - button [ref=e379] [cursor=pointer]
+              - button [ref=e380] [cursor=pointer]
+              - button [ref=e381] [cursor=pointer]
+              - button [ref=e382] [cursor=pointer]
+              - button [ref=e383] [cursor=pointer]
+              - button [ref=e384] [cursor=pointer]
+              - button [ref=e385] [cursor=pointer]
+              - button [ref=e386] [cursor=pointer]
+              - button [ref=e387] [cursor=pointer]
+              - button [ref=e388] [cursor=pointer]
+              - button [ref=e389] [cursor=pointer]
+              - button [ref=e390] [cursor=pointer]
+              - button [ref=e391] [cursor=pointer]
+              - button [ref=e392] [cursor=pointer]
+              - button [ref=e393] [cursor=pointer]
+              - button [ref=e394] [cursor=pointer]
+              - button [ref=e395] [cursor=pointer]
+              - button [ref=e396] [cursor=pointer]
+              - button [ref=e397] [cursor=pointer]
+              - button [ref=e398] [cursor=pointer]
+              - button [ref=e399] [cursor=pointer]
+              - button [ref=e400] [cursor=pointer]
+              - button [ref=e401] [cursor=pointer]
+              - button [ref=e402] [cursor=pointer]
+              - button [ref=e403] [cursor=pointer]
+              - button [ref=e404] [cursor=pointer]
+              - button [ref=e405] [cursor=pointer]
+              - button [ref=e406] [cursor=pointer]
+              - button [ref=e407] [cursor=pointer]
+              - button [ref=e408] [cursor=pointer]
+              - button [ref=e409] [cursor=pointer]
+              - button [ref=e410] [cursor=pointer]
+              - button [ref=e411] [cursor=pointer]
+              - button [ref=e412] [cursor=pointer]
+              - button [ref=e413] [cursor=pointer]
+              - button [ref=e414] [cursor=pointer]
+              - button [ref=e415] [cursor=pointer]
+              - button [ref=e416] [cursor=pointer]
+              - button [ref=e417] [cursor=pointer]
+              - button [ref=e418] [cursor=pointer]
+              - button [ref=e419] [cursor=pointer]
+              - button [ref=e420] [cursor=pointer]
+              - button [ref=e421] [cursor=pointer]
+              - button [ref=e422] [cursor=pointer]
+              - button [ref=e423] [cursor=pointer]
+              - button [ref=e424] [cursor=pointer]
+              - button [ref=e425] [cursor=pointer]
+              - button [ref=e426] [cursor=pointer]
+              - button [ref=e427] [cursor=pointer]
+              - button [ref=e428] [cursor=pointer]
+              - button [ref=e429] [cursor=pointer]
+              - button [ref=e430] [cursor=pointer]
+              - button [ref=e431] [cursor=pointer]
+              - button [ref=e432] [cursor=pointer]
+              - button [ref=e433] [cursor=pointer]
+              - button [ref=e434] [cursor=pointer]
+              - button [ref=e435] [cursor=pointer]
+              - button [ref=e436] [cursor=pointer]
+              - button [ref=e437] [cursor=pointer]
+              - button [ref=e438] [cursor=pointer]
+              - button [ref=e439] [cursor=pointer]
+              - button [ref=e440] [cursor=pointer]
+              - button [ref=e441] [cursor=pointer]
+              - button [ref=e442] [cursor=pointer]
+              - button [ref=e443] [cursor=pointer]
+              - button [ref=e444] [cursor=pointer]
+              - button [ref=e445] [cursor=pointer]
+              - button [ref=e446] [cursor=pointer]
+              - button [ref=e447] [cursor=pointer]
+              - button [ref=e448] [cursor=pointer]
+              - button [ref=e449] [cursor=pointer]
+              - button [ref=e450] [cursor=pointer]
+              - button [ref=e451] [cursor=pointer]
+              - button [ref=e452] [cursor=pointer]
+              - button [ref=e453] [cursor=pointer]
+              - button [ref=e454] [cursor=pointer]
+              - button [ref=e455] [cursor=pointer]
+              - button [ref=e456] [cursor=pointer]
+              - button [ref=e457] [cursor=pointer]
+              - button [ref=e458] [cursor=pointer]
+              - button [ref=e459] [cursor=pointer]
+              - button [ref=e460] [cursor=pointer]
+              - button [ref=e461] [cursor=pointer]
+              - button [ref=e462] [cursor=pointer]
+              - button [ref=e463] [cursor=pointer]
+              - button [ref=e464] [cursor=pointer]
+              - button [ref=e465] [cursor=pointer]
+              - button [ref=e466] [cursor=pointer]
+              - button [ref=e467] [cursor=pointer]
+              - button [ref=e468] [cursor=pointer]
+              - button [ref=e469] [cursor=pointer]
+              - button [ref=e470] [cursor=pointer]
+          - generic [ref=e316]:
+            - generic [ref=e471]: Couleur
+            - generic [ref=e472]:
+              - generic [ref=e473] [cursor=pointer]
+              - generic [ref=e474] [cursor=pointer]
+              - generic [ref=e475] [cursor=pointer]
+              - generic [ref=e476] [cursor=pointer]
+              - generic [ref=e477] [cursor=pointer]
+              - generic [ref=e478] [cursor=pointer]
+              - generic [ref=e479] [cursor=pointer]
+              - generic [ref=e480] [cursor=pointer]
+            - generic [ref=e481]: Réglages
+            - 'button "Miroir : Non" [ref=e482] [cursor=pointer]'
+        - button "Sauvegarder mon Mii" [ref=e336] [cursor=pointer]

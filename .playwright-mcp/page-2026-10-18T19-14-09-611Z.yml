@@ -1,0 +1,36 @@
+- generic [ref=f3e1]:
+  - generic:
+    - generic:
+      - img "App Logo"
+  - generic [ref=f3e150]:
+    - generic:
+      - button "B Quitter":
+        - generic: B
+        - text: Quitter
+      - generic: Kirby & the Amazing Mirror
+      - button "Sauvegarder la partie"
+      - button "Plein écran"
+    - iframe [active] [ref=f3e167]:
+      - generic [ref=f4e1]:
+        - generic [active] [ref=f4e3]:
+          - generic:
+            - button "Redémarrer"
+            - button "Mettre en pause"
+            - button "Enregistrer l'état"
+            - button "Ouvrir un état"
+            - button "Paramètres des contrôles"
+            - button "Triches"
+            - button "Gestionnaire du cache"
+            - button "Exporter vers une sauvegarde"
+            - button "Importer une sauvegarde"
+            - generic:
+              - button
+              - slider "Volume": "0.5"
+            - button "Menu contextuel"
+            - generic:
+              - button "Paramètres"
+            - button "Passer en mode plein écran"
+            - button "Exit Emulation"
+        - generic:
+          - generic: CONTROLES
+          - text: "FLÈCHES : DIRX : AZ : BA : LS : RENTRÉE : STARTMAJ : SELECT"

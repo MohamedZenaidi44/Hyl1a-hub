@@ -1,0 +1,41 @@
+- generic [ref=f5e1]:
+  - generic:
+    - generic:
+      - banner:
+        - generic [ref=f5e31]:
+          - generic [ref=f5e32] [cursor=pointer]
+          - generic [ref=f5e35] [cursor=pointer]: Noctharis
+          - button "Déconnexion" [ref=f5e38] [cursor=pointer]
+        - generic [ref=f5e41]:
+          - generic [ref=f5e42]: 21:16 PM
+          - generic [ref=f5e43]: Sunday, Oct 18
+      - tablist "Catégories du menu" [ref=f5e44]:
+        - tab "Utilisateur" [ref=f5e45] [cursor=pointer]
+        - tab "Jeux" [active] [selected] [ref=f5e48] [cursor=pointer]
+        - tab "Mii" [ref=f5e51] [cursor=pointer]
+        - tab "Réseau" [ref=f5e54] [cursor=pointer]
+        - tab "Media" [ref=f5e57] [cursor=pointer]
+        - tab "Thèmes" [ref=f5e60] [cursor=pointer]
+        - tab "Paramètres" [ref=f5e63] [cursor=pointer]
+      - generic:
+        - generic:
+          - generic: GBA
+          - paragraph: Joue à tes jeux Game Boy Advance directement depuis ton navigateur.
+          - button "Ouvrir" [ref=f5e66] [cursor=pointer]
+      - tabpanel [ref=f5e67]:
+        - generic [ref=f5e68]:
+          - button "GBA" [ref=f5e99] [cursor=pointer]
+          - button "DS" [ref=f5e102] [cursor=pointer]
+          - button "NES" [ref=f5e105] [cursor=pointer]
+          - button "N64" [ref=f5e108] [cursor=pointer]
+          - button "Hall of Fame" [ref=f5e111] [cursor=pointer]
+      - contentinfo:
+        - generic [ref=f5e76]:
+          - button "Piste précédente" [ref=f5e77] [cursor=pointer]: ⏮
+          - button "Pause" [ref=f5e98] [cursor=pointer]: ⏸
+          - button "Piste suivante" [ref=f5e79] [cursor=pointer]: ⏭
+          - generic [ref=f5e80]: Home Menu
+          - generic [ref=f5e82]: 00:07 / 02:09
+  - generic:
+    - generic:
+      - img "App Logo"

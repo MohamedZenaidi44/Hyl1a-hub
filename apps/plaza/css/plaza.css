@@ -140,15 +140,6 @@
 }
 @keyframes plaza-spin { to { transform: rotate(360deg); } }
 
-/* ── Mode éco : pas de flou coûteux ── */
-body.eco-mode .plaza-back,
-body.eco-mode .plaza-title,
-body.eco-mode .plaza-chip {
-  -webkit-backdrop-filter: none;
-  backdrop-filter: none;
-  background: rgba(18, 24, 34, 0.9);
-}
-
 @media (prefers-reduced-motion: reduce) {
   .plaza-spinner { animation-duration: 1.8s; }
 }

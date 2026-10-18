@@ -599,14 +599,7 @@ async function runInteractions(browser, logs) {
   const bgWhite = await wallpaperVisibility(path.join(SHOTS_DIR, 'wii-theme-white-1920x1080.png'));
   results.push(['fond d\'écran visible en thème blanc (texture mesurée)', bgWhite > 2, `variance=${bgWhite.toFixed(2)}`]);
 
-  // Mode économie : la disposition doit rester intacte
-  await page.evaluate(() => window.ThemeManager && window.ThemeManager.setEcoMode(true, true));
-  await new Promise(r => setTimeout(r, 350));
-  const ecoLayout = await collectLayout(page);
-  const ecoIssues = analyzeLayout(ecoLayout);
-  results.push(['mode économie : disposition intacte', ecoIssues.length === 0, ecoIssues.join(' | ') || 'aucun défaut']);
-  await page.evaluate(() => window.ThemeManager && window.ThemeManager.setEcoMode(false, true));
-  await new Promise(r => setTimeout(r, 300));
+  // (Le Mode Économie a été retiré de l'application.)
 
   // Hyl1a Bio : plus de fenêtre interne — le clic (et « Ouvrir ») dirige
   // vers le site bio dans un nouvel onglet

@@ -1,0 +1,87 @@
+- generic [active] [ref=e1]:
+  - generic:
+    - generic: Mises à jour
+    - generic:
+      - generic:
+        - generic: MAJ 11 — Mii Maker en 3D
+        - generic: "Ton Mii s'affiche maintenant en vraie 3D : modèle complet (corps, squelette, animations) que tu peux faire tourner. Change visage, cheveux, yeux, nez, bouche, barbe, lunettes… et vois le résultat en direct."
+      - generic:
+        - generic: MAJ 10 — Mii Maker fonctionnel
+        - generic: "Crée enfin ton vrai Mii : visage, cheveux, yeux, bouche, lunettes, barbe… avec un aperçu en direct. Ton Mii est sauvegardé sur ton compte et s'affiche partout dans Hylia Plaza."
+      - generic:
+        - generic: MAJ 9 — Redesign de l'émulateur GBA
+        - generic: L'émulateur GBA a été redessiné avec l'ajout des jaquettes des jeux.
+      - generic:
+        - generic: MAJ 8 — Focus sur le GBA
+        - generic: Les autres émulateurs ont été temporairement désactivés pour se concentrer sur le GBA, en attendant un futur patch commun.
+      - generic:
+        - generic: MAJ 7 — Sauvegardes individuelles
+        - generic: Chaque utilisateur dispose désormais de ses propres sauvegardes sur l'émulateur GBA.
+      - generic:
+        - generic: MAJ 6 — Essai de Mii en 3D
+        - generic: Un essai d'intégration de vrais modèles 3D pour le Mii Maker a été tenté, sans succès pour le moment.
+      - generic:
+        - generic: MAJ 5 — Correctif synchronisation GBA
+        - generic: Travail sur les problèmes de synchronisation des sauvegardes de l'émulateur GBA.
+      - generic:
+        - generic: MAJ 4 — Patch performance GBA
+        - generic: Correction d'un bug de performance sur l'émulateur GBA.
+      - generic:
+        - generic: MAJ 3 — Nouveaux émulateurs
+        - generic: Intégration des émulateurs DS, NES et N64.
+      - generic:
+        - generic: MAJ 2 — Nouveaux jeux GBA
+        - generic: Ajout de nouveaux jeux disponibles sur l'émulateur GBA.
+      - generic:
+        - generic: MAJ 1 — Nouveau menu d'accueil
+        - generic: Le style du menu d'accueil a été simplifié.
+  - generic:
+    - generic:
+      - img "App Logo"
+  - generic [ref=e286]:
+    - generic [ref=e289]:
+      - button "Infos" [ref=e290] [cursor=pointer]
+      - button "Corps" [ref=e291] [cursor=pointer]
+      - button "Visage" [ref=e292] [cursor=pointer]
+      - button "Cheveux" [ref=e293] [cursor=pointer]
+      - button "Sourcils" [ref=e294] [cursor=pointer]
+      - button "Yeux" [ref=e295] [cursor=pointer]
+      - button "Nez" [ref=e296] [cursor=pointer]
+      - button "Bouche" [ref=e297] [cursor=pointer]
+      - button "Accessoires" [ref=e298] [cursor=pointer]
+    - generic [ref=e299]:
+      - generic [ref=e300]:
+        - generic [ref=e303]:
+          - button "◀" [ref=e304] [cursor=pointer]
+          - button "▶" [ref=e305] [cursor=pointer]
+          - button "⇕" [ref=e306] [cursor=pointer]
+          - button "↻" [ref=e307] [cursor=pointer]
+        - button "Quitter" [ref=e308] [cursor=pointer]
+      - generic [ref=e309]:
+        - generic [ref=e310]:
+          - generic [ref=e311]:
+            - generic [ref=e312]: Nom du Mii (10 caractères max)
+            - textbox "Mon Mii" [ref=e313]: Mii
+            - generic [ref=e314]: Bio (affichée sur votre profil)
+            - textbox "Salut ! Je suis sur Hylia Plaza :)" [ref=e315]: Juste un perso de dofus...
+          - generic [ref=e316]:
+            - generic [ref=e317]: Genre
+            - generic [ref=e318]:
+              - button "Homme" [ref=e319] [cursor=pointer]
+              - button "Femme" [ref=e320] [cursor=pointer]
+            - generic [ref=e321]: Couleur préférée
+            - generic [ref=e322]: Couleur
+            - generic [ref=e323]:
+              - generic [ref=e324] [cursor=pointer]
+              - generic [ref=e325] [cursor=pointer]
+              - generic [ref=e326] [cursor=pointer]
+              - generic [ref=e327] [cursor=pointer]
+              - generic [ref=e328] [cursor=pointer]
+              - generic [ref=e329] [cursor=pointer]
+              - generic [ref=e330] [cursor=pointer]
+              - generic [ref=e331] [cursor=pointer]
+              - generic [ref=e332] [cursor=pointer]
+              - generic [ref=e333] [cursor=pointer]
+              - generic [ref=e334] [cursor=pointer]
+              - generic [ref=e335] [cursor=pointer]
+        - button "Sauvegarder mon Mii" [ref=e336] [cursor=pointer]

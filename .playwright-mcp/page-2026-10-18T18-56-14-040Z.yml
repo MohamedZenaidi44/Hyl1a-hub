@@ -1,0 +1,278 @@
+- generic [ref=e1]:
+  - generic [ref=e15]:
+    - generic [ref=e16]: Mises à jour
+    - generic [ref=e18]:
+      - generic [ref=e19]:
+        - generic [ref=e20]: MAJ 11 — Mii Maker en 3D
+        - generic [ref=e21]: "Ton Mii s'affiche maintenant en vraie 3D : modèle complet (corps, squelette, animations) que tu peux faire tourner. Change visage, cheveux, yeux, nez, bouche, barbe, lunettes… et vois le résultat en direct."
+      - generic [ref=e22]:
+        - generic [ref=e23]: MAJ 10 — Mii Maker fonctionnel
+        - generic [ref=e24]: "Crée enfin ton vrai Mii : visage, cheveux, yeux, bouche, lunettes, barbe… avec un aperçu en direct. Ton Mii est sauvegardé sur ton compte et s'affiche partout dans Hylia Plaza."
+      - generic [ref=e25]:
+        - generic [ref=e26]: MAJ 9 — Redesign de l'émulateur GBA
+        - generic [ref=e27]: L'émulateur GBA a été redessiné avec l'ajout des jaquettes des jeux.
+      - generic [ref=e28]:
+        - generic [ref=e29]: MAJ 8 — Focus sur le GBA
+        - generic [ref=e30]: Les autres émulateurs ont été temporairement désactivés pour se concentrer sur le GBA, en attendant un futur patch commun.
+      - generic [ref=e31]:
+        - generic [ref=e32]: MAJ 7 — Sauvegardes individuelles
+        - generic [ref=e33]: Chaque utilisateur dispose désormais de ses propres sauvegardes sur l'émulateur GBA.
+      - generic [ref=e34]:
+        - generic [ref=e35]: MAJ 6 — Essai de Mii en 3D
+        - generic [ref=e36]: Un essai d'intégration de vrais modèles 3D pour le Mii Maker a été tenté, sans succès pour le moment.
+      - generic [ref=e37]:
+        - generic [ref=e38]: MAJ 5 — Correctif synchronisation GBA
+        - generic [ref=e39]: Travail sur les problèmes de synchronisation des sauvegardes de l'émulateur GBA.
+      - generic [ref=e40]:
+        - generic [ref=e41]: MAJ 4 — Patch performance GBA
+        - generic [ref=e42]: Correction d'un bug de performance sur l'émulateur GBA.
+      - generic [ref=e43]:
+        - generic [ref=e44]: MAJ 3 — Nouveaux émulateurs
+        - generic [ref=e45]: Intégration des émulateurs DS, NES et N64.
+      - generic [ref=e46]:
+        - generic [ref=e47]: MAJ 2 — Nouveaux jeux GBA
+        - generic [ref=e48]: Ajout de nouveaux jeux disponibles sur l'émulateur GBA.
+      - generic [ref=e49]:
+        - generic [ref=e50]: MAJ 1 — Nouveau menu d'accueil
+        - generic [ref=e51]: Le style du menu d'accueil a été simplifié.
+  - generic [ref=e663]:
+    - button "Fermer" [ref=e664] [cursor=pointer]
+    - generic [ref=e669]:
+      - generic [ref=e670]: Liste d'Amis
+      - generic [ref=e671]:
+        - generic [ref=e720]:
+          - generic [ref=e721]: Ajouter un ami
+          - textbox "Pseudo#1234..." [ref=e722]
+          - button "Ajouter" [ref=e723] [cursor=pointer]
+        - generic [ref=e724]: MES AMIS
+        - generic [ref=e726] [cursor=pointer]:
+          - generic [ref=e728]: "#3450"
+          - button "Message" [ref=e730]
+        - generic [ref=e731]: AUTRES UTILISATEURS
+        - generic [ref=e732]:
+          - generic [ref=e733] [cursor=pointer]:
+            - generic [ref=e735]: chl#0000
+            - generic [ref=e736]: Explorateur Hylia Plaza
+            - generic [ref=e737]: Joueur
+            - generic [ref=e738]:
+              - button "Message" [ref=e739]
+              - button "+ Ajouter" [ref=e741]
+          - generic [ref=e742] [cursor=pointer]:
+            - generic [ref=e744]: silvok#3345
+            - generic [ref=e745]: Explorateur Hylia Plaza
+            - generic [ref=e746]: Joueur
+            - generic [ref=e747]:
+              - button "Message" [ref=e748]
+              - button "+ Ajouter" [ref=e750]
+          - generic [ref=e751] [cursor=pointer]:
+            - generic [ref=e753]: mael#8710
+            - generic [ref=e754]: Explorateur Hylia Plaza
+            - generic [ref=e755]: Joueur
+            - generic [ref=e756]:
+              - button "Message" [ref=e757]
+              - button "+ Ajouter" [ref=e759]
+          - generic [ref=e760] [cursor=pointer]:
+            - generic [ref=e762]: Axel#1282
+            - generic [ref=e763]: Explorateur Hylia Plaza
+            - generic [ref=e764]: Joueur
+            - generic [ref=e765]:
+              - button "Message" [ref=e766]
+              - button "+ Ajouter" [ref=e768]
+          - generic [ref=e769] [cursor=pointer]:
+            - generic [ref=e771]: Yamato#0000
+            - generic [ref=e772]: Explorateur Hylia Plaza
+            - generic [ref=e773]: Joueur
+            - generic [ref=e774]:
+              - button "Message" [ref=e775]
+              - button "+ Ajouter" [ref=e777]
+          - generic [ref=e778] [cursor=pointer]:
+            - generic [ref=e780]: Yoyoyo#8401
+            - generic [ref=e781]: Explorateur Hylia Plaza
+            - generic [ref=e782]: Joueur
+            - generic [ref=e783]:
+              - button "Message" [ref=e784]
+              - button "+ Ajouter" [ref=e786]
+          - generic [ref=e787] [cursor=pointer]:
+            - generic [ref=e789]: mathias#0000
+            - generic [ref=e790]: Explorateur Hylia Plaza
+            - generic [ref=e791]: Joueur
+            - generic [ref=e792]:
+              - button "Message" [ref=e793]
+              - button "+ Ajouter" [ref=e795]
+          - generic [ref=e796] [cursor=pointer]:
+            - generic [ref=e798]: cecile#0000
+            - generic [ref=e799]: Explorateur Hylia Plaza
+            - generic [ref=e800]: Joueur
+            - generic [ref=e801]:
+              - button "Message" [ref=e802]
+              - button "+ Ajouter" [ref=e804]
+          - generic [ref=e805] [cursor=pointer]:
+            - generic [ref=e807]: Elsay#0000
+            - generic [ref=e808]: Explorateur Hylia Plaza
+            - generic [ref=e809]: Joueur
+            - generic [ref=e810]:
+              - button "Message" [ref=e811]
+              - button "+ Ajouter" [ref=e813]
+          - generic [ref=e814] [cursor=pointer]:
+            - generic [ref=e816]: Huzrok#0000
+            - generic [ref=e817]: Explorateur Hylia Plaza
+            - generic [ref=e818]: Joueur
+            - generic [ref=e819]:
+              - button "Message" [ref=e820]
+              - button "+ Ajouter" [ref=e822]
+          - generic [ref=e823] [cursor=pointer]:
+            - generic [ref=e825]: test#0000
+            - generic [ref=e826]: Explorateur Hylia Plaza
+            - generic [ref=e827]: Joueur
+            - generic [ref=e828]:
+              - button "Message" [ref=e829]
+              - button "+ Ajouter" [ref=e831]
+          - generic [ref=e832] [cursor=pointer]:
+            - generic [ref=e834]: Yonakkip#0000
+            - generic [ref=e835]: Explorateur Hylia Plaza
+            - generic [ref=e836]: Joueur
+            - generic [ref=e837]:
+              - button "Message" [ref=e838]
+              - button "+ Ajouter" [ref=e840]
+          - generic [ref=e841] [cursor=pointer]:
+            - generic [ref=e843]: TestSe#0000
+            - generic [ref=e844]: Explorateur Hylia Plaza
+            - generic [ref=e845]: Joueur
+            - generic [ref=e846]:
+              - button "Message" [ref=e847]
+              - button "+ Ajouter" [ref=e849]
+          - generic [ref=e850] [cursor=pointer]:
+            - generic [ref=e852]: nuxi#0000
+            - generic [ref=e853]: Explorateur Hylia Plaza
+            - generic [ref=e854]: Joueur
+            - generic [ref=e855]:
+              - button "Message" [ref=e856]
+              - button "+ Ajouter" [ref=e858]
+          - generic [ref=e859] [cursor=pointer]:
+            - generic [ref=e861]: rtiii#0000
+            - generic [ref=e862]: Explorateur Hylia Plaza
+            - generic [ref=e863]: Joueur
+            - generic [ref=e864]:
+              - button "Message" [ref=e865]
+              - button "+ Ajouter" [ref=e867]
+          - generic [ref=e868] [cursor=pointer]:
+            - generic [ref=e870]: stop posting about#2941
+            - generic [ref=e871]: Explorateur Hylia Plaza
+            - generic [ref=e872]: Joueur
+            - generic [ref=e873]:
+              - button "Message" [ref=e874]
+              - button "+ Ajouter" [ref=e876]
+          - generic [ref=e877] [cursor=pointer]:
+            - generic [ref=e879]: test44#2136
+            - generic [ref=e880]: Explorateur Hylia Plaza
+            - generic [ref=e881]: Joueur
+            - generic [ref=e882]:
+              - button "Message" [ref=e883]
+              - button "+ Ajouter" [ref=e885]
+          - generic [ref=e886] [cursor=pointer]:
+            - generic [ref=e888]: Astra#0000
+            - generic [ref=e889]: Explorateur Hylia Plaza
+            - generic [ref=e890]: Joueur
+            - generic [ref=e891]:
+              - button "Message" [ref=e892]
+              - button "+ Ajouter" [ref=e894]
+          - generic [ref=e895] [cursor=pointer]:
+            - generic [ref=e897]: tiktok#0000
+            - generic [ref=e898]: Explorateur Hylia Plaza
+            - generic [ref=e899]: Joueur
+            - generic [ref=e900]:
+              - button "Message" [ref=e901]
+              - button "+ Ajouter" [ref=e903]
+          - generic [ref=e904] [cursor=pointer]:
+            - generic [ref=e906]: anonyme#0000
+            - generic [ref=e907]: Explorateur Hylia Plaza
+            - generic [ref=e908]: Joueur
+            - generic [ref=e909]:
+              - button "Message" [ref=e910]
+              - button "+ Ajouter" [ref=e912]
+          - generic [ref=e913] [cursor=pointer]:
+            - generic [ref=e915]: Christian#0000
+            - generic [ref=e916]: Explorateur Hylia Plaza
+            - generic [ref=e917]: Joueur
+            - generic [ref=e918]:
+              - button "Message" [ref=e919]
+              - button "+ Ajouter" [ref=e921]
+          - generic [ref=e922] [cursor=pointer]:
+            - generic [ref=e924]: Cassiopé#0000
+            - generic [ref=e925]: Explorateur Hylia Plaza
+            - generic [ref=e926]: Joueur
+            - generic [ref=e927]:
+              - button "Message" [ref=e928]
+              - button "+ Ajouter" [ref=e930]
+          - generic [ref=e931] [cursor=pointer]:
+            - generic [ref=e933]: Luffy#0000
+            - generic [ref=e934]: Explorateur Hylia Plaza
+            - generic [ref=e935]: Joueur
+            - generic [ref=e936]:
+              - button "Message" [ref=e937]
+              - button "+ Ajouter" [ref=e939]
+          - generic [ref=e940] [cursor=pointer]:
+            - generic [ref=e942]: test6#1536
+            - generic [ref=e943]: Explorateur Hylia Plaza
+            - generic [ref=e944]: Joueur
+            - generic [ref=e945]:
+              - button "Message" [ref=e946]
+              - button "+ Ajouter" [ref=e948]
+  - generic:
+    - generic:
+      - banner:
+        - generic [ref=e52]:
+          - generic [ref=e53] [cursor=pointer]
+          - generic [ref=e56] [cursor=pointer]:
+            - generic [ref=e57]: Noctharis
+            - generic [ref=e58]: username
+          - button "Déconnexion" [ref=e61] [cursor=pointer]
+        - generic [ref=e65]:
+          - generic [ref=e66]: Bienvenue à Hylia Plaza ! Explorez vos applications, personnalisez votre profil et profitez de l'ambiance • Welcome to Hylia Plaza! Explore your apps, customize your profile, and enjoy the vibe •
+          - generic [ref=e67]: Bienvenue à Hylia Plaza ! Explorez vos applications, personnalisez votre profil et profitez de l'ambiance • Welcome to Hylia Plaza! Explore your apps, customize your profile, and enjoy the vibe •
+        - generic [ref=e68]:
+          - generic [ref=e69]: 20:56 PM
+          - generic [ref=e70]: Sunday, Oct 18
+        - button "Mises à jour" [ref=e71] [cursor=pointer]
+      - tablist "Catégories du menu" [ref=e73]:
+        - tab "Utilisateur" [ref=e74] [cursor=pointer]
+        - tab "Jeux" [ref=e77] [cursor=pointer]
+        - tab "Mii" [ref=e80] [cursor=pointer]
+        - tab "Réseau" [selected] [ref=e83] [cursor=pointer]
+        - tab "Media" [ref=e86] [cursor=pointer]
+        - tab "Thèmes" [ref=e89] [cursor=pointer]
+        - tab "Paramètres" [ref=e92] [cursor=pointer]
+      - generic:
+        - generic:
+          - generic: Amis
+          - paragraph: Retrouve tes amis en ligne.
+          - button "Ouvrir" [ref=e95] [cursor=pointer]
+      - tabpanel [ref=e96]:
+        - generic [ref=e97]:
+          - button "Chat Général" [ref=e641] [cursor=pointer]
+          - button "Amis" [active] [ref=e645] [cursor=pointer]
+          - button "Messages" [ref=e649] [cursor=pointer]
+          - button "Town Board" [ref=e653] [cursor=pointer]
+          - button "Notes" [ref=e657] [cursor=pointer]
+      - contentinfo:
+        - generic [ref=e105]:
+          - button "Piste précédente" [ref=e106] [cursor=pointer]: ⏮
+          - button "Pause" [ref=e143] [cursor=pointer]: ⏸
+          - button "Piste suivante" [ref=e108] [cursor=pointer]: ⏭
+          - generic [ref=e109]: DSi Camera Album
+          - generic [ref=e111]: 02:10 / 03:52
+        - generic:
+          - generic:
+            - generic: ←
+            - generic: →
+            - text: Choix / page
+          - generic:
+            - generic: ↑
+            - generic: ↓
+            - text: Page
+          - generic:
+            - generic: ↵
+            - text: Ouvrir
+  - generic:
+    - generic:
+      - img "App Logo"

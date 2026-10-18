@@ -23,6 +23,7 @@
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@700;800;900&family=Nunito:wght@700;800;900&display=swap" />
 
   <!-- CSS -->
+  <link rel="stylesheet" href="public/css/boot.css" />
   <link rel="stylesheet" href="public/css/main.css" />
   <link rel="stylesheet" href="public/css/animations.css" />
   <link rel="stylesheet" href="public/css/hub.css" />
@@ -50,6 +51,17 @@
 </head>
 
 <body>
+  <!-- BOOT / PRELOAD SCREEN (style console : logo + barre de progression,
+       préserve la navigation le temps que les assets critiques se chargent) -->
+  <div id="boot-screen" aria-hidden="false">
+    <img src="public/assets/icons/logov2.webp" alt="Hylia Plaza" class="boot-logo">
+    <div class="boot-bar" role="progressbar" aria-label="Chargement de Hylia Plaza" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+      <div class="boot-bar-fill" id="boot-bar-fill"></div>
+    </div>
+    <div class="boot-status" id="boot-status">Démarrage…</div>
+    <div class="boot-tip">Compiler les shaders…</div>
+  </div>
+
   <!-- BACKGROUND VIDEO -->
   <video autoplay loop muted playsinline id="bg-video" preload="metadata">
     <source src="public/assets/icons/video/3dsW.mp4" type="video/mp4">
@@ -172,7 +184,7 @@
 
   <!-- SOCIAL OVERLAY -->
   <div id="social-overlay" class="hidden">
-    <div class="social-backdrop" onclick="SocialSystem.closeOverlay()"></div>
+    <div class="social-backdrop"></div>
     <div class="social-window mii-glass-panel">
       <div class="social-close" onclick="SocialSystem.closeOverlay()" role="button" tabindex="0" aria-label="Fermer" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();SocialSystem.closeOverlay();}"><svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></div>
       <div class="social-content">
@@ -316,7 +328,7 @@
   <script src="public/js/core/social.js" defer></script>
   <script src="public/js/core/cloudSave.js" defer></script>
   <script src="public/js/core/themeManager.js" defer></script>
-  <script src="public/js/core/perfManager.js" defer></script>
+  <script src="public/js/core/boot.js" defer></script>
   <script src="public/js/core/app.js" defer></script>
 </body>
 </html>

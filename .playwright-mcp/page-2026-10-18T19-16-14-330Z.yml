@@ -1,0 +1,54 @@
+- generic [active] [ref=f5e1]:
+  - generic [ref=f5e83] [cursor=pointer]:
+    - generic [ref=f5e84]:
+      - heading "WARNING–HEALTH AND SAFETY" [level=1] [ref=f5e90]
+      - paragraph [ref=f5e91]: Please use the Hylia Plaza strap, as controllers do not have a flared base and can completely insert into an orifice, become lodged, and require medical intervention to remove.
+      - generic [ref=f5e92]:
+        - generic [ref=f5e93]: Also online at
+        - link "hyl1a-web.vercel.app" [ref=f5e94]:
+          - /url: https://hyl1a-web.vercel.app/
+    - generic [ref=f5e95]:
+      - text: Press
+      - generic [ref=f5e96]: A
+      - text: to continue.
+  - generic:
+    - generic:
+      - banner:
+        - generic [ref=f5e31]:
+          - generic [ref=f5e32] [cursor=pointer]
+          - generic [ref=f5e35] [cursor=pointer]: Noctharis
+          - button "Déconnexion" [ref=f5e38] [cursor=pointer]
+        - generic [ref=f5e41]:
+          - generic [ref=f5e42]: 21:16 PM
+          - generic [ref=f5e43]: Sunday, Oct 18
+      - tablist "Catégories du menu" [ref=f5e44]:
+        - tab "Utilisateur" [selected] [ref=f5e45] [cursor=pointer]
+        - tab "Jeux" [ref=f5e48] [cursor=pointer]
+        - tab "Mii" [ref=f5e51] [cursor=pointer]
+        - tab "Réseau" [ref=f5e54] [cursor=pointer]
+        - tab "Media" [ref=f5e57] [cursor=pointer]
+        - tab "Thèmes" [ref=f5e60] [cursor=pointer]
+        - tab "Paramètres" [ref=f5e63] [cursor=pointer]
+      - generic:
+        - generic:
+          - generic: Hyl1a Bio
+          - paragraph: "Hylia Plaza est mon hub de jeux dans le navigateur, inspiré d'iiSU : GBA, DS, NES et N64 jouables directement sur le web avec compte, Mii et sauvegardes. Clique sur Ouvrir pour visiter mon site bio — mes projets sont sur github.com/MohamedZenaidi44."
+          - button "Ouvrir" [ref=f5e66] [cursor=pointer]
+      - tabpanel [ref=f5e67]:
+        - generic [ref=f5e68]:
+          - button "Hyl1a Bio" [ref=f5e69] [cursor=pointer]
+          - button "Mon Profil" [ref=f5e72] [cursor=pointer]
+      - contentinfo:
+        - generic [ref=f5e76]:
+          - button "Piste précédente" [ref=f5e77] [cursor=pointer]: ⏮
+          - button "Lecture" [ref=f5e78] [cursor=pointer]: ▶
+          - button "Piste suivante" [ref=f5e79] [cursor=pointer]: ⏭
+          - generic [ref=f5e80]: Aucune musique
+          - generic [ref=f5e82]: 00:00 / 00:00
+  - generic:
+    - generic:
+      - img "App Logo"
+  - generic:
+    - text: Welcome
+    - generic: Noctharis#8520
+    - text: "! :)"

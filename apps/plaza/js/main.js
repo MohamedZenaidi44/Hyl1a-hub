@@ -40,9 +40,8 @@ function themeForHour(h) {
 export default async function renderPlaza(container) {
   ensureStyles();
 
-  /* ── Détermine la qualité selon le mode éco / détection de perf du hub ── */
-  const eco = document.body.classList.contains('eco-mode');
-  const quality = eco ? QUALITY.low : QUALITY.medium;
+  /* ── Qualité de rendu par défaut ── */
+  const quality = QUALITY.medium;
 
   /* ── Structure HTML (HUD en verre sombre, façon hub) ── */
   container.classList.add('plaza-root');

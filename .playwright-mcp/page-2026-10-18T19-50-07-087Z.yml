@@ -1,0 +1,101 @@
+- generic [active] [ref=f18e1]:
+  - generic [ref=f18e2]:
+    - img "Hylia Plaza Logo"
+    - generic [ref=f18e5]:
+      - heading "Connexion" [level=2] [ref=f18e6]
+      - paragraph [ref=f18e7]: Entrez vos identifiants pour continuer.
+      - textbox "Nom d'utilisateur" [ref=f18e9]
+      - textbox "Mot de passe" [ref=f18e11]
+      - button "Se Connecter" [ref=f18e12] [cursor=pointer]
+      - paragraph [ref=f18e13]: Pas encore de compte ? S'inscrire
+  - generic [ref=f18e14]:
+    - generic [ref=f18e15]: Mises à jour
+    - generic [ref=f18e17]:
+      - generic [ref=f18e18]:
+        - generic [ref=f18e19]: MAJ 11 — Mii Maker en 3D
+        - generic [ref=f18e20]: "Ton Mii s'affiche maintenant en vraie 3D : modèle complet (corps, squelette, animations) que tu peux faire tourner. Change visage, cheveux, yeux, nez, bouche, barbe, lunettes… et vois le résultat en direct."
+      - generic [ref=f18e21]:
+        - generic [ref=f18e22]: MAJ 10 — Mii Maker fonctionnel
+        - generic [ref=f18e23]: "Crée enfin ton vrai Mii : visage, cheveux, yeux, bouche, lunettes, barbe… avec un aperçu en direct. Ton Mii est sauvegardé sur ton compte et s'affiche partout dans Hylia Plaza."
+      - generic [ref=f18e24]:
+        - generic [ref=f18e25]: MAJ 9 — Redesign de l'émulateur GBA
+        - generic [ref=f18e26]: L'émulateur GBA a été redessiné avec l'ajout des jaquettes des jeux.
+      - generic [ref=f18e27]:
+        - generic [ref=f18e28]: MAJ 8 — Focus sur le GBA
+        - generic [ref=f18e29]: Les autres émulateurs ont été temporairement désactivés pour se concentrer sur le GBA, en attendant un futur patch commun.
+      - generic [ref=f18e30]:
+        - generic [ref=f18e31]: MAJ 7 — Sauvegardes individuelles
+        - generic [ref=f18e32]: Chaque utilisateur dispose désormais de ses propres sauvegardes sur l'émulateur GBA.
+      - generic [ref=f18e33]:
+        - generic [ref=f18e34]: MAJ 6 — Essai de Mii en 3D
+        - generic [ref=f18e35]: Un essai d'intégration de vrais modèles 3D pour le Mii Maker a été tenté, sans succès pour le moment.
+      - generic [ref=f18e36]:
+        - generic [ref=f18e37]: MAJ 5 — Correctif synchronisation GBA
+        - generic [ref=f18e38]: Travail sur les problèmes de synchronisation des sauvegardes de l'émulateur GBA.
+      - generic [ref=f18e39]:
+        - generic [ref=f18e40]: MAJ 4 — Patch performance GBA
+        - generic [ref=f18e41]: Correction d'un bug de performance sur l'émulateur GBA.
+      - generic [ref=f18e42]:
+        - generic [ref=f18e43]: MAJ 3 — Nouveaux émulateurs
+        - generic [ref=f18e44]: Intégration des émulateurs DS, NES et N64.
+      - generic [ref=f18e45]:
+        - generic [ref=f18e46]: MAJ 2 — Nouveaux jeux GBA
+        - generic [ref=f18e47]: Ajout de nouveaux jeux disponibles sur l'émulateur GBA.
+      - generic [ref=f18e48]:
+        - generic [ref=f18e49]: MAJ 1 — Nouveau menu d'accueil
+        - generic [ref=f18e50]: Le style du menu d'accueil a été simplifié.
+  - generic:
+    - generic:
+      - banner:
+        - generic [ref=f18e51]:
+          - generic [ref=f18e52] [cursor=pointer]
+          - generic [ref=f18e55] [cursor=pointer]:
+            - generic [ref=f18e56]: Noctharis
+            - generic [ref=f18e57]: username
+          - button "Déconnexion" [ref=f18e60] [cursor=pointer]
+        - generic [ref=f18e64]:
+          - generic [ref=f18e65]: Bienvenue à Hylia Plaza ! Explorez vos applications, personnalisez votre profil et profitez de l'ambiance • Welcome to Hylia Plaza! Explore your apps, customize your profile, and enjoy the vibe •
+          - generic [ref=f18e66]: Bienvenue à Hylia Plaza ! Explorez vos applications, personnalisez votre profil et profitez de l'ambiance • Welcome to Hylia Plaza! Explore your apps, customize your profile, and enjoy the vibe •
+        - generic [ref=f18e67]:
+          - generic [ref=f18e68]: 21:50 PM
+          - generic [ref=f18e69]: Sunday, Oct 18
+        - button "Mises à jour" [ref=f18e70] [cursor=pointer]
+      - tablist "Catégories du menu" [ref=f18e72]:
+        - tab "Utilisateur" [selected] [ref=f18e73] [cursor=pointer]
+        - tab "Jeux" [ref=f18e76] [cursor=pointer]
+        - tab "Mii" [ref=f18e79] [cursor=pointer]
+        - tab "Réseau" [ref=f18e82] [cursor=pointer]
+        - tab "Media" [ref=f18e85] [cursor=pointer]
+        - tab "Thèmes" [ref=f18e88] [cursor=pointer]
+        - tab "Paramètres" [ref=f18e91] [cursor=pointer]
+      - generic:
+        - generic:
+          - generic: Hyl1a Bio
+          - paragraph: "Hylia Plaza est mon hub de jeux dans le navigateur, inspiré d'iiSU : GBA, DS, NES et N64 jouables directement sur le web avec compte, Mii et sauvegardes. Clique sur Ouvrir pour visiter mon site bio — mes projets sont sur github.com/MohamedZenaidi44."
+          - button "Ouvrir" [ref=f18e94] [cursor=pointer]
+      - tabpanel [ref=f18e95]:
+        - generic [ref=f18e96]:
+          - button "Hyl1a Bio" [ref=f18e97] [cursor=pointer]
+          - button "Mon Profil" [ref=f18e100] [cursor=pointer]
+      - contentinfo:
+        - generic [ref=f18e104]:
+          - button "Piste précédente" [ref=f18e105] [cursor=pointer]: ⏮
+          - button "Lecture" [ref=f18e106] [cursor=pointer]: ▶
+          - button "Piste suivante" [ref=f18e107] [cursor=pointer]: ⏭
+          - generic [ref=f18e108]: Chargement...
+          - generic [ref=f18e110]: 00:00 / 00:00
+        - generic:
+          - generic:
+            - generic: ←
+            - generic: →
+            - text: Choix / page
+          - generic:
+            - generic: ↑
+            - generic: ↓
+            - text: Page
+          - generic:
+            - generic: ↵
+            - text: Ouvrir
+  - generic:
+    - generic:
+      - img "App Logo"

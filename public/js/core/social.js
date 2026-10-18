@@ -43,12 +43,45 @@ window.SocialSystem = {
 
   init() {
     this.overlay = document.getElementById('social-overlay');
-    
+
     // Escape key to close social overlay
     document.addEventListener('keydown', (e) => {
       if (e.key === 'Escape' && this.overlay && !this.overlay.classList.contains('hidden')) {
         this.closeOverlay();
       }
+    });
+
+    /*
+     * BUG 2 — Pendant que l'overlay social est ouvert, un clic sur une zone
+     * NON interactive (backdrop ou vide de la fenêtre) qui recouvre un canal
+     * du hub (wii-channel / wii-tab) doit fermer l'overlay ET ouvrir ce canal,
+     * pour ne pas devoir cliquer deux fois. Les clics sur les contrôles réels
+     * du chat (boutons, inputs, cartes d'amis…) restent inchangés.
+     */
+    this.overlay.addEventListener('click', (e) => {
+      if (this.overlay.classList.contains('hidden')) return;
+      const t = e.target;
+      // Interactions légitimes du chat : on ne les intercepte jamais.
+      if (t.closest('button, input, textarea, select, a, .friend-card, [onclick]')) return;
+      try {
+        this.overlay.style.pointerEvents = 'none';
+        const under = document.elementFromPoint(e.clientX, e.clientY);
+        this.overlay.style.pointerEvents = '';
+        if (!under || !under.isConnected || (under.closest && under.closest('#social-overlay'))) {
+          // Aucun hub derrière : clic sur le backdrop seul → simple fermeture.
+          if (t.classList.contains('social-backdrop')) this.closeOverlay();
+          return;
+        }
+        const behind = under.closest('.wii-channel, .wii-tab, button[role="tab"]');
+        if (behind) {
+          e.preventDefault();
+          e.stopPropagation();
+          this.closeOverlay();
+          setTimeout(() => { try { behind.click(); } catch (_) {} }, 340);
+        } else if (t.classList.contains('social-backdrop')) {
+          this.closeOverlay();
+        }
+      } catch (_) { /* ignore */ }
     });
   },
 

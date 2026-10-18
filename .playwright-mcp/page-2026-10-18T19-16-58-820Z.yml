@@ -1,0 +1,17 @@
+- generic [ref=f5e1]:
+  - generic:
+    - generic:
+      - img "App Logo"
+  - generic [ref=f5e166]:
+    - generic [ref=f5e167]:
+      - button "B Quitter" [ref=f5e168] [cursor=pointer]:
+        - generic [ref=f5e169]: B
+        - text: Quitter
+      - generic [ref=f5e170]: Kirby & the Amazing Mirror
+      - button "Sauvegarder la partie" [ref=f5e171] [cursor=pointer]
+      - button "Plein écran" [ref=f5e176] [cursor=pointer]
+    - iframe [active] [ref=f5e183]:
+      - generic [active] [ref=f6e1]:
+        - generic:
+          - generic: CONTROLES
+          - text: "FLÈCHES : DIRX : AZ : BA : LS : RENTRÉE : STARTMAJ : SELECT"

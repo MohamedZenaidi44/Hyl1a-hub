@@ -2330,46 +2330,6 @@ body.app-open-active > *:not(.mii-fullscreen-container) {
   animation-play-state: paused !important;
 }
 
-/* ═══════════════════════════════════════════════════════════════
-   MODE ÉCONOMIE (body.eco-mode) — activé via Thèmes
-   Désactive : backdrop-filter coûteux, vidéo, visualiseur, animations
-   ═══════════════════════════════════════════════════════════════ */
-
-/* Supprimer le backdrop-filter sur tous les éléments en mode économie */
-body.eco-mode *,
-body.eco-mode *::before,
-body.eco-mode *::after {
-  backdrop-filter: none !important;
-  -webkit-backdrop-filter: none !important;
-}
-
-/* Remplacer par un fond semi-opaque de remplacement */
-body.eco-mode .mii-glass-panel,
-body.eco-mode #user-panel,
-body.eco-mode #clock-panel,
-body.eco-mode #app-preview-panel,
-body.eco-mode #grid-column,
-body.eco-mode #music-bar-container,
-body.eco-mode #marquee-bar {
-  background: rgba(0, 0, 0, 0.75) !important;
-}
-
-/* Masquer le visualiseur en mode économie */
-body.eco-mode #modern-visualizer-container {
-  display: none !important;
-}
-
-/* Masquer la vidéo de fond en mode économie */
-body.eco-mode #bg-video {
-  display: none !important;
-}
-
-/* Réduire les animations (gardées mais plus lentes) */
-body.eco-mode * {
-  animation-duration: 0.1ms !important;
-  animation-iteration-count: 1 !important;
-  transition-duration: 0.1ms !important;
-}
 
 /* ═══════════════════════════════════════════════════════════════
    LOGIQUE iiSU — PANNEAUX : transitions & états

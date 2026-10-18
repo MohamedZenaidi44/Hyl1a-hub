@@ -1,0 +1,42 @@
+- generic [active] [ref=f3e1]:
+  - generic:
+    - generic:
+      - banner:
+        - generic [ref=f3e15]:
+          - generic [ref=f3e16] [cursor=pointer]
+          - generic [ref=f3e19] [cursor=pointer]: Noctharis
+          - button "Déconnexion" [ref=f3e22] [cursor=pointer]
+        - generic [ref=f3e25]:
+          - generic [ref=f3e26]: 21:12 PM
+          - generic [ref=f3e27]: Sunday, Oct 18
+      - tablist "Catégories du menu" [ref=f3e28]:
+        - tab "Utilisateur" [selected] [ref=f3e29] [cursor=pointer]
+        - tab "Jeux" [ref=f3e32] [cursor=pointer]
+        - tab "Mii" [ref=f3e35] [cursor=pointer]
+        - tab "Réseau" [ref=f3e38] [cursor=pointer]
+        - tab "Media" [ref=f3e41] [cursor=pointer]
+        - tab "Thèmes" [ref=f3e44] [cursor=pointer]
+        - tab "Paramètres" [ref=f3e47] [cursor=pointer]
+      - generic:
+        - generic:
+          - generic: Hyl1a Bio
+          - paragraph: "Hylia Plaza est mon hub de jeux dans le navigateur, inspiré d'iiSU : GBA, DS, NES et N64 jouables directement sur le web avec compte, Mii et sauvegardes. Clique sur Ouvrir pour visiter mon site bio — mes projets sont sur github.com/MohamedZenaidi44."
+          - button "Ouvrir" [ref=f3e50] [cursor=pointer]
+      - tabpanel [ref=f3e51]:
+        - generic [ref=f3e52]:
+          - button "Hyl1a Bio" [ref=f3e53] [cursor=pointer]
+          - button "Mon Profil" [ref=f3e56] [cursor=pointer]
+      - contentinfo:
+        - generic [ref=f3e60]:
+          - button "Piste précédente" [ref=f3e61] [cursor=pointer]: ⏮
+          - button "Pause" [ref=f3e81] [cursor=pointer]: ⏸
+          - button "Piste suivante" [ref=f3e63] [cursor=pointer]: ⏭
+          - generic [ref=f3e64]: Wii U Home Menu
+          - generic [ref=f3e66]: 00:00 / 02:26
+  - generic:
+    - generic:
+      - img "App Logo"
+  - generic:
+    - generic:
+      - generic: Now Playing
+      - generic: Wii U Home Menu

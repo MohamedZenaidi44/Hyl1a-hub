@@ -1,0 +1,142 @@
+- generic [ref=e1]:
+  - generic [ref=e15]:
+    - generic [ref=e16]: Mises à jour
+    - generic [ref=e18]:
+      - generic [ref=e19]:
+        - generic [ref=e20]: MAJ 11 — Mii Maker en 3D
+        - generic [ref=e21]: "Ton Mii s'affiche maintenant en vraie 3D : modèle complet (corps, squelette, animations) que tu peux faire tourner. Change visage, cheveux, yeux, nez, bouche, barbe, lunettes… et vois le résultat en direct."
+      - generic [ref=e22]:
+        - generic [ref=e23]: MAJ 10 — Mii Maker fonctionnel
+        - generic [ref=e24]: "Crée enfin ton vrai Mii : visage, cheveux, yeux, bouche, lunettes, barbe… avec un aperçu en direct. Ton Mii est sauvegardé sur ton compte et s'affiche partout dans Hylia Plaza."
+      - generic [ref=e25]:
+        - generic [ref=e26]: MAJ 9 — Redesign de l'émulateur GBA
+        - generic [ref=e27]: L'émulateur GBA a été redessiné avec l'ajout des jaquettes des jeux.
+      - generic [ref=e28]:
+        - generic [ref=e29]: MAJ 8 — Focus sur le GBA
+        - generic [ref=e30]: Les autres émulateurs ont été temporairement désactivés pour se concentrer sur le GBA, en attendant un futur patch commun.
+      - generic [ref=e31]:
+        - generic [ref=e32]: MAJ 7 — Sauvegardes individuelles
+        - generic [ref=e33]: Chaque utilisateur dispose désormais de ses propres sauvegardes sur l'émulateur GBA.
+      - generic [ref=e34]:
+        - generic [ref=e35]: MAJ 6 — Essai de Mii en 3D
+        - generic [ref=e36]: Un essai d'intégration de vrais modèles 3D pour le Mii Maker a été tenté, sans succès pour le moment.
+      - generic [ref=e37]:
+        - generic [ref=e38]: MAJ 5 — Correctif synchronisation GBA
+        - generic [ref=e39]: Travail sur les problèmes de synchronisation des sauvegardes de l'émulateur GBA.
+      - generic [ref=e40]:
+        - generic [ref=e41]: MAJ 4 — Patch performance GBA
+        - generic [ref=e42]: Correction d'un bug de performance sur l'émulateur GBA.
+      - generic [ref=e43]:
+        - generic [ref=e44]: MAJ 3 — Nouveaux émulateurs
+        - generic [ref=e45]: Intégration des émulateurs DS, NES et N64.
+      - generic [ref=e46]:
+        - generic [ref=e47]: MAJ 2 — Nouveaux jeux GBA
+        - generic [ref=e48]: Ajout de nouveaux jeux disponibles sur l'émulateur GBA.
+      - generic [ref=e49]:
+        - generic [ref=e50]: MAJ 1 — Nouveau menu d'accueil
+        - generic [ref=e51]: Le style du menu d'accueil a été simplifié.
+  - generic [ref=e663]:
+    - button "Fermer" [ref=e664] [cursor=pointer]
+    - generic [ref=e668]:
+      - generic [ref=e1011]:
+        - generic [ref=e1012] [cursor=pointer]:
+          - img "Profile" [ref=e1014]
+          - generic [ref=e1015]: Mon Profil
+        - generic [ref=e1016] [cursor=pointer]:
+          - img "Amis" [ref=e1018]
+          - generic [ref=e1019]: Amis
+        - generic [ref=e1020] [cursor=pointer]:
+          - img "Global" [ref=e1022]
+          - generic [ref=e1023]: Global
+        - generic [ref=e1024] [cursor=pointer]:
+          - img "Messages" [ref=e1026]
+          - generic [ref=e1027]: Messages
+      - generic [ref=e669]:
+        - generic [ref=e670]: Mon Profil
+        - generic [ref=e671]:
+          - generic [ref=e1029]:
+            - text: Noctharis
+            - generic [ref=e1030]: "#8520"
+          - generic [ref=e1031]:
+            - generic [ref=e1032]:
+              - generic [ref=e1033]: Statut de compte
+              - generic [ref=e1034]:
+                - textbox "Que faites-vous ?" [ref=e1035]
+                - button "OK" [ref=e1036] [cursor=pointer]
+            - generic [ref=e1037]:
+              - generic [ref=e1038]: Localisation
+              - generic [ref=e1039]: France
+            - generic [ref=e1040]:
+              - generic [ref=e1041]: Dernière Connexion
+              - generic [ref=e1042]: En ligne maintenant
+          - button "Déconnexion" [ref=e1043] [cursor=pointer]
+      - generic [ref=e1044]:
+        - generic [ref=e1045]: MON MII avec Noctharis
+        - generic [ref=e1047]:
+          - generic [ref=e1048]:
+            - generic [ref=e1049]: Tag
+            - generic [ref=e1050]: "#8520"
+          - generic [ref=e1051]:
+            - generic [ref=e1052]: Sexe
+            - generic [ref=e1053]: Homme
+          - generic [ref=e1054]:
+            - generic [ref=e1055]: Début
+            - generic [ref=e1056]: "2024"
+          - generic [ref=e1057]:
+            - generic [ref=e1058]: Jeu préféré
+            - generic [ref=e1059]: Pokémon Émeraude (GBA)
+  - generic:
+    - generic:
+      - banner:
+        - generic [ref=e52]:
+          - generic [ref=e53] [cursor=pointer]
+          - generic [ref=e56] [cursor=pointer]:
+            - generic [ref=e57]: Noctharis
+            - generic [ref=e58]: username
+          - button "Déconnexion" [ref=e61] [cursor=pointer]
+        - generic [ref=e65]:
+          - generic [ref=e66]: Bienvenue à Hylia Plaza ! Explorez vos applications, personnalisez votre profil et profitez de l'ambiance • Welcome to Hylia Plaza! Explore your apps, customize your profile, and enjoy the vibe •
+          - generic [ref=e67]: Bienvenue à Hylia Plaza ! Explorez vos applications, personnalisez votre profil et profitez de l'ambiance • Welcome to Hylia Plaza! Explore your apps, customize your profile, and enjoy the vibe •
+        - generic [ref=e68]:
+          - generic [ref=e69]: 20:59 PM
+          - generic [ref=e70]: Sunday, Oct 18
+        - button "Mises à jour" [ref=e71] [cursor=pointer]
+      - tablist "Catégories du menu" [ref=e73]:
+        - tab "Utilisateur" [selected] [ref=e74] [cursor=pointer]
+        - tab "Jeux" [ref=e77] [cursor=pointer]
+        - tab "Mii" [ref=e80] [cursor=pointer]
+        - tab "Réseau" [ref=e83] [cursor=pointer]
+        - tab "Media" [ref=e86] [cursor=pointer]
+        - tab "Thèmes" [ref=e89] [cursor=pointer]
+        - tab "Paramètres" [ref=e92] [cursor=pointer]
+      - generic:
+        - generic:
+          - generic: Mon Profil
+          - paragraph: Consulte et personnalise ton profil Hylia Plaza.
+          - button "Ouvrir" [ref=e95] [cursor=pointer]
+      - tabpanel [ref=e96]:
+        - generic [ref=e97]:
+          - button "Hyl1a Bio" [ref=e1003] [cursor=pointer]
+          - button "Mon Profil" [active] [ref=e1006] [cursor=pointer]
+      - contentinfo:
+        - generic [ref=e105]:
+          - button "Piste précédente" [ref=e106] [cursor=pointer]: ⏮
+          - button "Pause" [ref=e143] [cursor=pointer]: ⏸
+          - button "Piste suivante" [ref=e108] [cursor=pointer]: ⏭
+          - generic [ref=e109]: DSi Camera Album
+          - generic [ref=e111]: 02:58 / 03:52
+        - generic:
+          - generic:
+            - generic: ←
+            - generic: →
+            - text: Choix / page
+          - generic:
+            - generic: ↑
+            - generic: ↓
+            - text: Page
+          - generic:
+            - generic: ↵
+            - text: Ouvrir
+  - generic:
+    - generic:
+      - img "App Logo"

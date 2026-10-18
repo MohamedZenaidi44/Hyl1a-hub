@@ -130,16 +130,16 @@
                 document.body.appendChild(script);
             }
 
+            // Charge l'émulateur immédiatement (pattern gba_player v4, sans bloquer) :
+            // la sauvegarde cloud est recherchée EN PARALLÈLE de l'init du core.
+            loadEmu();
             if (window.parent && window.parent.CloudSaveManager) {
                 window.parent.CloudSaveManager.checkCloudSave(gameName, core).then(url => {
                     if (url) {
                         window.EJS_StateUrl = url;
                         window.parent.CloudSaveManager.showNotification('☁️ Chargement de la sauvegarde Cloud...');
                     }
-                    loadEmu();
-                }).catch(() => loadEmu());
-            } else {
-                loadEmu();
+                }).catch(() => {});
             }
 
             // Auto-focus window for keys

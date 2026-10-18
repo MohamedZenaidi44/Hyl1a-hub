@@ -154,22 +154,14 @@ const ThemeManager = {
 
     // Background video + monochrome theme variables
     const bgVideo = document.getElementById('bg-video');
-    const eco = document.body.classList.contains('eco-mode');
     if (bgVideo) {
       if (theme.videoSrc) {
         if (!bgVideo.src.endsWith(theme.videoSrc)) {
           bgVideo.src = theme.videoSrc;
         }
-        if (eco) {
-          // Mode économie : la vidéo reste masquée, on garde le dégradé du thème.
-          bgVideo.style.opacity = '0';
-          bgVideo.pause();
-          document.body.style.background = theme.bgGradient;
-        } else {
-          bgVideo.style.opacity = '1';
-          bgVideo.play().catch(e => console.log('Video play error (needs interaction):', e));
-          document.body.style.background = 'transparent'; // Let video show through
-        }
+        bgVideo.style.opacity = '1';
+        bgVideo.play().catch(e => console.log('Video play error (needs interaction):', e));
+        document.body.style.background = 'transparent'; // Let video show through
       } else {
         bgVideo.style.opacity = '0';
         setTimeout(() => { if (!bgVideo.style.opacity || bgVideo.style.opacity === '0') bgVideo.pause(); }, 500);
@@ -236,10 +228,6 @@ const ThemeManager = {
     const overlay = document.createElement('div');
     overlay.id = 'theme-overlay';
 
-    // Lire l'état du Mode Économie
-    const ecoActive = localStorage.getItem('hylia-eco-mode') === 'true';
-    const ecoManual = localStorage.getItem('hylia-eco-mode-manual') === 'true';
-
     overlay.innerHTML = `
       <div class="theme-modal glossy-glass">
         <h2>🎨 Choose a Theme</h2>
@@ -254,16 +242,6 @@ const ThemeManager = {
               <div class="theme-name">${t.name}</div>
             </div>
           `).join('')}
-        </div>
-
-        <!-- Mode Économie -->
-        <div style="margin-top:18px;padding:14px 18px;background:rgba(255,255,255,0.06);border-radius:14px;border:1px solid rgba(255,255,255,0.12);display:flex;align-items:center;gap:12px;">
-          <label style="display:flex;align-items:center;gap:10px;cursor:pointer;color:rgba(255,255,255,0.85);font-size:14px;font-weight:600;user-select:none;">
-            <input type="checkbox" id="eco-mode-toggle" ${ecoActive ? 'checked' : ''}
-              style="width:18px;height:18px;cursor:pointer;accent-color:#4facfe;">
-            ⚡ Mode Économie
-          </label>
-          <span style="font-size:12px;color:rgba(255,255,255,0.45);flex:1;">Désactive la vidéo, les flous et le visualiseur${ecoActive && !ecoManual ? ' · <em>activé automatiquement</em>' : ''}</span>
         </div>
 
         <button class="theme-close-btn">✕ Close</button>
@@ -283,13 +261,6 @@ const ThemeManager = {
       });
     });
 
-    // Event listener — Mode Économie
-    overlay.querySelector('#eco-mode-toggle').addEventListener('change', (e) => {
-      ThemeManager.setEcoMode(e.target.checked, true);
-      const hint = e.target.closest('div')?.querySelector('span');
-      if (hint) hint.innerHTML = 'Désactive la vidéo, les flous et le visualiseur';
-    });
-
     overlay.querySelector('.theme-close-btn').addEventListener('click', () => {
       if (typeof AudioManager !== 'undefined') AudioManager.playClick();
       overlay.classList.remove('visible');
@@ -302,41 +273,8 @@ const ThemeManager = {
         setTimeout(() => overlay.remove(), 300);
       }
     });
-  },
-
-  setEcoMode(active, manual = false) {
-    localStorage.setItem('hylia-eco-mode', active ? 'true' : 'false');
-    // Un choix manuel fige la préférence : la détection auto ne reprendra plus la main.
-    if (manual) localStorage.setItem('hylia-eco-mode-manual', 'true');
-
-    const theme = this.themes[this.currentTheme];
-
-    if (active) {
-      document.body.classList.add('eco-mode');
-      // Arrêter la vidéo de fond
-      const bgVid = document.getElementById('bg-video');
-      if (bgVid && !bgVid.paused) bgVid.pause();
-      // Remplacer la vidéo (masquée en CSS) par le dégradé du thème
-      if (theme && theme.bgGradient) document.body.style.background = theme.bgGradient;
-      // Arrêter le visualiseur via son flag interne
-      if (window.ModernVisualizer) ModernVisualizer.pause();
-    } else {
-      document.body.classList.remove('eco-mode');
-      // Relancer la vidéo
-      const bgVid = document.getElementById('bg-video');
-      if (bgVid && bgVid.paused && !document.body.classList.contains('app-open-active')) {
-        bgVid.play().catch(() => {});
-      }
-      // Rendre au fond vidéo sa transparence
-      if (theme && theme.videoSrc) document.body.style.background = 'transparent';
-      // Relancer le visualiseur
-      if (window.ModernVisualizer && ModernVisualizer._paused) ModernVisualizer.resume();
-    }
   }
 };
-
-// Expose _ecoModeActive pour que le visualiseur puisse vérifier l'état
-window._ecoModeActive = () => localStorage.getItem('hylia-eco-mode') === 'true';
 
 // Make it global so it can be called elsewhere
 window.ThemeManager = ThemeManager;
@@ -344,8 +282,8 @@ window.ThemeManager = ThemeManager;
 // Register the theme selector as an app
 document.addEventListener('DOMContentLoaded', () => {
   ThemeManager.init();
-  // Appliquer le mode économie sauvegardé immédiatement
-  if (localStorage.getItem('hylia-eco-mode') === 'true') {
-    ThemeManager.setEcoMode(true);
-  }
+  // Nettoyage des clés du Mode Économie (fonctionnalité retirée)
+  localStorage.removeItem('hylia-eco-mode');
+  localStorage.removeItem('hylia-eco-mode-manual');
+  document.body.classList.remove('eco-mode');
 });

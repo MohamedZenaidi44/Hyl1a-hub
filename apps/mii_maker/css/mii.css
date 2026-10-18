@@ -758,11 +758,6 @@ body.theme-black .mii-options {
   .mii-quit { bottom: 10px; }
 }
 
-/* mode éco (vieux PC) : fond animé figé */
-body.eco-mode .mii-bg-left::before,
-body.eco-mode .mii-bg-left::after {
-  animation: none;
-}
 
 @media (prefers-reduced-motion: reduce) {
   .mii-screen *,

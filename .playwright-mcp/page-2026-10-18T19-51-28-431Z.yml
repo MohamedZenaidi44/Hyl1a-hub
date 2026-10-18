@@ -1,0 +1,110 @@
+- generic [active] [ref=f19e1]:
+  - generic [ref=f19e2]:
+    - generic [ref=f19e3]:
+      - generic [ref=f19e4]: chl
+      - generic [ref=f19e6]: salut les feuj
+      - generic [ref=f19e8]: silvok
+      - generic [ref=f19e10]: ok
+      - generic [ref=f19e12]: It's a Axolotl
+      - generic [ref=f19e14]: Yo l’équipe c'est moi Yamato la fille de Kaido
+      - generic [ref=f19e16]: Yoyoyo
+      - generic [ref=f19e18]: Wifmat
+    - img "Hylia Plaza Logo"
+    - generic [ref=f19e21]:
+      - heading "Connexion" [level=2] [ref=f19e22]
+      - paragraph [ref=f19e23]: Entrez vos identifiants pour continuer.
+      - textbox "Nom d'utilisateur" [ref=f19e25]
+      - textbox "Mot de passe" [ref=f19e27]
+      - button "Se Connecter" [ref=f19e28] [cursor=pointer]
+      - paragraph [ref=f19e29]: Pas encore de compte ? S'inscrire
+  - generic [ref=f19e30]:
+    - generic [ref=f19e31]: Mises à jour
+    - generic [ref=f19e33]:
+      - generic [ref=f19e34]:
+        - generic [ref=f19e35]: MAJ 11 — Mii Maker en 3D
+        - generic [ref=f19e36]: "Ton Mii s'affiche maintenant en vraie 3D : modèle complet (corps, squelette, animations) que tu peux faire tourner. Change visage, cheveux, yeux, nez, bouche, barbe, lunettes… et vois le résultat en direct."
+      - generic [ref=f19e37]:
+        - generic [ref=f19e38]: MAJ 10 — Mii Maker fonctionnel
+        - generic [ref=f19e39]: "Crée enfin ton vrai Mii : visage, cheveux, yeux, bouche, lunettes, barbe… avec un aperçu en direct. Ton Mii est sauvegardé sur ton compte et s'affiche partout dans Hylia Plaza."
+      - generic [ref=f19e40]:
+        - generic [ref=f19e41]: MAJ 9 — Redesign de l'émulateur GBA
+        - generic [ref=f19e42]: L'émulateur GBA a été redessiné avec l'ajout des jaquettes des jeux.
+      - generic [ref=f19e43]:
+        - generic [ref=f19e44]: MAJ 8 — Focus sur le GBA
+        - generic [ref=f19e45]: Les autres émulateurs ont été temporairement désactivés pour se concentrer sur le GBA, en attendant un futur patch commun.
+      - generic [ref=f19e46]:
+        - generic [ref=f19e47]: MAJ 7 — Sauvegardes individuelles
+        - generic [ref=f19e48]: Chaque utilisateur dispose désormais de ses propres sauvegardes sur l'émulateur GBA.
+      - generic [ref=f19e49]:
+        - generic [ref=f19e50]: MAJ 6 — Essai de Mii en 3D
+        - generic [ref=f19e51]: Un essai d'intégration de vrais modèles 3D pour le Mii Maker a été tenté, sans succès pour le moment.
+      - generic [ref=f19e52]:
+        - generic [ref=f19e53]: MAJ 5 — Correctif synchronisation GBA
+        - generic [ref=f19e54]: Travail sur les problèmes de synchronisation des sauvegardes de l'émulateur GBA.
+      - generic [ref=f19e55]:
+        - generic [ref=f19e56]: MAJ 4 — Patch performance GBA
+        - generic [ref=f19e57]: Correction d'un bug de performance sur l'émulateur GBA.
+      - generic [ref=f19e58]:
+        - generic [ref=f19e59]: MAJ 3 — Nouveaux émulateurs
+        - generic [ref=f19e60]: Intégration des émulateurs DS, NES et N64.
+      - generic [ref=f19e61]:
+        - generic [ref=f19e62]: MAJ 2 — Nouveaux jeux GBA
+        - generic [ref=f19e63]: Ajout de nouveaux jeux disponibles sur l'émulateur GBA.
+      - generic [ref=f19e64]:
+        - generic [ref=f19e65]: MAJ 1 — Nouveau menu d'accueil
+        - generic [ref=f19e66]: Le style du menu d'accueil a été simplifié.
+  - generic:
+    - generic:
+      - banner:
+        - generic [ref=f19e67]:
+          - generic [ref=f19e68] [cursor=pointer]
+          - generic [ref=f19e71] [cursor=pointer]:
+            - generic [ref=f19e72]: Guest
+            - generic [ref=f19e73]: username
+          - button "Déconnexion" [ref=f19e76] [cursor=pointer]
+        - generic [ref=f19e80]:
+          - generic [ref=f19e81]: Bienvenue à Hylia Plaza ! Explorez vos applications, personnalisez votre profil et profitez de l'ambiance • Welcome to Hylia Plaza! Explore your apps, customize your profile, and enjoy the vibe •
+          - generic [ref=f19e82]: Bienvenue à Hylia Plaza ! Explorez vos applications, personnalisez votre profil et profitez de l'ambiance • Welcome to Hylia Plaza! Explore your apps, customize your profile, and enjoy the vibe •
+        - generic [ref=f19e83]:
+          - generic [ref=f19e84]: 21:51 PM
+          - generic [ref=f19e85]: Sunday, Oct 18
+        - button "Mises à jour" [ref=f19e86] [cursor=pointer]
+      - tablist "Catégories du menu" [ref=f19e88]:
+        - tab "Utilisateur" [selected] [ref=f19e89] [cursor=pointer]
+        - tab "Jeux" [ref=f19e92] [cursor=pointer]
+        - tab "Mii" [ref=f19e95] [cursor=pointer]
+        - tab "Réseau" [ref=f19e98] [cursor=pointer]
+        - tab "Media" [ref=f19e101] [cursor=pointer]
+        - tab "Thèmes" [ref=f19e104] [cursor=pointer]
+        - tab "Paramètres" [ref=f19e107] [cursor=pointer]
+      - generic:
+        - generic:
+          - generic: Hyl1a Bio
+          - paragraph: "Hylia Plaza est mon hub de jeux dans le navigateur, inspiré d'iiSU : GBA, DS, NES et N64 jouables directement sur le web avec compte, Mii et sauvegardes. Clique sur Ouvrir pour visiter mon site bio — mes projets sont sur github.com/MohamedZenaidi44."
+          - button "Ouvrir" [ref=f19e110] [cursor=pointer]
+      - tabpanel [ref=f19e111]:
+        - generic [ref=f19e112]:
+          - button "Hyl1a Bio" [ref=f19e113] [cursor=pointer]
+          - button "Mon Profil" [ref=f19e116] [cursor=pointer]
+      - contentinfo:
+        - generic [ref=f19e120]:
+          - button "Piste précédente" [ref=f19e121] [cursor=pointer]: ⏮
+          - button "Lecture" [ref=f19e122] [cursor=pointer]: ▶
+          - button "Piste suivante" [ref=f19e123] [cursor=pointer]: ⏭
+          - generic [ref=f19e124]: Chargement...
+          - generic [ref=f19e126]: 00:00 / 00:00
+        - generic:
+          - generic:
+            - generic: ←
+            - generic: →
+            - text: Choix / page
+          - generic:
+            - generic: ↑
+            - generic: ↓
+            - text: Page
+          - generic:
+            - generic: ↵
+            - text: Ouvrir
+  - generic:
+    - generic:
+      - img "App Logo"
