@@ -27,6 +27,7 @@
 
 <body>
     <div id="game">Loading Emulator...</div>
+    <script src="../../public/js/core/emu-save-sync.js"></script>
     <script>
         // Use hash for robust passing without server interference, fallback to search if not in hash
         const paramsString = window.location.hash ? window.location.hash.substring(1) : window.location.search;
@@ -78,10 +79,9 @@
             window.EJS_fixedSaveInterval = 2000;
 
             window.addEventListener('beforeunload', (e) => {
-                const msg = "Attention : vos sauvegardes en jeu récentes risquent d'être perdues. Veuillez utiliser le menu de sauvegarde (Save State) de l'émulateur avant de quitter !";
+                if (!window._emuGameLoaded) return;
                 e.preventDefault();
-                e.returnValue = msg;
-                return msg;
+                e.returnValue = '';
             });
 
             // UI Enhancement: Show controls on the sides

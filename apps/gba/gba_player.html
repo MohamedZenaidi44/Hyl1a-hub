@@ -26,8 +26,8 @@
   </div>
 </div>
 
-<!-- gba-save-sync.js doit être chargé AVANT le script inline -->
-<script src="./js/gba-save-sync.js"></script>
+<!-- emu-save-sync.js doit être chargé AVANT le script inline -->
+<script src="../../public/js/core/emu-save-sync.js"></script>
 
 <script>
 (function () {
@@ -93,7 +93,7 @@
 
   /* ── Chargement loader.js ─────────────────────────────────────────── */
   // v4 : on charge loader.js directement, sans bloquer.
-  // gba-save-sync.js utilise EJS_onGameStart pour injecter la save APRÈS
+  // emu-save-sync.js utilise EJS_onGameStart pour injecter la save APRÈS
   // que le core mGBA est prêt — plus de race condition IDB possible.
   function loadEmulatorScript() {
     var script = document.createElement('script');
@@ -104,7 +104,7 @@
     document.body.appendChild(script);
   }
 
-  // Laisser gba-save-sync.js s'initialiser d'abord (il a besoin de poser
+  // Laisser emu-save-sync.js s'initialiser d'abord (il a besoin de poser
   // EJS_onGameStart avant que loader.js ne démarre), puis charger loader.js.
   // Un simple setTimeout(0) suffit pour passer après le script sync.
   setTimeout(loadEmulatorScript, 0);

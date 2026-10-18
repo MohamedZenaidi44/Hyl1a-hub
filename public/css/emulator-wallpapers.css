@@ -1,0 +1,39 @@
+/* ═══════════════════════════════════════════════════════════════════════
+   Wallpapers des émulateurs — une image fixe par console.
+   Règle : le thème (clair/sombre) n'influence JAMAIS le choix du wallpaper ;
+   c'est la même image dans les deux thèmes (seule l'interface s'adapte).
+   Correspondance : nom de l'émulateur = nom du fichier (sans extension),
+   insensible à la casse et à l'extension (.png/.jpeg).
+   Chaque fond : voile discret constant (lisibilité de l'UI sombre) +
+   image en cover centré (plein écran, sans déformation) + couleur neutre
+   de secours si l'image manque.
+   ──    Dossier source : public/assets/emulators/ ──
+   - DS  → NDS.jpeg      - N64 → N64.png     - NES → NES.jpeg
+   - GBA → GBA.png (géré dans public/js/core/emulatorXmb.js, #xmb-wall-*)
+   - 3DS → 3DS.jpeg (aucun émulateur 3DS pour l'instant, fichier prêt)
+   - a7psier.jpeg : non associé (aucun émulateur correspondant)
+   Les règles .ds/.n64/.nes-menu-wrapper ci-dessous servent de fond de
+   secours sur la racine du menu (le wallpaper principal est rendu par
+   .gxmb-wallpaper dans public/js/core/emulatorXmb.js).
+   ═══════════════════════════════════════════════════════════════════════ */
+
+/* Nintendo DS */
+.mii-fullscreen-container .ds-menu-wrapper {
+  background: linear-gradient(rgba(8, 10, 16, 0.30), rgba(8, 10, 16, 0.30)),
+              url('../assets/emulators/NDS.jpeg') center / cover no-repeat,
+              #14161c;
+}
+
+/* Nintendo 64 */
+.mii-fullscreen-container .n64-menu-wrapper {
+  background: linear-gradient(rgba(8, 10, 16, 0.30), rgba(8, 10, 16, 0.30)),
+              url('../assets/emulators/N64.png') center / cover no-repeat,
+              #14161c;
+}
+
+/* NES */
+.mii-fullscreen-container .nes-menu-wrapper {
+  background: linear-gradient(rgba(8, 10, 16, 0.30), rgba(8, 10, 16, 0.30)),
+              url('../assets/emulators/NES.jpeg') center / cover no-repeat,
+              #14161c;
+}

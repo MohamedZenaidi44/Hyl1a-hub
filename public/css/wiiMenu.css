@@ -1,18 +1,26 @@
 /* ============================================================
-   MENU D'ACCUEIL — grille de chaînes façon Wii
+   MENU D'ACCUEIL — grille 100vh « Hero + rangée »
    Inspiré du Wii Menu (Nintendo Wii) et du « WiiSU Mode » d'iiSU.
 
    Structure produite par public/js/core/wiiMenu.js dans #main-container :
 
-     .wii-menu
-       nav.wii-tabs          → onglets de catégories (pages du menu)
-       .wii-channels-frame   → zone défilante de sécurité (petites hauteurs)
-         .wii-channels       → grille de chaînes
-           button.wii-channel
+     .wii-menu            → grille : topbar / onglets / hero / rangée / barre basse
+       header.wii-topbar  → profil (gauche), bandeau (centre), horloge + bouton (droite)
+       nav.wii-tabs       → onglets de catégories (pages du menu)
+       section.wii-hero   → carte de la chaîne sélectionnée + titre / description / Ouvrir
+         .wii-hero-card
+         .wii-info        → .wii-info-title, .wii-info-desc, .wii-launch-btn
+       .wii-channels-frame→ rangée défilante horizontalement
+         .wii-channels    → button.wii-channel
              .wii-channel-face   (panneau rectangulaire + gloss)
              .wii-channel-label  (nom sous la chaîne, comme sur la Wii)
-       .wii-info             → titre + description de la chaîne sélectionnée
-       .wii-hint             → indice des touches
+       footer.wii-bottom  → lecteur musique (centre, avec visualiseur derrière)
+                            + aide clavier (droite)
+
+   Le HUD existant (#user-panel, #marquee-bar, #clock-panel,
+   #btn-changelog-toggle, #music-bar-container, #modern-visualizer-container)
+   est déplacé dans la grille par wiiMenu.js : les règles `.wii-menu #xxx`
+   neutralisent leur position fixe d'origine.
 
    Palette : monochrome par thème (--wii-hi = glow/rebords blancs ou noirs,
    --wii-icon-color = icônes contrastées), fonds via les variables
@@ -31,19 +39,22 @@
 }
 
 /* ============================================================
-   SCÈNE — fond clair, mise en page flexible non superposable
+   SCÈNE — grille sans chevauchement : une zone par rangée
    ============================================================ */
 .wii-menu {
   position: absolute;
   inset: 0;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: clamp(12px, 2.2vh, 28px);
-  /* Réserves pour le HUD : le panneau profil/horloge occupe jusqu'à ~185px
-     en haut, les barres musique/marquee ~130px en bas. */
-  padding: clamp(190px, 22vh, 270px) clamp(10px, 3vw, 52px) clamp(86px, 12vh, 132px);
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-rows: auto auto minmax(0, 1fr) auto auto;
+  grid-template-areas:
+    "topbar"
+    "tabs"
+    "hero"
+    "row"
+    "bottom";
+  gap: clamp(10px, 1.6vh, 22px);
+  padding: clamp(18px, 2.4vmin, 32px);
   box-sizing: border-box;
   overflow: hidden;
   pointer-events: none;
@@ -61,6 +72,13 @@
   --wii-scrim-bottom: rgba(238, 244, 250, 0.27);
   /* Halo de lisibilité des textes posés directement sur le fond */
   --wii-text-halo: 0 1px 6px rgba(255, 255, 255, 0.95), 0 0 16px rgba(255, 255, 255, 0.75);
+  /* Contour animé de la carte hero : flux monochrome (blanc ↔ gris) */
+  --wii-ring-a: rgba(255, 255, 255, 1);
+  --wii-ring-b: rgba(172, 178, 188, 0.9);
+  --wii-ring-mid: rgba(255, 255, 255, 0.45);
+  /* Verre : fonds translucides de la carte hero et du rectangle de descriptions */
+  --wii-hero-fill: rgba(255, 255, 255, 0.45);
+  --wii-info-fill: rgba(255, 255, 255, 0.32);
 
   /* Fond blanc / gris très clair : laisse deviner la vidéo derrière
      pour une légère profondeur visuelle. */
@@ -80,31 +98,155 @@ body.theme-black .wii-menu {
   --wii-scrim-top: rgba(12, 15, 22, 0.35);
   --wii-scrim-bottom: rgba(8, 10, 16, 0.42);
   --wii-text-halo: 0 1px 6px rgba(0, 0, 0, 0.9), 0 0 16px rgba(0, 0, 0, 0.75);
+  --wii-ring-a: rgba(10, 13, 18, 1);
+  --wii-ring-b: rgba(152, 158, 170, 0.85);
+  --wii-ring-mid: rgba(34, 39, 50, 1);
+  --wii-hero-fill: rgba(24, 28, 38, 0.5);
+  --wii-info-fill: rgba(20, 24, 32, 0.38);
+}
+
+/* ============================================================
+   BARRE HAUTE — profil | bandeau | horloge | bouton
+   ============================================================ */
+.wii-topbar {
+  grid-area: topbar;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: clamp(12px, 1.6vw, 28px);
+  min-width: 0;
+  height: clamp(64px, 9vh, 92px);
+  pointer-events: none;
+}
+
+/* ── HUD repositionné par la grille : neutralise le positionnement fixe ── */
+.wii-menu #user-panel {
+  position: static !important;
+  top: auto !important;
+  right: auto !important;
+  bottom: auto !important;
+  left: auto !important;
+  margin: 0 !important;
+  padding: 8px 20px 8px 8px !important;
+  gap: 10px !important;
+  z-index: auto !important;
+  max-width: none !important;
+  justify-self: start;
+  flex: 0 0 auto;
+  pointer-events: auto;
+}
+
+.wii-menu #top-avatar-container {
+  width: 54px !important;
+  height: 54px !important;
+}
+
+.wii-menu #user-panel .top-name {
+  font-size: 17px !important;
+}
+
+.wii-menu #user-panel .top-subname {
+  font-size: 11px !important;
+}
+
+.wii-menu #marquee-bar {
+  position: static !important;
+  top: auto !important;
+  right: auto !important;
+  bottom: auto !important;
+  left: auto !important;
+  transform: none !important;
+  z-index: auto !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: min(1080px, 100%) !important;
+  height: clamp(36px, 5vh, 46px) !important;
+  justify-self: center;
+  pointer-events: auto;
+}
+
+.wii-menu #marquee-bar .marquee-text {
+  font-size: 13px;
+}
+
+.wii-menu #clock-panel {
+  position: static !important;
+  top: auto !important;
+  right: auto !important;
+  bottom: auto !important;
+  left: auto !important;
+  z-index: auto !important;
+  justify-self: end;
+  pointer-events: auto;
+}
+
+.wii-menu #top-time {
+  font-size: clamp(26px, 2.2vw, 40px) !important;
+  line-height: 1.05;
+}
+
+.wii-menu #top-time .am-pm {
+  font-size: 0.4em !important;
+}
+
+.wii-menu #top-date {
+  font-size: clamp(11px, 0.8vw, 13px) !important;
+}
+
+.wii-menu #btn-changelog-toggle {
+  position: static !important;
+  top: auto !important;
+  right: auto !important;
+  bottom: auto !important;
+  left: auto !important;
+  margin: 0 !important;
+  z-index: auto !important;
+  justify-self: end;
+  pointer-events: auto;
 }
 
 /* ============================================================
    ONGLETS DE CATÉGORIES
    ============================================================ */
 .wii-tabs {
-  flex: 0 0 auto;
+  grid-area: tabs;
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   align-items: center;
   justify-content: center;
+  justify-content: safe center;
   gap: clamp(6px, 0.9vw, 12px);
   width: 100%;
-  max-width: min(1100px, 96vw);
+  max-width: none;
+  /* Barre descendue : un peu plus d'air sous le bandeau, proche du hero */
+  margin: clamp(10px, 2vh, 26px) 0 0;
+  padding: 4px 2px;
+  box-sizing: border-box;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: none;
   pointer-events: auto;
 }
 
+.wii-tabs::-webkit-scrollbar {
+  display: none;
+}
+
 .wii-tab {
+  position: relative;
+  --wii-ring-w: clamp(2px, 0.16vw, 3px);
+  /* Les catégories s'étirent : la barre remplit toute la largeur */
+  flex: 1 1 0;
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  padding: clamp(6px, 0.85vh, 10px) clamp(11px, 1.2vw, 19px);
-  border-radius: 999px;
-  border: 1px solid var(--wii-hi-soft);
-  background: var(--tile-bg, rgba(255, 255, 255, 0.92));
+  justify-content: center;
+  gap: 9px;
+  padding: clamp(7px, 0.95vh, 11px) clamp(12px, 1.3vw, 20px);
+  /* Tuile « gel » façon Wii U / iiSU : coins arrondis + brillance + relief */
+  border-radius: clamp(12px, 0.95vw, 18px);
+  background:
+    var(--tile-gloss, linear-gradient(to bottom, rgba(255, 255, 255, 0.55) 0%, rgba(255, 255, 255, 0.10) 50%, rgba(255, 255, 255, 0) 100%)),
+    var(--tile-bg, rgba(255, 255, 255, 0.92));
   color: var(--tile-label-color, rgba(88, 104, 126, 1));
   font-family: inherit;
   font-size: clamp(11px, 1.15vmin, 14px);
@@ -112,7 +254,11 @@ body.theme-black .wii-menu {
   letter-spacing: 0.02em;
   white-space: nowrap;
   cursor: pointer;
-  box-shadow: 0 3px 10px var(--wii-shadow), inset 0 1px 0 rgba(255, 255, 255, 0.9);
+  overflow: hidden;
+  box-shadow:
+    0 5px 14px var(--wii-shadow),
+    inset 0 1px 0 var(--tile-inner-highlight, rgba(255, 255, 255, 0.95)),
+    inset 0 -2px 5px rgba(18, 28, 44, 0.05);
   transition: transform 0.22s ease, border-color 0.22s ease, color 0.22s ease,
               box-shadow 0.22s ease;
 }
@@ -121,15 +267,28 @@ body.theme-black .wii-menu {
   transform: translateY(-2px);
   border-color: var(--wii-hi);
   color: var(--wii-icon-color);
+  box-shadow:
+    0 8px 18px var(--wii-shadow),
+    inset 0 1px 0 var(--tile-inner-highlight, rgba(255, 255, 255, 0.95)),
+    inset 0 -2px 5px rgba(18, 28, 44, 0.05);
+}
+
+.wii-tab:active {
+  transform: translateY(1px) scale(0.985);
+  box-shadow:
+    0 2px 6px var(--wii-shadow),
+    inset 0 1px 0 var(--tile-inner-highlight, rgba(255, 255, 255, 0.95)),
+    inset 0 2px 5px rgba(18, 28, 44, 0.10);
 }
 
 .wii-tab[aria-selected="true"] {
   border-color: var(--wii-hi);
   color: var(--wii-icon-color);
-  box-shadow: 0 6px 16px var(--wii-shadow),
+  transform: translateY(-1px);
+  box-shadow: 0 8px 20px var(--wii-shadow),
               0 0 0 2px var(--wii-hi),
-              0 0 18px var(--wii-hi-glow),
-              inset 0 1px 0 rgba(255, 255, 255, 0.95);
+              0 0 20px var(--wii-hi-glow),
+              inset 0 1px 0 var(--tile-inner-highlight, rgba(255, 255, 255, 0.95));
 }
 
 .wii-tab:focus-visible {
@@ -148,18 +307,307 @@ body.theme-black .wii-menu {
 }
 
 /* ============================================================
-   GRILLE DE CHAÎNES
+   HERO — carte de la chaîne sélectionnée + informations
    ============================================================ */
-.wii-channels-frame {
-  flex: 1 1 auto;
+.wii-hero {
+  grid-area: hero;
+  display: grid;
+  grid-template-columns: minmax(0, min(34vw, 520px)) minmax(0, 1fr);
+  align-items: center;
+  gap: clamp(20px, 3vw, 52px);
+  min-height: 0;
+  min-width: 0;
+  pointer-events: none;
+}
+
+.wii-hero-card {
+  position: relative;
+  height: min(100%, 560px);
+  max-height: 100%;
   min-height: 0;
   width: 100%;
+  align-self: center;
+  border-radius: clamp(18px, 1.6vw, 30px);
+  /* Verre : carte translucide — le fond d'écran se devine derrière.
+     Le contour épais animé est peint par ::before (bande extérieure seule). */
+  --wii-ring-w: clamp(6px, 0.55vw, 10px);
+  background: var(--wii-hero-fill, rgba(255, 255, 255, 0.45));
+  backdrop-filter: blur(16px) saturate(1.12);
+  -webkit-backdrop-filter: blur(16px) saturate(1.12);
+  box-shadow: 0 16px 40px var(--wii-shadow);
   display: flex;
   align-items: center;
   justify-content: center;
-  overflow-y: auto;
-  overflow-x: hidden;
+  overflow: hidden;
+  transition: box-shadow 0.25s ease;
+}
+
+/* ── Contour animé partagé ──
+   Carte hero, rectangle de descriptions, chaînes et onglets.
+   Le masque (xor) ne garde que la bande extérieure : l'animation ne
+   touche que le contour, jamais le fond des éléments. */
+.wii-hero-card::before,
+.wii-info::before,
+.wii-channel-face::before,
+.wii-tab::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: var(--wii-ring-w, 4px);
+  background: linear-gradient(125deg, var(--wii-ring-a), var(--wii-ring-b) 38%, var(--wii-ring-mid) 62%, var(--wii-ring-a));
+  background-size: 300% 300%;
+  animation: wiiHeroContour 6s ease-in-out infinite;
+  -webkit-mask-image: linear-gradient(#000 0 0), linear-gradient(#000 0 0);
+  -webkit-mask-clip: content-box, border-box;
+  -webkit-mask-composite: xor;
+  mask-image: linear-gradient(#000 0 0), linear-gradient(#000 0 0);
+  mask-clip: content-box, border-box;
+  mask-composite: exclude;
+  pointer-events: none;
+  z-index: 2;
+}
+
+/* Déphasage des flux : chaque famille d'éléments respire à son rythme */
+.wii-info::before         { animation-duration: 7s; animation-delay: -2s; }
+.wii-channel-face::before { animation-delay: -3s; opacity: 0.55; transition: opacity 0.35s ease; }
+.wii-tab::before          { animation-duration: 8s; animation-delay: -5s; opacity: 0.55; transition: opacity 0.35s ease; }
+
+/* Repos discret, contour plein sur l'élément survolé / sélectionné */
+.wii-channel:hover .wii-channel-face::before,
+.wii-channel.selected .wii-channel-face::before,
+.wii-tab:hover::before,
+.wii-tab[aria-selected="true"]::before {
+  opacity: 1;
+}
+
+/* Gloss discret sur la moitié haute (esprit Wii / iiSU) */
+.wii-hero-card::after {
+  content: '';
+  position: absolute;
+  inset: 0 0 52% 0;
+  background: var(--tile-gloss, linear-gradient(to bottom, rgba(255, 255, 255, 0.55), rgba(255, 255, 255, 0)));
+  pointer-events: none;
+}
+
+.wii-hero-art {
+  width: 58%;
+  height: 58%;
+  object-fit: contain;
+  filter: var(--tile-icon-filter, drop-shadow(0 2px 6px rgba(30, 60, 100, 0.18)));
+  z-index: 1;
+  animation: wiiHeroIn 0.35s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.wii-hero-art.is-mask {
+  width: 40%;
+  height: 40%;
+  background-color: var(--wii-icon-color);
+  -webkit-mask: var(--wii-icon) center / contain no-repeat;
+  mask: var(--wii-icon) center / contain no-repeat;
+  filter: none;
+}
+
+/* ── Box art : remplit tout le grand carré (couvre le fond de verre) ── */
+.wii-hero-art.is-cover {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  filter: none;
+}
+
+/* Le gloss passe au-dessus de la box art (esprit verre Wii), sous le contour */
+.wii-hero-card.has-cover::after {
+  z-index: 1;
+  opacity: 0.45;
+}
+
+/* ── Variantes d'illustration selon le thème (iiSU clair / sombre) ── */
+.wii-channel-art.art-dark,
+.wii-hero-art.art-dark {
+  display: none;
+}
+
+body.theme-black .wii-channel-art.art-light,
+body.theme-black .wii-hero-art.art-light {
+  display: none;
+}
+
+body.theme-black .wii-channel-art.art-dark,
+body.theme-black .wii-hero-art.art-dark {
+  display: block;
+}
+
+@keyframes wiiHeroIn {
+  from { opacity: 0; transform: translateY(10px) scale(0.97); }
+  to   { opacity: 1; transform: none; }
+}
+
+/* Flux du contour animé : le dégradé balaie le pourtour de la carte */
+@keyframes wiiHeroContour {
+  0%   { background-position: 0% 50%; }
+  50%  { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+/* ── Rectangle translucide des descriptions ──
+   Posé juste à côté de la carte hero, même hauteur qu'elle :
+   il remplit le vide du centre de la page. */
+.wii-info {
+  position: relative;
+  --wii-ring-w: clamp(6px, 0.55vw, 10px);
+  min-width: 0;
+  height: min(100%, 560px);
+  align-self: center;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  gap: clamp(10px, 1.4vh, 18px);
+  text-align: left;
+  padding: clamp(20px, 2.2vw, 42px) clamp(24px, 2.6vw, 48px);
+  border-radius: clamp(18px, 1.6vw, 30px);
+  background: var(--wii-info-fill, rgba(255, 255, 255, 0.32));
+  backdrop-filter: blur(14px) saturate(1.08);
+  -webkit-backdrop-filter: blur(14px) saturate(1.08);
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.wii-info-title {
+  font-size: clamp(24px, 2.6vw, 46px);
+  font-weight: 800;
+  letter-spacing: 0.01em;
+  color: var(--panel-text, rgba(26, 42, 66, 0.95));
+  text-shadow: var(--wii-text-halo);
+}
+
+.wii-info-desc {
+  margin-top: 0;
+  font-size: clamp(13px, 1.1vw, 17px);
+  font-weight: 600;
+  line-height: 1.55;
+  color: var(--panel-text-muted, rgba(78, 98, 124, 0.85));
+  text-shadow: var(--wii-text-halo);
+  max-width: 64ch;
+  display: -webkit-box;
+  -webkit-line-clamp: 4;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* ── Bouton « Ouvrir » ── */
+.wii-launch-btn {
+  pointer-events: auto;
+  margin-top: clamp(2px, 0.8vh, 10px);
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: clamp(10px, 1.3vh, 14px) clamp(24px, 2.2vw, 38px);
+  border-radius: 999px;
+  border: 1px solid var(--wii-hi-soft);
+  background: var(--tile-bg, rgba(255, 255, 255, 0.94));
+  color: var(--tile-label-color, rgba(20, 30, 50, 0.92));
+  font-family: inherit;
+  font-size: clamp(14px, 1.15vw, 17px);
+  font-weight: 800;
+  letter-spacing: 0.03em;
+  cursor: pointer;
+  box-shadow: 0 8px 20px var(--wii-shadow), inset 0 1px 0 rgba(255, 255, 255, 0.9);
+  transition: transform 0.22s ease, box-shadow 0.22s ease, border-color 0.22s ease;
+}
+
+.wii-launch-btn:hover {
+  transform: translateY(-2px);
+  border-color: var(--wii-hi);
+  box-shadow: 0 12px 28px var(--wii-shadow),
+              0 0 0 2px var(--wii-hi),
+              inset 0 1px 0 rgba(255, 255, 255, 0.95);
+}
+
+.wii-launch-btn:active {
+  transform: translateY(0) scale(0.98);
+}
+
+.wii-launch-btn:focus-visible {
+  outline: 3px solid var(--wii-hi);
+  outline-offset: 3px;
+}
+
+.wii-info.wii-info-in {
+  animation: wiiInfoIn 0.3s ease;
+}
+
+/* ── Visuel « hero » du rectangle de descriptions ──
+   Plein cadre au-dessus du fond de verre, sous le scrim de lisibilité. */
+.wii-info-bg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: inherit;
+  pointer-events: none;
+  z-index: 0;
+  display: none;
+}
+
+.wii-info.has-hero .wii-info-bg {
+  display: block;
+}
+
+/* Scrim de lisibilité : le texte (à gauche) reste lisible sur l'image */
+.wii-info.has-hero::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(90deg,
+    rgba(255, 255, 255, 0.88) 0%,
+    rgba(255, 255, 255, 0.55) 45%,
+    rgba(255, 255, 255, 0.14) 100%);
+  pointer-events: none;
+  z-index: 1;
+}
+
+body.theme-black .wii-info.has-hero::after {
+  background: linear-gradient(90deg,
+    rgba(10, 12, 18, 0.85) 0%,
+    rgba(10, 12, 18, 0.55) 45%,
+    rgba(10, 12, 18, 0.14) 100%);
+}
+
+/* Textes et bouton au-dessus de l'image et du scrim */
+.wii-info-title,
+.wii-info-desc,
+.wii-launch-btn {
+  position: relative;
+  z-index: 2;
+}
+
+@keyframes wiiInfoIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: none; }
+}
+
+/* ============================================================
+   RANGÉE DE CHAÎNES — hauteur fixe, défilement horizontal
+   ============================================================ */
+.wii-channels-frame {
+  grid-area: row;
+  min-width: 0;
+  height: clamp(150px, 23vh, 230px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  justify-content: safe center;
+  overflow-x: auto;
+  overflow-y: hidden;
   scrollbar-width: none;
+  overscroll-behavior-x: contain;
   pointer-events: auto;
 }
 
@@ -168,22 +616,14 @@ body.theme-black .wii-menu {
 }
 
 .wii-channels {
-  /* Largeur d'une chaîne : contrainte aussi par la hauteur disponible */
-  --wii-ch-w: clamp(116px, min(13.5vw, 25vh), 268px);
-  --wii-gap-x: clamp(14px, 1.8vw, 34px);
-  --wii-gap-y: clamp(12px, 1.6vh, 26px);
-  /* Flex avec retour à la ligne : chaque ligne reste centrée, même incomplète.
-     Largeur bornée à 3 chaînes (comme les pages du Wii Menu). */
+  --wii-ch-w: clamp(118px, min(11vw, 20vh), 210px);
+  --wii-gap-x: clamp(14px, 1.6vw, 30px);
   display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  align-content: center;
-  align-content: safe center;
-  gap: var(--wii-gap-y) var(--wii-gap-x);
-  width: 100%;
-  max-width: calc(var(--wii-ch-w) * 3 + var(--wii-gap-x) * 2);
-  margin: 0 auto;
-  padding: clamp(6px, 1vh, 16px) 0;
+  flex-wrap: nowrap;
+  align-items: center;
+  justify-content: flex-start;
+  gap: var(--wii-gap-x);
+  padding: 12px clamp(8px, 1vw, 18px);
   box-sizing: border-box;
 }
 
@@ -222,11 +662,11 @@ body.theme-black .wii-menu {
 
 /* Panneau rectangulaire de la chaîne */
 .wii-channel-face {
+  --wii-ring-w: clamp(3px, 0.28vw, 5px);
   width: 100%;
   aspect-ratio: 1.35 / 1;
   border-radius: clamp(12px, 1.1vw, 20px);
   background: var(--tile-bg, rgba(255, 255, 255, 0.94));
-  border: 1px solid var(--wii-hi-soft);
   box-shadow: 0 8px 20px var(--wii-shadow), inset 0 1px 0 rgba(255, 255, 255, 0.9);
   display: flex;
   align-items: center;
@@ -296,7 +736,7 @@ body.theme-black .wii-menu {
 
 /* ── États : chaîne sélectionnée (clavier / survol) ── */
 .wii-channel.selected .wii-channel-face {
-  transform: translateY(-5px);
+  transform: translateY(-4px) scale(1.05);
   border-color: var(--wii-hi);
   box-shadow: 0 16px 34px var(--wii-shadow),
               0 0 0 2px var(--wii-hi),
@@ -347,66 +787,79 @@ body.theme-black .wii-menu {
 }
 
 /* ============================================================
-   PANNEAU D'INFORMATION (chaîne sélectionnée)
+   BARRE BASSE — lecteur musique (centre) + aide clavier (droite)
    ============================================================ */
-.wii-info {
-  flex: 0 0 auto;
-  width: 100%;
-  max-width: min(780px, 88vw);
-  min-height: clamp(56px, 8vh, 88px);
-  text-align: center;
+.wii-bottom {
+  grid-area: bottom;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  align-items: center;
+  gap: clamp(12px, 1.6vw, 24px);
+  min-width: 0;
   pointer-events: none;
 }
 
-.wii-info-title {
-  font-size: clamp(17px, 2.2vmin, 27px);
-  font-weight: 800;
-  letter-spacing: 0.01em;
-  color: var(--panel-text, rgba(26, 42, 66, 0.95));
-  text-shadow: var(--wii-text-halo);
+.wii-menu #music-bar-container {
+  grid-column: 2;
+  position: relative !important;
+  top: auto !important;
+  right: auto !important;
+  bottom: auto !important;
+  left: auto !important;
+  transform: none !important;
+  z-index: 0 !important;
+  width: min(680px, max(300px, 44vw)) !important;
+  max-width: 100% !important;
+  height: clamp(46px, 6.2vh, 58px) !important;
+  justify-self: center;
+  pointer-events: auto;
 }
 
-.wii-info-desc {
-  margin-top: 4px;
-  font-size: clamp(12px, 1.3vmin, 16px);
-  font-weight: 600;
-  line-height: 1.55;
-  color: var(--panel-text-muted, rgba(78, 98, 124, 0.85));
-  text-shadow: var(--wii-text-halo);
+/* Visualiseur : décor discret derrière le lecteur de musique */
+.wii-menu #music-bar-container #modern-visualizer-container {
+  position: absolute !important;
+  inset: 0 !important;
+  width: auto !important;
+  height: auto !important;
+  transform: none !important;
+  z-index: 0 !important;
+  opacity: 0.55;
+  pointer-events: none;
 }
 
-.wii-info.wii-info-in {
-  animation: wiiInfoIn 0.3s ease;
+.wii-menu #music-bar-container > *:not(#modern-visualizer-container) {
+  position: relative;
+  z-index: 1;
 }
 
-@keyframes wiiInfoIn {
-  from { opacity: 0; transform: translateY(8px); }
-  to   { opacity: 1; transform: none; }
-}
-
-/* ============================================================
-   INDICES CLAVIER
-   ============================================================ */
+/* ── Aide clavier ── */
 .wii-hint {
-  position: absolute;
-  right: clamp(12px, 3vw, 40px);
-  bottom: clamp(12px, 2.4vh, 28px);
+  grid-column: 3;
+  justify-self: end;
   display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
   align-items: center;
-  gap: 14px;
-  font-size: clamp(11px, 1vmin, 13px);
+  gap: 4px 14px;
+  font-size: clamp(10px, 1vmin, 12px);
   font-weight: 700;
   color: var(--panel-text-muted, rgba(78, 98, 124, 0.85));
   text-shadow: var(--wii-text-halo);
   pointer-events: none;
+  white-space: nowrap;
+}
+
+.wii-hint > span {
+  display: inline-flex;
+  align-items: center;
 }
 
 .wii-hint .kbd {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-width: 22px;
-  height: 22px;
+  min-width: 20px;
+  height: 20px;
   padding: 0 6px;
   margin-right: 4px;
   border-radius: 6px;
@@ -419,48 +872,126 @@ body.theme-black .wii-menu {
    RESPONSIVE
    ============================================================ */
 
-/* Écrans moyens : tuiles un peu plus compactes */
-@media screen and (max-width: 900px) {
-  .wii-channels {
-    --wii-ch-w: clamp(112px, min(19vw, 23vh), 190px);
-    --wii-gap-x: clamp(12px, 1.6vw, 24px);
-    --wii-gap-y: clamp(10px, 1.4vh, 20px);
-  }
-}
-
-/* Petits écrans : tuiles compactes, indices masqués, HUD plus court */
-@media screen and (max-width: 620px) {
-  .wii-menu {
-    padding-top: clamp(84px, 12vh, 112px);
+/* Écrans moyens : hero en colonne (carte au-dessus, texte en dessous) */
+@media screen and (max-width: 1100px) {
+  .wii-hero {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: minmax(0, 1fr) auto;
+    gap: clamp(14px, 2.2vh, 26px);
   }
 
-  .wii-channels {
-    --wii-ch-w: clamp(118px, min(39vw, 21vh), 180px);
-    /* 2 chaînes par ligne maximum sur mobile */
-    max-width: calc(var(--wii-ch-w) * 2 + var(--wii-gap-x));
-  }
-
-  .wii-hint {
-    display: none;
+  .wii-hero-card {
+    width: min(560px, 100%);
+    justify-self: center;
   }
 
   .wii-info {
-    min-height: clamp(48px, 7vh, 72px);
+    height: auto;
+    align-items: center;
+    text-align: center;
   }
 
   .wii-info-desc {
-    font-size: clamp(11px, 2.6vw, 14px);
+    max-width: 70ch;
+  }
+}
+
+/* Petits écrans : aide masquée, horloge réduite, barres empilées */
+@media screen and (max-width: 700px) {
+  .wii-hint {
+    display: none !important;
+  }
+
+  .wii-menu #top-time {
+    font-size: 26px !important;
+  }
+
+  .wii-menu #top-time .am-pm {
+    font-size: 10px !important;
+  }
+
+  .wii-menu #top-date {
+    font-size: 10px !important;
+  }
+
+  .wii-menu #marquee-bar {
+    display: none !important;
+  }
+
+  .wii-topbar {
+    grid-template-columns: auto minmax(0, 1fr) auto;
+  }
+
+  .wii-bottom {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .wii-menu #music-bar-container {
+    grid-column: 1;
+    width: min(680px, 100%) !important;
+  }
+}
+
+/* Très petits écrans (≤ 600px) : HUD et tuiles compacts */
+@media screen and (max-width: 600px) {
+  .wii-menu {
+    padding: 12px;
+    gap: 8px;
+  }
+
+  .wii-menu #user-panel {
+    padding: 5px 12px 5px 5px !important;
+    gap: 7px !important;
+  }
+
+  .wii-menu #top-avatar-container {
+    width: 40px !important;
+    height: 40px !important;
+  }
+
+  .wii-menu #user-panel .top-name {
+    font-size: 13px !important;
+    max-width: 26vw;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .wii-menu #user-panel .top-subname {
+    font-size: 9px !important;
   }
 
   .wii-tab {
-    padding: 6px 11px;
-    gap: 6px;
-    font-size: 11px;
+    padding: 5px 10px;
+    gap: 5px;
+    font-size: 10.5px;
   }
 
   .wii-tab-icon {
-    width: 13px;
-    height: 13px;
+    width: 12px;
+    height: 12px;
+  }
+
+  .wii-channels-frame {
+    height: clamp(140px, 22vh, 190px);
+  }
+
+  .wii-info-title {
+    font-size: 22px;
+  }
+
+  .wii-info-desc {
+    font-size: 12.5px;
+    -webkit-line-clamp: 3;
+  }
+
+  .wii-info {
+    padding: 14px 16px;
+  }
+
+  .wii-launch-btn {
+    padding: 9px 22px;
+    font-size: 13.5px;
   }
 }
 

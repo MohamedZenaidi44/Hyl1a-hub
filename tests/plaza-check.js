@@ -75,18 +75,29 @@ async function launchPlaza(page) {
     await page.setViewport({ width: 1920, height: 1080 });
     await preparePage(page);
 
-    // 1) La chaîne Plaza est bien dans la catégorie Jeux
-    const inGames = await page.evaluate(() => {
+    // 1) La chaîne Plaza est bien dans la catégorie Mii
+    const miiIdx = await page.evaluate(() => {
       const tabs = [...document.querySelectorAll('.wii-tab')];
-      const gamesIdx = tabs.findIndex(t => /jeux/i.test(t.textContent));
-      if (gamesIdx < 0) return null;
-      const labels = [...document.querySelectorAll('.wii-channel-label')].map(l => l.textContent);
-      return { gamesIdx, labels };
+      const idx = tabs.findIndex(t => /^mii$/i.test(t.textContent.trim()));
+      if (idx >= 0) tabs[idx].click();
+      return idx;
     });
-    // (on lit les chaînes de la page courante seulement ; on vérifie surtout l'absence d'erreur d'index)
+    await new Promise(r => setTimeout(r, 350));
+    const miiLabels = await page.evaluate(() =>
+      [...document.querySelectorAll('.wii-channel-label')].map(l => l.textContent));
+    results.push(['chaîne Plaza dans la catégorie Mii', miiIdx >= 0 && miiLabels.includes('Plaza'),
+      JSON.stringify({ miiIdx, miiLabels })]);
 
     // 2) Lancement
     await launchPlaza(page);
+
+    // Le directeur social est mis en pause (cooldowns longs) : ce test mesure
+    // la marche AUTONOME d'un Mii, pas son emploi du temps social. Sans ça,
+    // miis[0] peut légitimement être immobile en pleine conversation.
+    await page.evaluate(() => {
+      const p = document.querySelector('.plaza-root')._plaza;
+      for (const m of p.miis) m._soc.cooldown = 999;
+    });
 
     const state = await page.evaluate(() => {
       const root = document.querySelector('.plaza-root');
@@ -147,13 +158,25 @@ async function launchPlaza(page) {
     const hudCount = await page.evaluate(() => document.querySelector('#plaza-count').textContent);
     results.push(['HUD : nombre de Mii affiché', /Mii/.test(hudCount), `"${hudCount}"`]);
 
-    await new Promise(r => setTimeout(r, 6500)); // laisse le temps de marcher
-    const moved = await page.evaluate(() => {
-      const m = document.querySelector('.plaza-root')._plaza.miis[0];
-      return [m.group.position.x, m.group.position.z];
-    });
-    const dist = Math.hypot(moved[0] - miiInfo.pos[0], moved[1] - miiInfo.pos[1]);
-    results.push(['le Mii se déplace (animation walk)', dist > 0.5, `dist=${dist.toFixed(2)}`]);
+    // La marche est mesurée avec ré-essais : si miis[0] était engagé
+    // (interaction/contemplation en cours au moment de la mesure), on
+    // recommence — un Mii immobile PENDANT une scène scriptée n'est pas un bug.
+    let dist = 0, tries = 0;
+    for (; tries < 3; tries++) {
+      const before = await page.evaluate(() => {
+        const m = document.querySelector('.plaza-root')._plaza.miis[0];
+        return { x: m.group.position.x, z: m.group.position.z, engaged: !!(m.busy || m.scripted) };
+      });
+      await new Promise(r => setTimeout(r, 4500)); // laisse le temps de marcher
+      const moved = await page.evaluate(() => {
+        const m = document.querySelector('.plaza-root')._plaza.miis[0];
+        return [m.group.position.x, m.group.position.z];
+      });
+      dist = Math.hypot(moved[0] - before.x, moved[1] - before.z);
+      if (dist > 0.5 || !before.engaged) break;
+    }
+    results.push(['le Mii se déplace (animation walk)', dist > 0.5,
+      `dist=${dist.toFixed(2)}${tries ? ` (essai ${tries + 1})` : ''}`]);
 
     // 5b) Les os s'articulent (clips retargetés pilotent réellement le squelette)
     const anim = await page.evaluate(async () => {

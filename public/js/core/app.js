@@ -270,7 +270,6 @@ function initAppTriggers() {
     'miiPlaza':   { title: 'Plaza',                  render: (c) => _lazy(c, '../../../apps/plaza/js/main.js') },
     'browser':    { title: 'Internet Browser',       render: (c) => _wip(c) },
     'gba':        { title: '🎮 Émulateur GBA',       render: (c) => _lazy(c, '../../../apps/gba/js/gba.js') },
-    'gbaTurbo':   { title: '🚀 GBA Turbo',           render: (c) => _lazy(c, '../apps/gbaTurbo.js') },
     'ds':         { title: '🎮 Émulateur DS',        render: (c) => _lazy(c, '../../../apps/ds/js/ds.js') },
     'nes':        { title: '🎮 Émulateur NES',       render: (c) => _lazy(c, '../../../apps/nes/js/nes.js') },
     'n64':        { title: '🎮 Émulateur N64',       render: (c) => _lazy(c, '../../../apps/n64/js/n64.js') },
@@ -284,26 +283,15 @@ function initAppTriggers() {
           <div class="bio-header">
             <img src="public/assets/icons/bobaboy.webp" class="bio-avatar">
             <div class="bio-title-group">
-              <h1>Hyl1a</h1>
-              <p>Developer • 20 years old</p>
+              <h1>Hylia Plaza</h1>
+              <p>Hub de jeux rétro dans le navigateur</p>
             </div>
           </div>
           <div class="bio-content">
-            <p>J'ai voulu créer un projet similaire à <strong>IISU</strong> mais sur navigateur pour pouvoir jouer directement sur le web avec une gestion fluide de sauvegarde et de compte.</p>
+            <p>Hylia Plaza est mon hub de jeux dans le navigateur, inspiré d'<strong>iiSU</strong> : GBA, DS, NES et N64 jouables directement sur le web avec compte, Mii et sauvegardes.</p>
             <div class="bio-socials">
-              <div class="social-item"><i class="fas fa-envelope"></i> mohznpro@gmail.com</div>
-              <div class="social-item"><i class="fab fa-discord"></i> hyl1a_</div>
-              <a href="https://discord.gg/ww4A6BAz" target="_blank" class="social-btn discord-server">Join my Discord</a>
-            </div>
-            <div class="bio-projects">
-              <h3>Mes autres projets</h3>
-              <a href="https://hyl1a.github.io/Hyl1a-web/" target="_blank" class="project-card">
-                <div class="project-info">
-                  <strong>Hyl1a Web</strong>
-                  <span>Frutiger Aero aesthetic website</span>
-                </div>
-                <i class="fas fa-external-link-alt"></i>
-              </a>
+              <a href="https://web2-rho-one.vercel.app/" target="_blank" rel="noopener" class="social-btn discord-server">Mon site bio</a>
+              <a href="https://github.com/MohamedZenaidi44" target="_blank" rel="noopener" class="social-btn">GitHub</a>
             </div>
           </div>
         </div>`;
@@ -439,7 +427,7 @@ window.handleAppLaunch = function (trigger) {
 
     // Show splash screen
     window.showSplashScreen(() => {
-      if (appId === 'miiMaker' || appId === 'gba' || appId === 'gbaTurbo' || appId === 'miiManager' || appId === 'ds' || appId === 'nes' || appId === 'n64' || appId === 'miiPlaza') {
+      if (appId === 'miiMaker' || appId === 'gba' || appId === 'miiManager' || appId === 'ds' || appId === 'nes' || appId === 'n64' || appId === 'miiPlaza') {
 
         const bgVid = document.getElementById('bg-video');
         // Pauser la vidéo pour tous les émulateurs, y compris GBA :
@@ -482,7 +470,7 @@ window.handleAppLaunch = function (trigger) {
             
             // Resume background video seulement si aucun émulateur fenêtré ouvert
             const bgVid = document.getElementById('bg-video');
-            const emuApps = ['gba', 'ds', 'nes', 'n64', 'gbaTurbo'];
+            const emuApps = ['gba', 'ds', 'nes', 'n64'];
             const emuStillOpen = emuApps.some(id => !!WindowManager.windows[id]);
             if (bgVid && !emuStillOpen) bgVid.play().catch(() => {});
             // Reprendre companion video
@@ -503,7 +491,7 @@ window.handleAppLaunch = function (trigger) {
 
         // Pause video si un émulateur est ouvert en fenêtre, sinon reprendre
         const bgVid = document.getElementById('bg-video');
-        const emuApps = ['gba', 'ds', 'nes', 'n64', 'gbaTurbo'];
+        const emuApps = ['gba', 'ds', 'nes', 'n64'];
         const emuOpen = emuApps.some(id => !!WindowManager.windows[id]);
         const companion = document.getElementById('companion-avatar');
         if (bgVid) {

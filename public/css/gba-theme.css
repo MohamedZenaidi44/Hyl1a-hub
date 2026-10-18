@@ -11,9 +11,8 @@
   -webkit-backdrop-filter: blur(24px) !important;
 }
 
-.gxmb-scrim {
-  background: transparent !important;
-}
+/* Note : le voile de lisibilité (.gxmb-scrim, défini dans gba.js) n'est
+   plus neutralisé ici — il est nécessaire sur le wallpaper GBA.png clair. */
 
 /* ── Barre du haut ── */
 .gxmb-topbar {
@@ -48,13 +47,12 @@
 }
 
 .gxmb-exit:hover {
-  background: var(--accent-glow, rgba(0,200,255,0.15)) !important;
-  border-color: var(--accent, rgba(0,200,255,0.5)) !important;
+  background: rgba(127, 127, 127, 0.18) !important;
 }
 
 .gxmb-exit b {
-  background: var(--accent, #fff) !important;
-  color: var(--grid-bg, #0a0a0a) !important;
+  background: #f5f5f5 !important;
+  color: #101010 !important;
   border-radius: 50%;
   width: 18px; height: 18px;
   display: inline-flex;
@@ -145,11 +143,10 @@
   color: var(--panel-text, rgba(255,255,255,0.9)) !important;
 }
 
-/* ── Bouton Jouer (coin) ── */
+/* ── Coin bas-droit (bouton Jouer) : aucun fond — le bouton porte le style ── */
 .gxmb-corner {
-  background: linear-gradient(135deg, var(--accent, #00c8ff), var(--accent-dark, #0080d8)) !important;
-  box-shadow: 0 6px 24px var(--accent-glow, rgba(0,200,255,0.45)) !important;
-  color: white !important;
+  background: transparent !important;
+  box-shadow: none !important;
 }
 
 /* ── Dots pagination ── */
@@ -180,4 +177,10 @@ body.theme-white .gxmb-banner-text {
 body.theme-white .gxmb-item {
   background: rgba(255, 255, 255, 0.80) !important;
   border-color: rgba(200, 215, 230, 0.60) !important;
+}
+
+/* Pastille « B » du bouton Retour : sombre neutre en thème blanc */
+body.theme-white .gxmb-exit b {
+  background: #1c1f24 !important;
+  color: #ffffff !important;
 }

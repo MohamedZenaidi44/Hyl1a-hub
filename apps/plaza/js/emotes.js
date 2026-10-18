@@ -1,17 +1,36 @@
 /**
- * emotes.js — Bulles d'émotion « façon Tomodachi Life ».
+ * emotes.js — Bulles « façon Tomodachi Life ».
  *
- * Chaque bulle est un `THREE.Sprite` dessiné en canvas : une bulle blanche
- * arrondie avec une queue, et un symbole au centre (cœur, note, colère,
- * « ! », « ? », « Zzz », goutte). `show(type, durée)` l'affiche au-dessus de
- * la tête du Mii ; `update(dt)` la masque à l'expiration.
+ * Deux modes, même objet :
+ *   - **émotion** : bulle blanche arrondie + symbole (cœur, note, colère,
+ *     « ! », « ? », « Zzz », goutte) — `show(type, durée)` ;
+ *   - **texte** : bulle de dialogue avec une VRAIE réplique (police épaisse,
+ *     retour à la ligne automatique, taille du canvas adaptée) —
+ *     `showText(réplique, durée)`.
+ *
+ * La queue de la bulle sert d'ancre : `sprite.center` est réglé sur la pointe
+ * de la queue, donc la POSITION du sprite = le point visé (le haut de la tête
+ * du Mii). `side` (−1/1) place la queue à gauche ou à droite → le corps de la
+ * bulle s'étend du côté opposé (miroir dessiné, pas de scale négatif).
  */
-
 import * as THREE from 'three';
 
-const S = 128;               // taille du canvas
+const S = 128;               // canvas émotion
 const BUBBLE_W = 108;        // largeur de la bulle dans le canvas
 const BUBBLE_H = 96;         // hauteur de la bulle
+
+/* Réglages des bulles texte. */
+const TEXT_FONT_FAMILY = 'Nunito, Segoe UI, sans-serif';
+const TEXT_FONT = `800 60px ${TEXT_FONT_FAMILY}`;
+const TEXT_WRAP_W = 560;     // largeur maximale d'une ligne (canvas)
+const TEXT_LINE_H = 78;      // interligne (canvas)
+const TEXT_PAD_X = 40;       // marge intérieure horizontale
+const TEXT_PAD_TOP = 30;
+const TEXT_MIN_W = 250;      // bulle compacte pour les répliques courtes
+const TEXT_TAIL = 38;        // zone de la queue sous le corps
+const TEXT_PX2U = 0.0058;    // taille monde d'un pixel de canvas
+
+const EMOTE_SCALE = 0.62;    // taille monde de la bulle émotion
 
 function roundRect(ctx, x, y, w, h, r) {
   ctx.beginPath();
@@ -73,18 +92,14 @@ function drawSweat(ctx, cx, cy, s) {
 
 function drawGlyph(ctx, text, cx, cy, s, color) {
   ctx.fillStyle = color;
-  ctx.font = `900 ${Math.round(s * 2.1)}px Nunito, Segoe UI, sans-serif`;
+  ctx.font = `900 ${Math.round(s * 2.1)}px ${TEXT_FONT_FAMILY}`;
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
   ctx.fillText(text, cx, cy + s * 0.1);
 }
 
-/** Dessine la bulle + le symbole demandé dans le canvas. */
-function drawBubble(ctx, type) {
-  ctx.clearRect(0, 0, S, S);
-  const x = (S - BUBBLE_W) / 2, y = 4, w = BUBBLE_W, h = BUBBLE_H;
-
-  // Ombre douce
+/** Fond blanc + ombre, commun aux deux modes. */
+function drawBody(ctx, x, y, w, h) {
   ctx.save();
   ctx.shadowColor = 'rgba(10, 16, 28, 0.35)';
   ctx.shadowBlur = 8;
@@ -93,15 +108,32 @@ function drawBubble(ctx, type) {
   roundRect(ctx, x, y, w, h, 26);
   ctx.fill();
   ctx.restore();
+}
 
-  // Queue de la bulle (petit triangle bas-gauche)
+/** Queue triangulaire, pointe vers la tête (bas-gauche ou bas-droite). */
+function drawTail(ctx, myBox, mirror) {
+  const y = myBox.y, h = myBox.h;
   ctx.fillStyle = '#ffffff';
   ctx.beginPath();
-  ctx.moveTo(x + 30, y + h - 6);
-  ctx.lineTo(x + 16, y + h + 22);
-  ctx.lineTo(x + 56, y + h - 4);
+  if (!mirror) {
+    ctx.moveTo(myBox.x + 30, y + h - 6);
+    ctx.lineTo(myBox.x + 16, y + h + 22);
+    ctx.lineTo(myBox.x + 56, y + h - 4);
+  } else {
+    ctx.moveTo(myBox.x + myBox.w - 30, y + h - 6);
+    ctx.lineTo(myBox.x + myBox.w - 16, y + h + 22);
+    ctx.lineTo(myBox.x + myBox.w - 56, y + h - 4);
+  }
   ctx.closePath();
   ctx.fill();
+}
+
+/** Dessine la bulle émotion (+ symbole) dans le canvas 128×128. */
+function drawEmote(ctx, type, mirror) {
+  ctx.clearRect(0, 0, S, S);
+  const x = (S - BUBBLE_W) / 2, y = 4, w = BUBBLE_W, h = BUBBLE_H;
+  drawBody(ctx, x, y, w, h);
+  drawTail(ctx, { x, y, w, h }, mirror);
 
   const cx = S / 2, cy = y + h / 2;
   const s = 18;
@@ -117,32 +149,132 @@ function drawBubble(ctx, type) {
   }
 }
 
-/** Crée une bulle prête à être attachée au groupe d'un Mii. */
+/** Coupe la réplique en lignes qui tiennent dans `maxW`. */
+function wrapText(ctx, text, maxW) {
+  const words = String(text).split(/\s+/);
+  const lines = [];
+  let cur = '';
+  for (const word of words) {
+    const t = cur ? `${cur} ${word}` : word;
+    if (ctx.measureText(t).width > maxW && cur) { lines.push(cur); cur = word; }
+    else cur = t;
+  }
+  if (cur) lines.push(cur);
+  return lines;
+}
+
+/** Dessine une bulle de dialogue : corps adapté au texte + queue. */
+function drawTextBubble(ctx, W, H, lines, mirror) {
+  ctx.clearRect(0, 0, W, H);
+  const bodyH = H - TEXT_TAIL;
+  drawBody(ctx, 2, 2, W - 4, bodyH - 4);
+  drawTail(ctx, { x: 2, y: 2, w: W - 4, h: bodyH - 4 }, mirror);
+
+  ctx.fillStyle = '#263041';
+  ctx.font = TEXT_FONT;
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  const blockH = lines.length * TEXT_LINE_H;
+  const y0 = 2 + (bodyH - 4 - blockH) / 2 + TEXT_LINE_H / 2;
+  for (let i = 0; i < lines.length; i++) {
+    ctx.fillText(lines[i], W / 2, y0 + i * TEXT_LINE_H + 4);
+  }
+}
+
+/**
+ * Crée une bulle prête à être attachée au groupe d'un Mii.
+ * La `position` du sprite = pointe de la queue (à poser au-dessus de la tête).
+ */
 export function makeBubble() {
   const canvas = document.createElement('canvas');
   canvas.width = canvas.height = S;
-  const ctx = canvas.getContext('2d');
+  let ctx = canvas.getContext('2d');
 
   const tex = new THREE.CanvasTexture(canvas);
   if ('colorSpace' in tex) tex.colorSpace = THREE.SRGBColorSpace;
 
   const mat = new THREE.SpriteMaterial({ map: tex, transparent: true, depthWrite: false });
   const sprite = new THREE.Sprite(mat);
-  sprite.scale.set(0.55, 0.55, 1);
+  sprite.scale.set(EMOTE_SCALE, EMOTE_SCALE, 1);
+  sprite.center.set(26 / S, 2 / S);
   sprite.visible = false;
 
   let timeLeft = 0;
   let lastType = null;
+  let lastText = null;
+  let lastSide = 1;
+  let mode = 'emote';        // 'emote' | 'text'
+  let baseW = EMOTE_SCALE;   // taille monde de base du mode courant…
+  let baseH = EMOTE_SCALE;
+  let readScale = 1;         // …× facteur de lisibilité (distance caméra)
+
+  function applyScale() {
+    sprite.scale.set(baseW * readScale, baseH * readScale, 1);
+  }
+
+  function ensureSize(w, h) {
+    if (canvas.width !== w || canvas.height !== h) {
+      canvas.width = w;
+      canvas.height = h;
+      ctx = canvas.getContext('2d');
+      tex.dispose();
+    }
+  }
 
   return {
     sprite,
-    /** Affiche la bulle `type` pendant `seconds`. */
-    show(type, seconds = 2.2) {
-      if (type !== lastType) {
-        drawBubble(ctx, type);
-        tex.needsUpdate = true;
+    get mode() { return mode; },
+    /** Contenu courant : réplique (mode texte) ou type d'émotion. */
+    get text() { return mode === 'text' ? (lastText || '') : (lastType || ''); },
+    /**
+     * Facteur de lisibilité selon la distance caméra : les bulles grossissent
+     * un peu en vue éloignée (lisible), rétrécissent un peu en vue proche
+     * (elles ne mangent pas l'écran). Appliqué à chaud, sans redessiner.
+     */
+    setReadScale(k) {
+      const v = Math.max(0.7, Math.min(1.45, k));
+      if (Math.abs(v - readScale) < 0.01) return;
+      readScale = v;
+      applyScale();
+    },
+    /** Affiche la bulle d'émotion `type` pendant `seconds`. */
+    show(type, seconds = 2.2, side = 1) {
+      const mirror = side < 0;
+      if (mode !== 'emote' || type !== lastType || mirror !== (lastSide < 0)) {
+        ensureSize(S, S);
+        drawEmote(ctx, type, mirror);
+        baseW = baseH = EMOTE_SCALE;
+        sprite.center.set((mirror ? S - 26 : 26) / S, 2 / S);
         lastType = type;
+        lastSide = side;
+        mode = 'emote';
+        tex.needsUpdate = true;
       }
+      applyScale();
+      sprite.visible = true;
+      timeLeft = seconds;
+    },
+    /** Affiche une réplique de dialogue pendant `seconds` (canvas adapté). */
+    showText(text, seconds = 2.4, side = 1) {
+      const mirror = side < 0;
+      if (mode !== 'text' || text !== lastText || mirror !== (lastSide < 0)) {
+        ctx.font = TEXT_FONT;
+        const lines = wrapText(ctx, text, TEXT_WRAP_W);
+        let wMax = 0;
+        for (const l of lines) wMax = Math.max(wMax, ctx.measureText(l).width);
+        const W = Math.max(TEXT_MIN_W, Math.ceil(wMax) + TEXT_PAD_X * 2);
+        const H = TEXT_PAD_TOP * 2 + lines.length * TEXT_LINE_H + TEXT_TAIL;
+        ensureSize(W, H);
+        drawTextBubble(ctx, W, H, lines, mirror);
+        baseW = W * TEXT_PX2U;
+        baseH = H * TEXT_PX2U;
+        sprite.center.set((mirror ? W - 16 : 16) / W, 6 / H);
+        lastText = text;
+        lastSide = side;
+        mode = 'text';
+        tex.needsUpdate = true;
+      }
+      applyScale();
       sprite.visible = true;
       timeLeft = seconds;
     },

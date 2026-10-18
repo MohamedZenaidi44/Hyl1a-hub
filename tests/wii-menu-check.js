@@ -4,16 +4,29 @@
  * Pour chaque résolution cible :
  *  - capture d'écran dans tests/shots/
  *  - aucun débordement horizontal du document
- *  - chaînes entièrement dans la viewport, toutes de même taille
- *  - grille centrée
- *  - aucun chevauchement entre chaînes, onglets, info, HUD (profil, horloge, barres)
+ *  - rangée de chaînes entièrement visible verticalement (défilement
+ *    horizontal interne permis), centrée quand elle tient à l'écran
+ *  - zones de la grille (barre haute / onglets / hero / rangée / barre basse)
+ *    sans aucun chevauchement entre elles
+ *  - hero : carte à gauche du texte (≥1100px), empilée carte au-dessus (<1100px)
+ *  - <700px : aide clavier masquée + horloge réduite
+ *  - menu jamais en chevauchement avec le HUD déplacé dans la grille
  *
- * Tests d'interactions (1920x1080 + 390px) :
+ * Tests d'interactions (1920x1080) :
  *  - clic sur un onglet → changement de page
- *  - flèches ← → ↑ ↓ → sélection
- *  - flèche → au bord droit → changement de page
- *  - Entrée → lancement (ouverture du sélecteur de thèmes, sans app lourde)
- *  - survol → sélection
+ *  - ← / → : navigation dans la rangée ; aux bords, changement de page
+ *  - ↑ / ↓ : changement de page (catégorie)
+ *  - Entrée / bouton « Ouvrir » → lancement (sélecteur de thèmes, app légère)
+ *  - Hyl1a Bio → redirection vers le site bio (nouvel onglet), sans fenêtre
+ *  - survol → sélection + carte du hero synchronisée
+ *  - box art plein cadre dans la carte hero (GBA/DS/NES/N64/Plaza/Mii Maker)
+ *  - Plaza : box art dans le grand carré + visuel hero dans le rectangle
+ *  - tuiles et box art basculent iiSU clair/sombre avec le thème
+ *  - HUD (profil, bandeau, horloge, bouton, musique, visualiseur, aide)
+ *    correctement intégré à la grille
+ *  - carte hero : verre translucide (flou) + fond translucide ; rectangle de
+ *    descriptions translucide ; contour animé (wiiHeroContour) partout :
+ *    carte hero, descriptions, chaînes et onglets
  *  - prefers-reduced-motion → animations neutralisées
  *
  * Lancement : node tests/wii-menu-check.js
@@ -29,8 +42,7 @@ const BASE_URL = 'http://localhost:5500/';
 const VIEWPORTS = [
   { width: 2560, height: 1440 },
   { width: 1920, height: 1080 },
-  { width: 1600, height: 900 },
-  { width: 1366, height: 768 },
+  { width: 1280, height: 720 },
   { width: 1024, height: 768 },
   { width: 390, height: 844 },
 ];
@@ -87,11 +99,12 @@ async function preparePage(page) {
 }
 
 /* Texture du fond d'écran dans une zone libre de l'UI :
-   un voile plat donne ~0, une vidéo visible donne plusieurs unités. */
+   coin bas-gauche de la barre basse (aucun panneau opaque à cet endroit).
+   Un voile plat donne ~0, une vidéo visible donne plusieurs unités. */
 async function wallpaperVisibility(shotPath) {
   const sharp = require('sharp');
   const { channels } = await sharp(shotPath)
-    .extract({ left: 40, top: 560, width: 280, height: 380 })
+    .extract({ left: 40, top: 982, width: 560, height: 64 })
     .stats();
   return channels.slice(0, 3).reduce((s, c) => s + c.stdev, 0) / 3;
 }
@@ -113,11 +126,26 @@ async function collectLayout(page) {
       viewport: { width: window.innerWidth, height: window.innerHeight },
       docScrollWidth: document.scrollingElement.scrollWidth,
       docScrollHeight: document.scrollingElement.scrollHeight,
+      topbar: rectOf('.wii-topbar'),
+      hero: rectOf('.wii-hero'),
+      heroCard: rectOf('.wii-hero-card'),
+      row: rectOf('.wii-channels-frame'),
+      bottom: rectOf('.wii-bottom'),
       grid: rectOf('.wii-channels'),
       tabs: rectOf('.wii-tabs'),
       info: rectOf('.wii-info'),
       hint: rectOf('.wii-hint'),
-      faces: all('.wii-channel-face'),
+      timeFontSize: (() => {
+        const t = document.querySelector('#top-time');
+        return t ? parseFloat(getComputedStyle(t).fontSize) : 0;
+      })(),
+      faces: Array.from(document.querySelectorAll('.wii-channel-face')).map(el => {
+        const r = el.getBoundingClientRect();
+        // Taille de layout (sans le scale de sélection) pour comparer les faces
+        return { left: r.x, top: r.y, right: r.right, bottom: r.bottom,
+                 width: el.offsetWidth, height: el.offsetHeight,
+                 label: el.textContent.trim().slice(0, 24) };
+      }),
       channels: all('.wii-channel'),
       tabRects: all('.wii-tab'),
       hud: {
@@ -136,19 +164,24 @@ function analyzeLayout(L) {
   const issues = [];
   const { width: vw, height: vh } = L.viewport;
 
-  // 1. Pas de débordement horizontal
+  // 1. Pas de débordement horizontal du document
   if (L.docScrollWidth > vw + 1) {
     issues.push(`débordement horizontal : scrollWidth=${L.docScrollWidth} > viewport=${vw}`);
   }
 
-  // 2. Toutes les chaînes dans la viewport
+  // 2. Rangée et chaînes entièrement visibles verticalement
+  //    (le défilement horizontal interne de la rangée reste permis)
+  if (L.row && (L.row.top < -1 || L.row.bottom > vh + 1)) {
+    issues.push(`rangée hors viewport verticalement : top=${Math.round(L.row.top)} bottom=${Math.round(L.row.bottom)}`);
+  }
   L.channels.forEach((c, i) => {
-    if (c.left < -1 || c.top < -1 || c.right > vw + 1 || c.bottom > vh + 1) {
-      issues.push(`chaîne ${i} (${c.label}) hors viewport : ${JSON.stringify(c)}`);
+    if (c.top < -1 || c.bottom > vh + 1) {
+      issues.push(`chaîne ${i} (${c.label}) hors viewport verticalement : top=${Math.round(c.top)} bottom=${Math.round(c.bottom)}`);
     }
   });
 
   // 3. Proportions régulières : faces toutes identiques
+  //    (taille de layout : le scale de la chaîne sélectionnée est ignoré)
   if (L.faces.length > 1) {
     const w0 = Math.round(L.faces[0].width), h0 = Math.round(L.faces[0].height);
     L.faces.forEach((f, i) => {
@@ -158,22 +191,19 @@ function analyzeLayout(L) {
     });
   }
 
-  // 4. Chaque ligne de chaînes est centrée horizontalement
-  const rows = new Map();
-  for (const c of L.channels) {
-    const key = Math.round(c.top / 10) * 10;
-    if (!rows.has(key)) rows.set(key, []);
-    rows.get(key).push(c);
-  }
-  for (const [top, row] of rows) {
-    const left = Math.min(...row.map(r => r.left));
-    const right = vw - Math.max(...row.map(r => r.right));
-    if (Math.abs(left - right) > 60) {
-      issues.push(`ligne y=${top} non centrée : marge gauche=${Math.round(left)}px, droite=${Math.round(right)}px`);
+  // 4. Quand la rangée tient à l'écran, elle est centrée
+  //    (sinon elle défile et reste alignée au début)
+  if (L.row && L.channels.length) {
+    const first = L.channels[0];
+    const last = L.channels[L.channels.length - 1];
+    const content = last.right - first.left;
+    if (content <= L.row.width - 2) {
+      const left = first.left - L.row.left;
+      const right = L.row.right - last.right;
+      if (Math.abs(left - right) > 60) {
+        issues.push(`rangée non centrée : marge gauche=${Math.round(left)}px, droite=${Math.round(right)}px`);
+      }
     }
-  }
-  if (L.grid && (L.grid.bottom > vh + 1 || L.grid.top < -1)) {
-    issues.push(`grille hors viewport verticalement : top=${Math.round(L.grid.top)} bottom=${Math.round(L.grid.bottom)}`);
   }
 
   // 5. Pas de chevauchement entre chaînes
@@ -194,15 +224,52 @@ function analyzeLayout(L) {
     }
   }
 
-  // 7. Le contenu visible du menu ne chevauche pas le HUD
+  // 7. Zones de la grille : aucun chevauchement entre elles
+  const zones = [
+    ['barre haute', L.topbar],
+    ['onglets', L.tabs],
+    ['hero', L.hero],
+    ['rangée', L.row],
+    ['barre basse', L.bottom],
+  ].filter(([, r]) => r);
+  for (let i = 0; i < zones.length; i++) {
+    for (let j = i + 1; j < zones.length; j++) {
+      if (rectsIntersect(zones[i][1], zones[j][1])) {
+        issues.push(`chevauchement zones : ${zones[i][0]} / ${zones[j][0]}`);
+      }
+    }
+  }
+
+  // 8. Hero : carte et texte côte à côte (≥1100px) ou empilés (<1100px)
+  if (L.heroCard && L.info) {
+    if (vw >= 1100) {
+      if (L.heroCard.right > L.info.left + 1) {
+        issues.push(`hero : carte et texte superposés (carte.right=${Math.round(L.heroCard.right)} info.left=${Math.round(L.info.left)})`);
+      }
+    } else if (L.heroCard.bottom > L.info.top + 1) {
+      issues.push(`hero empilé : carte et texte superposés (carte.bottom=${Math.round(L.heroCard.bottom)} info.top=${Math.round(L.info.top)})`);
+    }
+  }
+
+  // 9. Petits écrans : aide clavier masquée + horloge réduite
+  if (vw < 700) {
+    if (L.hint && L.hint.width > 0) {
+      issues.push('aide clavier visible alors que <700px');
+    }
+    if (L.timeFontSize > 34) {
+      issues.push(`horloge non réduite (<700px) : ${L.timeFontSize}px`);
+    }
+  }
+
+  // 10. Le contenu visible du menu ne chevauche pas le HUD
   const menuZones = [
     ['onglets', L.tabRects],
     ['info', L.info],
     ['chaînes', L.channels],
   ];
   const hudEntries = Object.entries(L.hud).filter(([, r]) => r && r.width > 0 && r.height > 0);
-  for (const [name, zones] of menuZones) {
-    const list = Array.isArray(zones) ? zones : (zones ? [zones] : []);
+  for (const [name, zonesList] of menuZones) {
+    const list = Array.isArray(zonesList) ? zonesList : (zonesList ? [zonesList] : []);
     for (const m of list) {
       for (const [hudName, h] of hudEntries) {
         if (rectsIntersect(m, h)) {
@@ -239,51 +306,135 @@ async function runInteractions(browser, logs) {
   let s = await state();
   results.push(['sélection initiale = 1re chaîne', s.selected === 0, JSON.stringify(s)]);
 
-  // Onglet "Jeux" (index 1) : 7 chaînes (dont Plaza), grille 3 colonnes
+  // Onglet "Jeux" (index 1) : 5 chaînes, rangée unique
   await page.click('.wii-tabs .wii-tab:nth-child(2)');
   await new Promise(r => setTimeout(r, 350));
   s = await state();
-  results.push(['clic onglet → page Jeux (7 chaînes)', s.activeTab === 1 && s.channelCount === 7, JSON.stringify(s)]);
+  results.push(['clic onglet → page Jeux (5 chaînes)', s.activeTab === 1 && s.channelCount === 5, JSON.stringify(s)]);
 
-  // → : même ligne, colonne suivante (0 → 1)
+  // → : chaîne suivante dans la rangée (0 → 1)
   await page.keyboard.press('ArrowRight');
   s = await state();
   results.push(['→ : sélection 0 → 1', s.selected === 1, `selected=${s.selected}`]);
 
-  // ↓ : ligne suivante (1 → 4)
+  // ↓ : page suivante (Mii, 3 chaînes)
   await page.keyboard.press('ArrowDown');
   s = await state();
-  results.push(['↓ : sélection 1 → 4', s.selected === 4, `selected=${s.selected}`]);
+  results.push(['↓ : page suivante (Mii)', s.activeTab === 2 && s.channelCount === 3 && s.selected === 0, JSON.stringify(s)]);
 
-  // ↑ : retour ligne du haut (4 → 1)
+  // ↑ : page précédente (Jeux)
   await page.keyboard.press('ArrowUp');
   s = await state();
-  results.push(['↑ : sélection 4 → 1', s.selected === 1, `selected=${s.selected}`]);
+  results.push(['↑ : page précédente (Jeux)', s.activeTab === 1 && s.channelCount === 5 && s.selected === 0, JSON.stringify(s)]);
 
-  // → → jusqu'au bord droit puis changement de page
-  await page.keyboard.press('ArrowRight'); // 1 → 2 (colonne 2, bord droit)
+  // → ×3 : avance dans la rangée (0 → 3)
+  for (let i = 0; i < 3; i++) await page.keyboard.press('ArrowRight');
   s = await state();
-  results.push(['→ : sélection 1 → 2 (bord droit)', s.selected === 2, `selected=${s.selected}`]);
+  results.push(['→ ×3 : avance dans la rangée (0 → 3)', s.selected === 3, `selected=${s.selected}`]);
+
+  // → : dernière chaîne (4/5), puis bord droit → page suivante
+  await page.keyboard.press('ArrowRight');
+  s = await state();
+  results.push(['→ : dernière chaîne (4/5)', s.selected === 4, `selected=${s.selected}`]);
   await page.keyboard.press('ArrowRight'); // bord droit → page suivante (Mii)
   s = await state();
-  results.push(['→ au bord droit → page suivante', s.activeTab === 2 && s.channelCount === 2, JSON.stringify(s)]);
+  results.push(['→ au bord droit → page suivante', s.activeTab === 2 && s.channelCount === 3, JSON.stringify(s)]);
   await page.keyboard.press('ArrowLeft'); // bord gauche → page précédente (Jeux)
   s = await state();
-  results.push(['← au bord gauche → page précédente', s.activeTab === 1 && s.channelCount === 7, JSON.stringify(s)]);
+  results.push(['← au bord gauche → page précédente', s.activeTab === 1 && s.channelCount === 5, JSON.stringify(s)]);
 
   // Survol : la sélection suit la souris (sans cliquer : un clic lancerait l'app)
   const box = await page.evaluate(() => {
-    const r = document.querySelector('.wii-channels .wii-channel:nth-child(5)').getBoundingClientRect();
+    const r = document.querySelector('.wii-channels .wii-channel:nth-child(4)').getBoundingClientRect();
     return { x: r.x + r.width / 2, y: r.y + r.height / 2 };
   });
   await page.mouse.move(box.x, box.y);
   await new Promise(r => setTimeout(r, 250));
   s = await state();
-  results.push(['survol → sélection suit la souris (5e chaîne)', s.selected === 4 && s.infoTitle === 'N64', `selected=${s.selected} info=${s.infoTitle}`]);
+  results.push(['survol → sélection suit la souris (4e chaîne)', s.selected === 3 && s.infoTitle === 'N64', `selected=${s.selected} info=${s.infoTitle}`]);
+
+  // La carte du hero suit la sélection (4e chaîne = N64 → box art iiSU
+  // plein cadre : object-fit cover et dimensions = celles du grand carré)
+  const heroArt = await page.evaluate(() => {
+    const card = document.querySelector('.wii-hero-card');
+    const art = document.querySelector('.wii-hero-art');
+    const cr = card ? card.getBoundingClientRect() : null;
+    const ar = art ? art.getBoundingClientRect() : null;
+    return {
+      src: art ? (art.getAttribute('src') || '') : '',
+      cover: art ? getComputedStyle(art).objectFit : '',
+      fills: !!(cr && ar && Math.abs(cr.width - ar.width) < 2 && Math.abs(cr.height - ar.height) < 2),
+      mask: art ? art.classList.contains('is-mask') : false,
+    };
+  });
+  results.push(['carte du hero synchronisée (N64) + box art plein cadre',
+    heroArt.src.includes('n64') && heroArt.cover === 'cover' && heroArt.fills,
+    JSON.stringify(heroArt)]);
 
   // Focus clavier visible (tab accessible en boutons)
   const focusable = await page.evaluate(() => document.querySelectorAll('button.wii-channel').length);
-  results.push(['chaînes = boutons focusables', focusable === 7, `count=${focusable}`]);
+  results.push(['chaînes = boutons focusables', focusable === 5, `count=${focusable}`]);
+
+  // ── Vérifs de visuels : helpers (survol d'une chaîne + lecture des cadres) ──
+  const hoverChannel = async (n) => {
+    const box = await page.evaluate((idx) => {
+      const r = document.querySelector('.wii-channels .wii-channel:nth-child(' + idx + ')').getBoundingClientRect();
+      return { x: r.x + r.width / 2, y: r.y + r.height / 2 };
+    }, n);
+    await page.mouse.move(box.x, box.y);
+    await new Promise(r => setTimeout(r, 350));
+  };
+  const readFill = () => page.evaluate(() => {
+    const near = (a, b) => !!(a && b && Math.abs(a.width - b.width) < 2 && Math.abs(a.height - b.height) < 2);
+    const card = document.querySelector('.wii-hero-card');
+    const art = document.querySelector('.wii-hero-art');
+    const info = document.querySelector('.wii-info');
+    const bg = document.querySelector('.wii-info-bg');
+    return {
+      title: (document.querySelector('.wii-info-title') || {}).textContent || '',
+      artSrc: art ? (art.getAttribute('src') || '') : '',
+      artCover: art ? getComputedStyle(art).objectFit : '',
+      artFills: near(art && art.getBoundingClientRect(), card && card.getBoundingClientRect()),
+      bgSrc: bg ? (bg.getAttribute('src') || '') : '',
+      bgCover: bg ? getComputedStyle(bg).objectFit : '',
+      bgVisible: bg ? getComputedStyle(bg).display !== 'none' : false,
+      bgFills: near(bg && bg.getBoundingClientRect(), info && info.getBoundingClientRect()),
+      hasHero: info ? info.classList.contains('has-hero') : false,
+    };
+  });
+
+  // Plaza (page Mii) : la box art remplit le grand carré et le visuel
+  // « hero » remplit tout le rectangle de descriptions
+  await page.click('.wii-tabs .wii-tab:nth-child(3)'); // Mii
+  await new Promise(r => setTimeout(r, 350));
+  await hoverChannel(2); // Plaza
+  const plazaFill = await readFill();
+  results.push(['Plaza : box art remplit le grand carré',
+    plazaFill.title === 'Plaza' && plazaFill.artSrc.includes('boxart/plaza')
+      && plazaFill.artCover === 'cover' && plazaFill.artFills,
+    JSON.stringify(plazaFill)]);
+  results.push(['Plaza : visuel hero remplit le rectangle de descriptions',
+    plazaFill.bgSrc.includes('hero/plaza') && plazaFill.bgCover === 'cover'
+      && plazaFill.bgVisible && plazaFill.bgFills && plazaFill.hasHero,
+    JSON.stringify(plazaFill)]);
+
+  // Autres chaînes (Réseau / Media) : visuels générés, mêmes pleins cadres
+  await page.click('.wii-tabs .wii-tab:nth-child(4)'); // Réseau
+  await new Promise(r => setTimeout(r, 350));
+  await hoverChannel(1); // Chat Général
+  const chatFill = await readFill();
+  results.push(['Réseau : box art + hero pleins cadres (Chat Général)',
+    chatFill.title === 'Chat Général' && chatFill.artSrc.includes('boxart/global') && chatFill.artFills
+      && chatFill.bgSrc.includes('hero/global') && chatFill.bgFills && chatFill.hasHero,
+    JSON.stringify(chatFill)]);
+  await page.click('.wii-tabs .wii-tab:nth-child(5)'); // Media
+  await new Promise(r => setTimeout(r, 350));
+  await hoverChannel(1); // Radio
+  const radioFill = await readFill();
+  results.push(['Media : box art + hero pleins cadres (Radio)',
+    radioFill.title === 'Radio' && radioFill.artSrc.includes('boxart/radio') && radioFill.artFills
+      && radioFill.bgSrc.includes('hero/radio') && radioFill.bgFills && radioFill.hasHero,
+    JSON.stringify(radioFill)]);
 
   // Entrée : "Thèmes" → sélecteur de thèmes (pas d'app lourde).
   // Clic réel sur l'onglet (le focus y reste), puis Entrée : doit ouvrir la
@@ -303,6 +454,17 @@ async function runInteractions(browser, logs) {
   });
   await new Promise(r => setTimeout(r, 400));
 
+  // Bouton « Ouvrir » du hero → même lancement
+  await page.click('.wii-launch-btn');
+  await new Promise(r => setTimeout(r, 500));
+  const overlayOpenBtn = await page.evaluate(() => !!document.getElementById('theme-overlay'));
+  results.push(['bouton « Ouvrir » → lancement réel', overlayOpenBtn, `overlay=${overlayOpenBtn}`]);
+  await page.evaluate(() => {
+    const btn = document.querySelector('.theme-close-btn');
+    if (btn) btn.click();
+  });
+  await new Promise(r => setTimeout(r, 400));
+
   // Clic souris → lancement réel (même canal que la touche Entrée)
   await page.click('.wii-channels .wii-channel:nth-child(1)');
   await new Promise(r => setTimeout(r, 500));
@@ -312,6 +474,59 @@ async function runInteractions(browser, logs) {
     const btn = document.querySelector('.theme-close-btn');
     if (btn) btn.click();
   });
+  await new Promise(r => setTimeout(r, 450)); // fermeture de l'overlay terminée
+
+  // HUD intégré à la grille (déplacé du body vers les zones de la grille)
+  const hudInGrid = await page.evaluate(() => ({
+    profile: !!document.querySelector('.wii-topbar #user-panel'),
+    marquee: !!document.querySelector('.wii-topbar #marquee-bar'),
+    clock: !!document.querySelector('.wii-topbar #clock-panel'),
+    changelog: !!document.querySelector('.wii-topbar #btn-changelog-toggle'),
+    music: !!document.querySelector('.wii-bottom #music-bar-container'),
+    visualizer: !!document.querySelector('#music-bar-container #modern-visualizer-container'),
+    hint: !!document.querySelector('.wii-bottom .wii-hint'),
+  }));
+  results.push(['HUD intégré à la grille (profil, bandeau, horloge, bouton, musique, visualiseur, aide)',
+    Object.values(hudInGrid).every(Boolean), JSON.stringify(hudInGrid)]);
+
+  // Verre : carte hero (flou + fond translucide + contour animé) et
+  // rectangle de descriptions (flou + fond translucide)
+  const heroStyles = await page.evaluate(() => {
+    const card = document.querySelector('.wii-hero-card');
+    const info = document.querySelector('.wii-info');
+    const csCard = getComputedStyle(card);
+    const csInfo = getComputedStyle(info);
+    const alphaFrom = (str) => {
+      const m = String(str).match(/rgba?\(([^)]+)\)/g) || [];
+      const alphas = m.map(s => { const p = s.match(/[\d.]+/g).map(Number); return p.length > 3 ? p[3] : 1; });
+      return alphas.length ? Math.min(...alphas) : 1;
+    };
+    const ringAnim = (el) => getComputedStyle(el, '::before').animationName;
+    return {
+      cardBlur: csCard.backdropFilter,
+      infoBlur: csInfo.backdropFilter,
+      cardAnim: ringAnim(card),
+      cardAlpha: alphaFrom(csCard.backgroundColor),
+      infoAlpha: alphaFrom(csInfo.backgroundColor),
+      ringAnim: {
+        card: ringAnim(card),
+        info: ringAnim(info),
+        tab: ringAnim(document.querySelector('.wii-tab')),
+        face: ringAnim(document.querySelector('.wii-channel-face')),
+      },
+    };
+  });
+  results.push(['carte hero : verre (flou) + fond translucide + contour animé',
+    heroStyles.cardBlur !== 'none' && heroStyles.cardAlpha < 0.9
+      && /wiiHeroContour/.test(heroStyles.cardAnim),
+    JSON.stringify(heroStyles)]);
+  results.push(['rectangle de descriptions : verre translucide',
+    heroStyles.infoBlur !== 'none' && heroStyles.infoAlpha < 0.9,
+    `blur=${heroStyles.infoBlur} alpha=${heroStyles.infoAlpha}`]);
+  const rings = heroStyles.ringAnim;
+  results.push(['contour animé aussi sur descriptions, chaînes et onglets',
+    Object.values(rings).every(v => /wiiHeroContour/.test(v || '')),
+    JSON.stringify(rings)]);
 
   // Mesure des couleurs de thème du menu (glow/rebords, icônes vs face de tuile)
   const readThemeColors = () => page.evaluate(() => {
@@ -329,10 +544,29 @@ async function runInteractions(browser, logs) {
   });
 
   // Thème sombre : glow/rebords NOIRS, icônes BLANCHES (lisibles)
-  await page.click('.wii-tabs .wii-tab:nth-child(2)'); // Jeux (6 chaînes)
+  await page.click('.wii-tabs .wii-tab:nth-child(2)'); // Jeux (5 chaînes)
   await new Promise(r => setTimeout(r, 350));
   await page.evaluate(() => window.ThemeManager && window.ThemeManager.apply('black', false));
   await new Promise(r => setTimeout(r, 450));
+  // Les tuiles et la box art basculent sur les variantes iiSU sombres
+  const darkArt = await page.evaluate(() => {
+    const disp = (el) => el ? getComputedStyle(el).display : 'absent';
+    const face = document.querySelector('.wii-channels .wii-channel:nth-child(1) .wii-channel-face');
+    const light = face ? face.querySelector('.art-light') : null;
+    const dark = face ? face.querySelector('.art-dark') : null;
+    const heroLight = document.querySelector('.wii-hero-card .wii-hero-art.art-light');
+    const heroDark = document.querySelector('.wii-hero-card .wii-hero-art.art-dark');
+    return {
+      tileLight: disp(light), tileDark: disp(dark),
+      tileDarkSrc: dark ? (dark.getAttribute('src') || '') : '',
+      heroLight: disp(heroLight), heroDark: disp(heroDark),
+      heroDarkSrc: heroDark ? (heroDark.getAttribute('src') || '') : '',
+    };
+  });
+  results.push(['thème noir : tuiles et box art basculées sur les variantes iiSU sombres',
+    darkArt.tileLight === 'none' && darkArt.tileDark !== 'none' && darkArt.tileDarkSrc.includes('gba-d')
+      && darkArt.heroLight === 'none' && darkArt.heroDark !== 'none' && darkArt.heroDarkSrc.includes('gba-d'),
+    JSON.stringify(darkArt)]);
   const darkLayout = await collectLayout(page);
   const darkIssues = analyzeLayout(darkLayout);
   results.push(['thème sombre : disposition intacte', darkIssues.length === 0, darkIssues.join(' | ') || 'aucun défaut']);
@@ -344,6 +578,20 @@ async function runInteractions(browser, logs) {
   results.push(['fond d\'écran visible en thème noir (texture mesurée)', bgBlack > 2, `variance=${bgBlack.toFixed(2)}`]);
   await page.evaluate(() => window.ThemeManager && window.ThemeManager.apply('white', false));
   await new Promise(r => setTimeout(r, 350));
+  // Retour aux variantes iiSU claires
+  const lightArt = await page.evaluate(() => {
+    const disp = (el) => el ? getComputedStyle(el).display : 'absent';
+    const face = document.querySelector('.wii-channels .wii-channel:nth-child(1) .wii-channel-face');
+    const light = face ? face.querySelector('.art-light') : null;
+    const dark = face ? face.querySelector('.art-dark') : null;
+    return {
+      tileLight: disp(light), tileDark: disp(dark),
+      tileLightSrc: light ? (light.getAttribute('src') || '') : '',
+    };
+  });
+  results.push(['thème blanc : tuiles rebasculées sur les variantes iiSU claires',
+    lightArt.tileDark === 'none' && lightArt.tileLight !== 'none' && lightArt.tileLightSrc.includes('gba-l'),
+    JSON.stringify(lightArt)]);
   const light = await readThemeColors();
   results.push(['thème blanc : glow/rebords blancs + icônes noires lisibles',
     light.hi > 0.9 && light.icon < 0.25 && light.iconVsFace > 0.5, JSON.stringify(light)]);
@@ -360,16 +608,39 @@ async function runInteractions(browser, logs) {
   await page.evaluate(() => window.ThemeManager && window.ThemeManager.setEcoMode(false, true));
   await new Promise(r => setTimeout(r, 300));
 
-  // Lancement d'une vraie app (fenêtrée) depuis une chaîne
+  // Hyl1a Bio : plus de fenêtre interne — le clic (et « Ouvrir ») dirige
+  // vers le site bio dans un nouvel onglet
+  await page.evaluate(() => {
+    window.__bioOpen = null;
+    window.open = function (u) { window.__bioOpen = String(u); return null; };
+  });
   await page.click('.wii-tabs .wii-tab:nth-child(1)'); // Utilisateur
   await new Promise(r => setTimeout(r, 300));
   await page.click('.wii-channels .wii-channel:nth-child(1)'); // Hyl1a Bio
-  await new Promise(r => setTimeout(r, 2200)); // splash + ouverture
+  await new Promise(r => setTimeout(r, 500));
+  const bioLaunch = await page.evaluate(() => ({
+    opened: window.__bioOpen || '',
+    internal: !!(document.querySelector('.mii-fullscreen-container') ||
+      (document.getElementById('window-layer') && document.getElementById('window-layer').children.length)),
+  }));
+  results.push(['Hyl1a Bio : le clic ouvre le site bio sans fenêtre interne',
+    bioLaunch.opened.includes('web2-rho-one.vercel.app') && !bioLaunch.internal,
+    JSON.stringify(bioLaunch)]);
+  await page.evaluate(() => { window.__bioOpen = null; });
+  await page.click('.wii-launch-btn');
+  await new Promise(r => setTimeout(r, 400));
+  const bioBtn = await page.evaluate(() => window.__bioOpen || '');
+  results.push(['Hyl1a Bio : bouton « Ouvrir » → site bio', bioBtn.includes('web2-rho-one.vercel.app'), bioBtn]);
+
+  // Une vraie app fenêtrée s'ouvre toujours depuis une chaîne (Hall of Fame)
+  await page.click('.wii-tabs .wii-tab:nth-child(2)'); // Jeux
+  await new Promise(r => setTimeout(r, 350));
+  await page.click('.wii-channels .wii-channel:nth-child(5)'); // Hall of Fame
+  await new Promise(r => setTimeout(r, 1800)); // splash + ouverture
   const appOpened = await page.evaluate(() =>
     !!(document.querySelector('.mii-fullscreen-container') ||
-       (window.WindowManager && window.WindowManager.windows && window.WindowManager.windows['bio']) ||
        (document.getElementById('window-layer') && document.getElementById('window-layer').children.length)));
-  results.push(['clic chaîne → vraie app ouverte (Hyl1a Bio)', appOpened, `opened=${appOpened}`]);
+  results.push(['clic chaîne → vraie app ouverte (Hall of Fame)', appOpened, `opened=${appOpened}`]);
 
   // prefers-reduced-motion
   await page.emulateMediaFeatures([{ name: 'prefers-reduced-motion', value: 'reduce' }]);

@@ -28,6 +28,15 @@ function ensureStyles() {
   document.head.appendChild(link);
 }
 
+/** Thème d'ambiance selon l'heure locale (mêmes bornes que le rythme du
+ *  jour des Mii : matin 5-12 et après-midi 12-18 = jour, 18-22 = soir,
+ *  22-5 = nuit). */
+function themeForHour(h) {
+  if (h >= 5 && h < 18) return 'day';
+  if (h >= 18 && h < 22) return 'evening';
+  return 'night';
+}
+
 export default async function renderPlaza(container) {
   ensureStyles();
 
@@ -80,6 +89,13 @@ export default async function renderPlaza(container) {
   renderer.setSize(width, height, false);
 
   const world = createWorld({ scene, aspect: width / height, quality, domElement: renderer.domElement });
+
+  /* ── Cycle jour/nuit sur l'heure réelle ──
+   * Le thème correspondant à l'heure locale est appliqué dès le chargement,
+   * puis un fondu doux suit chaque changement de tranche horaire (vérifié
+   * à chaque tick de l'horloge HUD). */
+  let themeBucket = themeForHour(new Date().getHours());
+  world.setTheme(themeBucket);
 
   /* ── Les Mii ──
    * « Mon Mii » (Firestore ou défaut) + une petite population de Mii
@@ -147,10 +163,15 @@ export default async function renderPlaza(container) {
   const onKey = (e) => { if (e.key === 'Escape') close(); };
   document.addEventListener('keydown', onKey);
 
-  /* ── Horloge HUD ── */
+  /* ── Horloge HUD + bascule jour/nuit ── */
   const clockTimer = setInterval(() => {
     const d = new Date();
     clockEl.textContent = String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0');
+    const bucket = themeForHour(d.getHours());
+    if (bucket !== themeBucket) {
+      themeBucket = bucket;
+      world.transitionTo(bucket, 4);   // fondu de 4 s entre deux ambiances
+    }
   }, 10000);
   clockEl.textContent = (() => { const d = new Date(); return String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0'); })();
 
@@ -221,5 +242,5 @@ export default async function renderPlaza(container) {
   });
 
   // Exposé pour les étapes suivantes (IA, social, UI).
-  container._plaza = { THREE, scene, renderer, world, quality, miis, me, social };
+  container._plaza = { THREE, scene, renderer, world, quality, miis, me, social, themeForHour };
 }

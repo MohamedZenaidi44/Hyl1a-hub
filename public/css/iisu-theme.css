@@ -468,7 +468,7 @@ body.theme-black textarea::placeholder {
 }
 
 /* Boutons secondaires (non-accent) */
-body.theme-black button:not(.chat-send-btn):not(.social-close):not(#preview-open-btn):not(.carousel-nav-btn):not([class*="launch"]) {
+body.theme-black button:not(.chat-send-btn):not(.social-close):not(#preview-open-btn):not(.carousel-nav-btn):not(.gxmb-play):not([class*="launch"]) {
   color: var(--panel-text) !important;
 }
 

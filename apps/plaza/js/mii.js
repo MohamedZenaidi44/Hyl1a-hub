@@ -168,6 +168,30 @@ export class MiiEntity {
     this.obstacles = opts.obstacles || [];
     this.maxRadius = opts.maxRadius || 0;
     this._ignoreBench = null;   // banc ignoré le temps d'aller s'asseoir
+    this._escapeBench = null;   // banc ignoré tant qu'on en sort (lever du banc)
+    this._avoidSides = new Map(); // côté de contournement mémorisé (hystérésis)
+    // Liste de contournement : les 2 cercles du dossier d'un même banc forment
+    // une poche concave où un Mii peut rester coincé (poussé-dé-poussé) → on
+    // les fusionne en un seul cercle (barycentre, rayon = max + écart) pour la
+    // NAVIGATION (le contact physique garde les 2 cercles d'origine).
+    this._steerObs = [];
+    {
+      const byBench = new Map();
+      for (const o of this.obstacles) {
+        if (o.benchIdx == null) { this._steerObs.push(o); continue; }
+        let g = byBench.get(o.benchIdx);
+        if (!g) { g = []; byBench.set(o.benchIdx, g); }
+        g.push(o);
+      }
+      for (const [bi, g] of byBench) {
+        let cx2 = 0, cz2 = 0, r2 = 0;
+        for (const o of g) { cx2 += o.x; cz2 += o.z; if (o.r > r2) r2 = o.r; }
+        cx2 /= g.length; cz2 /= g.length;
+        let span = 0;
+        for (const o of g) span = Math.max(span, Math.hypot(o.x - cx2, o.z - cz2));
+        this._steerObs.push({ x: cx2, z: cz2, r: r2 + span, benchIdx: bi });
+      }
+    }
     this._headBone = null;      // os « head » (correction de pitch)
     this._chestBone = null;     // os « chest » (le nametag y est accroché — stable)
     this._tagOffset = 1.12;     // hauteur du nametag au-dessus du torse (calculée par Mii)
@@ -339,7 +363,7 @@ export class MiiEntity {
       if (dist <= ARRIVE_EPS) {
         this.group.position.x = this.target.x;
         this.group.position.z = this.target.y;
-        this._resolveCollisions();
+        this._resolveCollisions(dt);
         this.idle();
       } else {
         // Pilotage « flânerie » (façon Tomodachi Life) : le cap converge vers
@@ -355,10 +379,12 @@ export class MiiEntity {
         const maxTurn = (this.speed / radius) * dt;
         this._hdg += Math.max(-maxTurn, Math.min(maxTurn, diff));
         // Évitement : se décale latéralement s'il y a un autre Mii devant
-        // (contournement visible, comme un piéton) — lissé.
+        // (contournement visible, comme un piéton) — lissé. Les obstacles
+        // fixes (bancs, arbres, kiosque, fontaine…) sont aussi contournés au
+        // lieu d'être « raclés » — plus d'hésitation le long du décor.
         let avoidWant = 0;
+        const fx = Math.sin(this._hdg), fz = Math.cos(this._hdg);
         if (!this.scripted && this.others) {
-          const fx = Math.sin(this._hdg), fz = Math.cos(this._hdg);
           for (let i = 0; i < this.others.length; i++) {
             const o = this.others[i];
             if (o === this || o._disposed) continue;
@@ -372,8 +398,34 @@ export class MiiEntity {
             const cross = fz * ox - fx * oz;
             avoidWant += (cross >= 0 ? -1 : 1) * ((6.76 - od2) / 6.76) * Math.max(0, ahead) * 1.5;
           }
-          avoidWant = Math.max(-1.1, Math.min(1.1, avoidWant));
         }
+        if (this._steerObs) {
+          for (let i = 0; i < this._steerObs.length; i++) {
+            const o = this._steerObs[i];
+            if (o.benchIdx != null && (this._ignoreBench === o.benchIdx || this._escapeBench === o.benchIdx)) continue;
+            const ox = o.x - this.group.position.x;
+            const oz = o.z - this.group.position.z;
+            const reach = o.r + MII_RADIUS + 1.15;
+            const od2 = ox * ox + oz * oz;
+            if (od2 > reach * reach || od2 < 1e-6) { this._avoidSides.delete(o); continue; }
+            const od = Math.sqrt(od2);
+            const ahead = (ox * fx + oz * fz) / od;
+            if (ahead < -0.05) { this._avoidSides.delete(o); continue; }
+            const cross = fz * ox - fx * oz;
+            const w = ((reach - od) / reach) * Math.max(0, ahead) * (o.r >= 1.5 ? 1.35 : 0.8);
+            // Côté mémorisé tant qu'on longe l'obstacle (hystérésis) : sans ça,
+            // cible pile derrière un gros obstacle → gauche/droite alternés à
+            // chaque frame = Mii qui râcle sur place pendant des dizaines de
+            // secondes. On ne change de côté que si le croisement devient franc.
+            let side = this._avoidSides.get(o);
+            if (side == null || Math.abs(cross) > 0.75) {
+              side = cross >= 0 ? -1 : 1;
+              this._avoidSides.set(o, side);
+            }
+            avoidWant += side * Math.min(w, 0.9);
+          }
+        }
+        avoidWant = Math.max(-1.1, Math.min(1.1, avoidWant));
         this._avoid += (avoidWant - this._avoid) * Math.min(1, dt * 12);
         let dir = this._hdg + this._avoid + Math.sin(this.t * 0.9 + this._swayPh) * 0.13 * Math.min(1, dist / 2.2);
         if (dist < 0.8) {
@@ -385,7 +437,7 @@ export class MiiEntity {
         const step = Math.min(this.speed * dt, dist);
         this.group.position.x += Math.sin(dir) * step;
         this.group.position.z += Math.cos(dir) * step;
-        this._resolveCollisions();
+        this._resolveCollisions(dt);
 
         if (this.is3D) {
           // Orientation du modèle (lissage) vers la direction réelle.
@@ -440,12 +492,15 @@ export class MiiEntity {
       }
       tagBone.getWorldPosition(_tmpV);
       this.group.worldToLocal(_tmpV);
+      // Nametag simple « façon Minecraft » : TOUJOURS posé juste au-dessus de
+      // la tête, solidaire du Mii — aucun décalage d'empilement, aucun lissage.
       this.label.position.y = _tmpV.y + this._tagOffset;
     }
   }
 
   /** Fait glisser le Mii hors des obstacles (fountain, arbres, bancs…). */
-  _resolveCollisions() {
+  _resolveCollisions(dt) {
+    const lim = Math.min(6 * (dt || 0.016), 0.42);
     if (this.obstacles.length) {
       for (let i = 0; i < this.obstacles.length; i++) {
         const o = this.obstacles[i];
@@ -454,9 +509,20 @@ export class MiiEntity {
         const dz = this.group.position.z - o.z;
         const rr = o.r + MII_RADIUS;
         const d2 = dx * dx + dz * dz;
+        if (o.benchIdx != null && this._escapeBench === o.benchIdx) {
+          // Sortie de banc : on ignore la poussée tant qu'on est dans le
+          // cercle (sinon le Mii serait éjecté d'un coup en se levant),
+          // puis la collision redevient solide dès qu'il est ressorti.
+          if (d2 < rr * rr) continue;
+          this._escapeBench = null;
+        }
         if (d2 < rr * rr) {
+          // Décalage progressif : jamais d'éjection d'un seul frame (un Mii
+          // qui se lève au milieu d'un chevauchement banc+arbre glisse dehors
+          // en une fraction de seconde au lieu de « sauter » de 0,75 u).
           const d = Math.sqrt(d2) || 1e-4;
-          const k = (rr - d) / d;
+          const pushD = Math.min(rr - d, lim);
+          const k = pushD / d;
           this.group.position.x += dx * k;
           this.group.position.z += dz * k;
         }
