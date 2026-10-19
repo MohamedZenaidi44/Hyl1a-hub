@@ -17,20 +17,53 @@
 
   let locked = true;
   let activated = false;
+  let activationQueued = false;
   let warningAudio = null;
   let audioStarted = false;
+  let detachAudioRetry = null;
 
   function tryPlayWarningAudio() {
     if (audioStarted || !warningAudio) return;
 
+    const markStarted = () => {
+      audioStarted = true;
+      if (detachAudioRetry) detachAudioRetry();
+    };
+
     const playPromise = warningAudio.play();
     if (playPromise && typeof playPromise.then === 'function') {
       playPromise
-        .then(() => { audioStarted = true; })
+        .then(markStarted)
         .catch(() => { /* autoplay bloqué, on retentera à la prochaine interaction */ });
     } else {
-      audioStarted = true;
+      markStarted();
     }
+  }
+
+  /**
+   * Si l'autoplay a été bloqué (le warning apparaît après le boot, donc
+   * plusieurs centaines de ms après le dernier geste), on rejoue le son à la
+   * première interaction de l'utilisateur.
+   */
+  function bindAudioRetry() {
+    if (detachAudioRetry) return;
+
+    const retry = () => {
+      if (audioStarted) {
+        if (detachAudioRetry) detachAudioRetry();
+        return;
+      }
+      tryPlayWarningAudio();
+    };
+
+    detachAudioRetry = () => {
+      window.removeEventListener('pointerdown', retry, true);
+      window.removeEventListener('keydown', retry, true);
+      detachAudioRetry = null;
+    };
+
+    window.addEventListener('pointerdown', retry, true);
+    window.addEventListener('keydown', retry, true);
   }
 
   function dismiss() {
@@ -44,6 +77,7 @@
     if (warningAudio && !warningAudio.paused) {
       warningAudio.pause();
     }
+    if (detachAudioRetry) detachAudioRetry();
 
     overlay.classList.add('is-hiding');
     overlay.removeEventListener('click', onInteract);
@@ -79,10 +113,45 @@
     dismiss();
   }
 
+  function isBootDone() {
+    const boot = document.getElementById('boot-screen');
+    return !boot || boot.classList.contains('boot-done') ||
+      boot.getAttribute('aria-hidden') === 'true';
+  }
+
+  function forceBootDone() {
+    const boot = document.getElementById('boot-screen');
+    if (!boot || boot.classList.contains('boot-done')) return;
+    boot.classList.add('boot-done');
+    boot.setAttribute('aria-hidden', 'true');
+  }
+
   /**
-   * Révèle l'écran Wii et lance le son. Appelée juste après le login réussi,
-   * donc immédiatement après un clic utilisateur — l'autoplay avec son n'est
-   * pas bloqué par le navigateur dans ce contexte.
+   * N'affiche le warning qu'une fois l'écran de boot terminé : sinon le son
+   * démarre derrière l'écran noir de démarrage. Filet de sécurité si boot.js
+   * est absent ou bloqué : on force la sortie au bout de 2,8 s.
+   */
+  function activateWhenReady() {
+    if (activated || activationQueued) return;
+    if (isBootDone()) { activate(); return; }
+
+    activationQueued = true;
+    let done = false;
+    const go = () => {
+      if (done) return;
+      done = true;
+      activationQueued = false;
+      document.removeEventListener('boot-finished', go);
+      forceBootDone();
+      activate();
+    };
+
+    document.addEventListener('boot-finished', go, { once: true });
+    setTimeout(go, 2800);
+  }
+
+  /**
+   * Révèle l'écran Wii et lance le son. Appelée juste après le login réussi.
    */
   function activate() {
     if (activated) return;
@@ -98,6 +167,7 @@
     warningAudio = new Audio(WARNING_AUDIO_SRC);
     warningAudio.volume = 1;
     tryPlayWarningAudio();
+    bindAudioRetry();
 
     overlay.addEventListener('click', onInteract);
     window.addEventListener('keydown', onInteract);
@@ -116,7 +186,7 @@
    */
   function watchAuthOverlay() {
     const authOverlay = document.getElementById('auth-overlay');
-    if (!authOverlay) { activate(); return; } // pas d'écran de login => on affiche direct
+    if (!authOverlay) { activateWhenReady(); return; } // pas d'écran de login => on affiche direct
 
     const isAuthHidden = () => {
       const style = window.getComputedStyle(authOverlay);
@@ -125,12 +195,12 @@
              authOverlay.classList.contains('hidden');
     };
 
-    if (isAuthHidden()) { activate(); return; }
+    if (isAuthHidden()) { activateWhenReady(); return; }
 
     const observer = new MutationObserver(() => {
       if (isAuthHidden()) {
         observer.disconnect();
-        activate();
+        activateWhenReady();
       }
     });
     observer.observe(authOverlay, { attributes: true, attributeFilter: ['style', 'class'] });
@@ -143,7 +213,7 @@
     // Si ton code d'authentification dispatch un évènement personnalisé à la
     // connexion réussie (ex: document.dispatchEvent(new Event('hylia:auth-success'))),
     // il sera aussi pris en compte — en plus de la détection automatique ci-dessous.
-    document.addEventListener('hylia:auth-success', activate, { once: true });
+    document.addEventListener('hylia:auth-success', activateWhenReady, { once: true });
 
     watchAuthOverlay();
   });

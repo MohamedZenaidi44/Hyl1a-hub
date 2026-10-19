@@ -9,14 +9,14 @@
  * accélérer le premier lancement d'un émulateur.
  *
  * Garanties : chaque tâche a un timeout propre ; le boot ne peut jamais
- * bloquer le site (cap global de ~7 s, puis sortie forcée).
+ * bloquer le site (cap global de ~2,5 s, puis sortie forcée).
  */
 (function () {
   'use strict';
 
   var MAX_TASK_MS = 4000;   // timeout par tâche
-  var MIN_VISIBLE = 1200;   // durée minimale d'affichage (effet console)
-  var HARD_CAP = 7000;      // sortie forcée si ça traîne
+  var MIN_VISIBLE = 800;    // durée minimale d'affichage (effet console)
+  var HARD_CAP = 2500;      // sortie forcée si ça traîne
 
   var IMAGES = [
     'public/assets/icons/logov2.webp',
@@ -36,7 +36,7 @@
     'public/assets/menu/icon/nes-d.webp',
     'public/assets/menu/icon/n64-l.webp',
     'public/assets/menu/icon/n64-d.webp',
-    'public/assets/emulators/GBA.png'
+    'public/assets/emulators/GBA.webp'
   ];
 
   var AUDIO_WARM = [
@@ -126,6 +126,14 @@
     var alreadyBooted = false;
     try { alreadyBooted = sessionStorage.getItem('hylia-booted') === '1'; } catch (e) {}
 
+    // Session déjà amorcée : pas de boot artificiel, on rend la main tout de suite.
+    if (alreadyBooted) {
+      setProgress(1, 1);
+      setStatus('Prêt !');
+      hideBoot();
+      return;
+    }
+
     var tasks = [];
     // La logo du boot est déjà dans le DOM : pas besoin de la recharger
     tasks.push({ label: "Préparation de l'écran…", run: Promise.resolve() });
@@ -144,7 +152,7 @@
       // Décale les tâches lourdes (vidéo, sons) de quelques frames pour
       // laisser passer le paint du boot screen avant les gros fetchs.
       setTimeout(function () {
-        if (!alreadyBooted && i % 4 === 3) setStatus(task.label);
+        if (i % 4 === 3) setStatus(task.label);
         task.run.then(function () {
           done++;
           setProgress(done, total);

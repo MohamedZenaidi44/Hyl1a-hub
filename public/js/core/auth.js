@@ -58,61 +58,13 @@ window.Auth = {
                 document.getElementById('top-username').textContent = this.currentUsername;
                 document.getElementById('auth-overlay').style.display = 'none';
  
-                // Only show welcome message and play SFX once per session
-                if (!sessionStorage.getItem('hylia_welcome_shown')) {
-                  sessionStorage.setItem('hylia_welcome_shown', 'true');
+                // Play connection SFX once per session
+                if (!sessionStorage.getItem('hylia_connect_sfx_played')) {
+                  sessionStorage.setItem('hylia_connect_sfx_played', 'true');
 
-                  // Play welcome SFX
                   if (window.AudioManager && window.AudioManager.playConnectSuccess) {
                     window.AudioManager.playConnectSuccess();
                   }
- 
-                  // Show welcome message
-                  const welcomeMsg = document.createElement('div');
-                  welcomeMsg.id = 'login-welcome-msg';
-                  welcomeMsg.style.cssText = `
-                    position: fixed;
-                    top: 20%;
-                    left: 50%;
-                    transform: translate(-50%, -50%);
-                    background: rgba(255, 255, 255, 0.08);
-                    backdrop-filter: blur(35px) saturate(180%);
-                    color: white;
-                    padding: 20px 40px;
-                    border-radius: 40px;
-                    font-size: 32px;
-                    font-weight: 900;
-                    z-index: 30000;
-                    box-shadow: 0 30px 90px rgba(0,0,0,0.6), 
-                                inset 0 0 30px rgba(255,255,255,0.2),
-                                0 0 0 1px rgba(255,255,255,0.4);
-                    pointer-events: none;
-                    text-shadow: 0 5px 15px rgba(0,0,0,0.5);
-                    letter-spacing: -1.5px;
-                    text-align: center;
-                    animation: welcomeCinematic 4s cubic-bezier(0.19, 1, 0.22, 1) forwards;
-                  `;
-                  welcomeMsg.innerHTML = `Welcome <span style="background: linear-gradient(135deg, #7ec4ff, #4a9fff, #7ec4ff); background-size: 200% auto; -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; animation: textShine 3s linear infinite;">${this.currentUsername}<span style="font-size: 0.6em; opacity: 0.7;">#${this.currentUserTag}</span></span> ! :)`;
-                  
-                  // Add animation keyframes
-                  if (!document.getElementById('welcome-anim-style')) {
-                    const style = document.createElement('style');
-                    style.id = 'welcome-anim-style';
-                    style.textContent = `
-                      @keyframes welcomeCinematic {
-                        0% { opacity: 0; transform: translate(-50%, -10%) scale(0.8); filter: blur(20px) brightness(1.5); }
-                        15%, 85% { opacity: 1; transform: translate(-50%, -20%) scale(1); filter: blur(0px) brightness(1); }
-                        100% { opacity: 0; transform: translate(-50%, -30%) scale(1.05); filter: blur(30px) brightness(0.8); }
-                      }
-                      @keyframes textShine {
-                        to { background-position: 200% center; }
-                      }
-                    `;
-                    document.head.appendChild(style);
-                  }
-  
-                  document.body.appendChild(welcomeMsg);
-                  setTimeout(() => welcomeMsg.remove(), 3800);
                 }
 
                // Re-trigger loadUserMii via document event or direct call if available
