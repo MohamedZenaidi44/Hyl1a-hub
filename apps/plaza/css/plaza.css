@@ -140,6 +140,4 @@
 }
 @keyframes plaza-spin { to { transform: rotate(360deg); } }
 
-@media (prefers-reduced-motion: reduce) {
-  .plaza-spinner { animation-duration: 1.8s; }
-}
+/* Mouvement réduit : volontairement ignoré (identité console, cf. hub.css). */

@@ -223,9 +223,7 @@ function injectGbaConsoleStyles() {
       .gba-bar { top: 10px; gap: 6px; padding: 6px 7px 6px 6px; }
       .gba-btn-pill { padding: 7px 12px 7px 7px; font-size: 11px; }
     }
-    @media (prefers-reduced-motion: reduce) {
-      .gba-play-root, .gba-bar { animation: none !important; transition: none !important; }
-    }
+    /* Mouvement réduit : volontairement ignoré (identité console, cf. hub.css). */
   `;
   document.head.appendChild(style);
 }

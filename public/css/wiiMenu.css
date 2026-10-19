@@ -995,16 +995,7 @@ body.theme-black .wii-info.has-hero::after {
   }
 }
 
-/* ============================================================
-   MOUVEMENT RÉDUIT
-   ============================================================ */
-@media (prefers-reduced-motion: reduce) {
-  .wii-menu *,
-  .wii-menu *::before,
-  .wii-menu *::after {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
-    scroll-behavior: auto !important;
-  }
-}
+/* ── MOUVEMENT RÉDUIT : volontairement ignoré ──
+   Aucune règle : les animations du menu (banderole, contours des jaquettes,
+   transitions des chaînes) font partie de l'identité console et doivent
+   tourner même quand Windows signale « mouvement réduit ». */

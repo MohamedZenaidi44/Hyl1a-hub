@@ -104,11 +104,7 @@
   box-sizing: border-box;
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .boot-logo { animation: none; }
-  .boot-status { animation: none; }
-  #boot-screen.boot-sweep .boot-bar-fill::after { animation: none; }
-}
+/* Mouvement réduit : volontairement ignoré (identité console, cf. hub.css). */
 
 /* Accessibilité Windows High Contrast */
 @media (forced-colors: active) {

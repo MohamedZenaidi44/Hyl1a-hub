@@ -25,9 +25,8 @@
  *  - HUD (profil, bandeau, horloge, bouton, musique, visualiseur, aide)
  *    correctement intégré à la grille
  *  - carte hero : verre translucide (flou) + fond translucide ; rectangle de
- *    descriptions translucide ; contour animé (wiiHeroContour) partout :
- *    carte hero, descriptions, chaînes et onglets
- *  - prefers-reduced-motion → animations neutralisées
+ *    descriptions translucide ; contour animé (wiiHeroContour) partout :  *    carte hero, descriptions, chaînes et onglets
+  *  - prefers-reduced-motion → animations conservées (choix produit : ignoré)
  *
  * Lancement : node tests/wii-menu-check.js
  * (serveur requis sur http://localhost:5500)
@@ -635,15 +634,16 @@ async function runInteractions(browser, logs) {
        (document.getElementById('window-layer') && document.getElementById('window-layer').children.length)));
   results.push(['clic chaîne → vraie app ouverte (Hall of Fame)', appOpened, `opened=${appOpened}`]);
 
-  // prefers-reduced-motion
+  // prefers-reduced-motion : volontairement ignoré par le site (identité console)
+  // → les animations doivent RESTER actives même quand Windows signale « reduce »
   await page.emulateMediaFeatures([{ name: 'prefers-reduced-motion', value: 'reduce' }]);
   const anim = await page.evaluate(() => {
     const el = document.querySelector('.wii-channel');
     const cs = getComputedStyle(el);
     return { duration: cs.animationDuration, transition: cs.transitionDuration };
   });
-  results.push(['prefers-reduced-motion → animations neutralisées',
-    parseFloat(anim.duration) < 0.01 && parseFloat(anim.transition) < 0.01,
+  results.push(['prefers-reduced-motion → animations conservées (choix produit)',
+    parseFloat(anim.duration) >= 0.3 && parseFloat(anim.transition) >= 0.15,
     JSON.stringify(anim)]);
   await page.emulateMediaFeatures([{ name: 'prefers-reduced-motion', value: 'no-preference' }]);
 

@@ -975,9 +975,9 @@ body.app-open-active #companion-widget {
   100% { transform: scale(0.8);  opacity: 0; }
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .grid-tile { animation: none; transition: none; }
-}
+/* Mouvement réduit : volontairement ignoré — les animations font partie
+   de l'identité console du hub (un réglage Windows « effets d'animation »
+   désactivé ne doit pas vider l'interface chez l'utilisateur). */
 
 /* Responsive */
 @media (max-width: 820px) {

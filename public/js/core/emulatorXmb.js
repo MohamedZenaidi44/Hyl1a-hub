@@ -456,10 +456,8 @@ function injectXmbBaseStyles() {
     .gxmb-root.is-parallax .gxmb-stage { transform: translateY(var(--gxmb-px, 0px)); }
     .gxmb-root.is-parallax .gxmb-panel { transform: translateY(calc(var(--gxmb-px, 0px) * -.35)); }
 
-    @media (prefers-reduced-motion: reduce) {
-      .gxmb-item::before, .gxmb-preview-frame::before, .gxmb-banner-track { animation: none !important; }
-      .gxmb-root, .gxmb-item, .gxmb-stage, .gxmb-panel { transition: none !important; }
-    }
+    /* Mouvement réduit : volontairement ignoré — la banderole et le contour
+       animé des jaquettes font partie de l'identité console (cf. hub.css). */
 
     @media (max-width: 640px) {
       .gxmb-titlebar { display: none; }
@@ -638,8 +636,8 @@ export function createEmulatorXmb(container, config) {
   const root = container.querySelector('.gxmb-root');
   root.focus();
 
-  /* Parallaxe douce au survol (désactivée si reduced-motion) */
-  if (!window.matchMedia || !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+  /* Parallaxe douce au survol (toujours active : mouvement réduit ignoré) */
+  {
     root.classList.add('is-parallax');
     let parallaxRaf = null;
     let parallaxY = 0;
