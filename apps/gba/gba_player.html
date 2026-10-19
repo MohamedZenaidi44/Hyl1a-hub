@@ -46,7 +46,7 @@
   window.EJS_gameUrl       = romUrl;
   window.EJS_core          = 'mgba';
   window.EJS_gameName      = gameName;
-  window.EJS_pathtodata    = 'https://cdn.emulatorjs.org/latest/data/';
+  window.EJS_pathtodata    = 'https://pub-045046eb23854c6e897afff1193bf9bf.r2.dev/emulatorjs/';
   window.EJS_startOnLoaded = true;
   window.EJS_color         = '#7c3aed';
 
@@ -97,7 +97,7 @@
   // que le core mGBA est prêt — plus de race condition IDB possible.
   function loadEmulatorScript() {
     var script = document.createElement('script');
-    script.src = 'https://cdn.emulatorjs.org/latest/data/loader.js';
+    script.src = 'https://pub-045046eb23854c6e897afff1193bf9bf.r2.dev/emulatorjs/loader.js';
     script.onerror = function () {
       showError('Impossible de charger EmulatorJS. Vérifie ta connexion réseau.');
     };

@@ -226,6 +226,12 @@ function injectXmbBaseStyles() {
     }
     .gxmb-cover img {
       width: 100%; height: 100%; object-fit: cover; display: block;
+      opacity: 0; transition: opacity .35s ease;
+    }
+    .gxmb-cover img.is-loaded { opacity: 1; }
+    /* Squelette statique visible pendant le chargement des jaquettes */
+    .gxmb-cover {
+      background: linear-gradient(145deg, rgba(255,255,255,.10), rgba(255,255,255,.045) 55%, rgba(255,255,255,.07));
     }
     .gxmb-cover .gxmb-fallback {
       width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center;
@@ -317,7 +323,7 @@ function injectXmbBaseStyles() {
       position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover;
       opacity: 0; transition: opacity .7s ease;
     }
-    .gxmb-preview-img.is-active { opacity: 1; }
+    .gxmb-preview-img.is-active.is-loaded { opacity: 1; }
     .gxmb-preview-empty {
       position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
       font-size: 11px; font-weight: 800; letter-spacing: 1.5px; text-transform: uppercase;
@@ -504,6 +510,7 @@ export function destroyEmulatorXmb() {
   if (!activeXmb) return;
   if (activeXmb.clockTimer) { clearInterval(activeXmb.clockTimer); activeXmb.clockTimer = null; }
   if (activeXmb.slideTimer) { clearInterval(activeXmb.slideTimer); activeXmb.slideTimer = null; }
+  if (activeXmb.romTimer) { clearTimeout(activeXmb.romTimer); activeXmb.romTimer = null; }
   if (activeXmb.keyHandler) {
     window.removeEventListener('keydown', activeXmb.keyHandler, true);
     if (window._gxmbKeyHandler === activeXmb.keyHandler) window._gxmbKeyHandler = null;
@@ -519,7 +526,8 @@ function buildXmbItemsHtml(games) {
   let itemsHtml = '';
   games.forEach((game, i) => {
     const inner = game.cover
-      ? `<img src="${game.cover}" alt="${game.name}"
+      ? `<img class="gxmb-cover-img" data-src="${game.cover}" alt="${game.name}" decoding="async" draggable="false"
+           onload="this.classList.add('is-loaded')"
            onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />
          <div class="gxmb-fallback" style="display:none;">
            <span class="gxmb-fallback-glyph">🎮</span>
@@ -558,6 +566,11 @@ export function createEmulatorXmb(container, config) {
   injectXmbBaseStyles();
   injectXmbWallpaperStyle(config.appId, config.wallpaper, config.wallpaperFallback);
   destroyEmulatorXmb();
+
+  /* Préchauffe les fichiers EmulatorJS du core (autour du menu) */
+  if (window.HyliaPrefetch && typeof window.HyliaPrefetch.console === 'function') {
+    window.HyliaPrefetch.console(config.appId);
+  }
 
   const state = config.state || (config.state = { index: 0 });
   let games = config.games.slice();
@@ -689,6 +702,13 @@ export function createEmulatorXmb(container, config) {
       item.style.filter = `brightness(${brightness})`;
       item.style.pointerEvents = adist > XMB_MAX_DIST ? 'none' : 'auto';
       item.style.zIndex = String(100 - adist);
+
+      /* Chargement paresseux : seules les jaquettes proches de la sélection
+         téléchargent leur image (le reste garde le squelette). */
+      const img = item.querySelector('img[data-src]');
+      if (img && !img.getAttribute('src') && adist <= 3) {
+        img.src = img.getAttribute('data-src');
+      }
     });
 
     const upBtn = container.querySelector('#gxmb-nav-up');
@@ -890,9 +910,9 @@ export function createEmulatorXmb(container, config) {
     if (shots.length === 0) {
       if (game.cover) {
         const img = document.createElement('img');
-        img.src = game.cover;
         img.className = 'gxmb-preview-img is-active';
         img.style.objectPosition = 'center 15%';
+        img.addEventListener('load', () => img.classList.add('is-loaded'));
         img.onerror = () => {
           img.remove();
           const empty = document.createElement('div');
@@ -900,7 +920,9 @@ export function createEmulatorXmb(container, config) {
           empty.textContent = 'Aperçu à venir';
           frame.appendChild(empty);
         };
+        img.src = game.cover;
         frame.appendChild(img);
+        if (img.complete) img.classList.add('is-loaded');
       } else {
         const empty = document.createElement('div');
         empty.className = 'gxmb-preview-empty';
@@ -912,11 +934,13 @@ export function createEmulatorXmb(container, config) {
 
     shots.forEach((src, i) => {
       const img = document.createElement('img');
-      img.src = src;
       img.className = 'gxmb-preview-img' + (i === 0 ? ' is-active' : '');
       img.alt = `${game.name} — capture ${i + 1}`;
+      img.addEventListener('load', () => img.classList.add('is-loaded'));
       img.onerror = () => { img.style.display = 'none'; };
+      img.src = src;
       frame.appendChild(img);
+      if (img.complete) img.classList.add('is-loaded');
 
       if (shots.length > 1) {
         const dot = document.createElement('div');
@@ -933,10 +957,22 @@ export function createEmulatorXmb(container, config) {
     }
   };
 
+  /* ── Préchauffage de la ROM sélectionnée (HTTP cache) ── */
+  const scheduleRomPrefetch = (game) => {
+    if (!activeXmb) return;
+    if (activeXmb.romTimer) { clearTimeout(activeXmb.romTimer); activeXmb.romTimer = null; }
+    if (!game || !game.file || !window.HyliaPrefetch) return;
+    activeXmb.romTimer = setTimeout(() => {
+      if (activeXmb) activeXmb.romTimer = null;
+      window.HyliaPrefetch.rom(game.file);
+    }, 800);
+  };
+
   /* ── Met à jour titre / description / temps de jeu / aperçu ── */
   const updateInfo = () => {
     if (!games.length) return;
     const game = games[state.index];
+    scheduleRomPrefetch(game);
     const textCol = container.querySelector('#gxmb-info-text');
     const previewCol = container.querySelector('#gxmb-preview');
     const cornerCol = container.querySelector('#gxmb-corner');

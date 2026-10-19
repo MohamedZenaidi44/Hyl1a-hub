@@ -2,7 +2,7 @@
  * Wallpapers par émulateur (dossier « emulator BC ») :
  *
  *  W1) chaque émulateur affiche l'image correspondant à son nom de fichier
- *      (DS → NDS.jpeg, N64 → N64.png, NES → NES.jpeg, GBA → GBA.png) ;
+ *      (DS → NDS.webp, N64 → N64.webp, NES → NES.webp, GBA → GBA.webp) ;
  *  W2) c'est la même image dans les deux thèmes (clair/sombre) : le fond
  *      ne change jamais, seule l'interface s'adapte ;
  *  W3) remplissage plein écran (cover centré, pas de déformation) ;
@@ -20,10 +20,10 @@ const BASE_URL = 'http://localhost:5500/';
 const SHOTS_DIR = path.join(__dirname, 'shots');
 
 const EMULATORS = [
-  { app: 'ds', file: 'NDS.jpeg', sel: '.gxmb-wallpaper', shot: 'emu-ds' },
-  { app: 'n64', file: 'N64.png', sel: '.gxmb-wallpaper', shot: 'emu-n64' },
-  { app: 'nes', file: 'NES.jpeg', sel: '.gxmb-wallpaper', shot: 'emu-nes' },
-  { app: 'gba', file: 'GBA.png', sel: '.gxmb-wallpaper', shot: 'emu-gba' },
+  { app: 'ds', file: 'NDS.webp', sel: '.gxmb-wallpaper', shot: 'emu-ds' },
+  { app: 'n64', file: 'N64.webp', sel: '.gxmb-wallpaper', shot: 'emu-n64' },
+  { app: 'nes', file: 'NES.webp', sel: '.gxmb-wallpaper', shot: 'emu-nes' },
+  { app: 'gba', file: 'GBA.webp', sel: '.gxmb-wallpaper', shot: 'emu-gba' },
 ];
 
 function findChrome() {

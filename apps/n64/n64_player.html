@@ -55,7 +55,7 @@
             window.EJS_core = core; 
             window.EJS_gameUrl = romUrl;
             window.EJS_gameName = gameName; 
-            window.EJS_pathtodata = 'https://cdn.emulatorjs.org/latest/data/'; 
+            window.EJS_pathtodata = 'https://pub-045046eb23854c6e897afff1193bf9bf.r2.dev/emulatorjs/'; 
             window.EJS_startOnLoaded = true;
             // Activer le multithreading SI le navigateur le supporte (boost énorme de FPS)
             window.EJS_threads = typeof SharedArrayBuffer !== 'undefined';
@@ -126,7 +126,7 @@
 
             function loadEmu() {
                 const script = document.createElement('script');
-                script.src = 'https://cdn.emulatorjs.org/latest/data/loader.js';
+                script.src = 'https://pub-045046eb23854c6e897afff1193bf9bf.r2.dev/emulatorjs/loader.js';
                 document.body.appendChild(script);
             }
 

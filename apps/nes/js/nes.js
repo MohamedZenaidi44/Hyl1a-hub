@@ -6,7 +6,7 @@
 import { createEmulatorXmb, destroyEmulatorXmb } from '/public/js/core/emulatorXmb.js';
 
 const NES_GAMES = [
-  { name: 'Super Mario Bros. 25th Anniversary', file: 'https://pub-045046eb23854c6e897afff1193bf9bf.r2.dev/nes/25th Anniversary Super Mario Bros. (Europe) (Promo, Virtual Console).zip', cover: '/public/assets/nes/covers/super-mario-bros-25th.jpg',
+  { name: 'Super Mario Bros. 25th Anniversary', file: 'https://pub-045046eb23854c6e897afff1193bf9bf.r2.dev/nes/25th Anniversary Super Mario Bros. (Europe) (Promo, Virtual Console).zip', cover: '/public/assets/nes/covers/super-mario-bros-25th.webp',
     description: "L'édition anniversaire des 25 ans du jeu qui a sauvé le jeu vidéo : huit mondes, les champignons, les tuyaux… et la princesse à sauver, en version Virtual Console." },
 ];
 
@@ -41,7 +41,7 @@ function renderNesMenu(container) {
     games: NES_GAMES,
     state: nesXmbState,
     titlebar: 'Émulateur NES',
-    wallpaper: 'public/assets/emulators/NES.jpeg',
+    wallpaper: 'public/assets/emulators/NES.webp',
     wallpaperFallback: '#14161c',
     emuIframeMatch: 'nes_player.html',
     getPlaytimes: () => nesPlaytimes,

@@ -63,7 +63,7 @@
     document.dispatchEvent(new CustomEvent('boot-finished'));
     // Warm-up discret du cache CDN EmulatorJS (accélère le 1er lancement d'émulateur)
     setTimeout(function () {
-      try { fetch('https://cdn.emulatorjs.org/latest/data/loader.js', { mode: 'no-cors', cache: 'default' }).catch(function () {}); }
+      try { fetch('https://pub-045046eb23854c6e897afff1193bf9bf.r2.dev/emulatorjs/loader.js', { mode: 'no-cors', cache: 'default' }).catch(function () {}); }
       catch (e) { /* ignore */ }
     }, 1500);
   }

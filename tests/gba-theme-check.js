@@ -1,7 +1,7 @@
 /**
  * Verification thème blanc/noir de la page de sélection GBA (menu gxmb) :
  *
- *  G1) le wallpaper GBA.png est présent (image + motif de secours multi-couches) ;
+ *  G1) le wallpaper GBA.webp est présent (image + motif de secours multi-couches) ;
  *  G2) la même image dans les deux thèmes (le fond ne change jamais) ;
  *  G3) les contours des jaquettes et de l'aperçu passent en monochrome
  *      (blanc-gris en thème blanc, noir-gris en thème noir) — plus d'accent ;
@@ -159,11 +159,11 @@ async function contentVariance(sharp, file) {
     await page.screenshot({ path: whiteShot });
 
     /* ───────── G1) Wallpaper présent ───────── */
-    R('G1 wallpaper GBA.png présent (+ motif de secours)',
+    R('G1 wallpaper GBA.webp présent (+ motif de secours)',
       black.has && white.has && black.layers >= 6 && white.layers >= 6 && white.hasRepeat,
       `couches=${white.layers} repeating=${white.hasRepeat}`);
-    R('G1b image GBA.png chargée dans les deux thèmes',
-      /GBA\.png$/.test(black.imageLayer) && /GBA\.png$/.test(white.imageLayer),
+    R('G1b image GBA.webp chargée dans les deux thèmes',
+      /GBA\.webp$/.test(black.imageLayer) && /GBA\.webp$/.test(white.imageLayer),
       `noir=${black.imageLayer.split('/').pop()} blanc=${white.imageLayer.split('/').pop()}`);
 
     /* ───────── G2) Même fond dans les deux thèmes ───────── */
